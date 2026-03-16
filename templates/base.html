@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}The Commons{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/" class="nav-logo">The Commons</a>
+    <span class="nav-spirit">Power to the People</span>
+    <div class="nav-links">
+      <a href="/">Feed</a>
+      <a href="/marketplace">Marketplace</a>
+      <a href="/codex">Codex</a>
+      <a href="/giving">Giving</a>
+      <span id="nav-user"></span>
+    </div>
+  </nav>
+
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>The Commons · No advertising · No data selling · No biometrics · Power to the People</p>
+    <p>Founded by Sovereign Human T.L. Powers · <a href="/codex">Read the Codex</a></p>
+  </footer>
+
+  <script src="/static/js/main.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

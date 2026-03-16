@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Marketplace — The Commons{% endblock %}
+{% block content %}
+
+<div class="marketplace-header">
+  <h1>Marketplace</h1>
+  <p>Local creators and small businesses only. No corporations. Flat $1 platform fee per transaction.</p>
+</div>
+
+<div class="marketplace-actions" id="seller-actions" style="display:none">
+  <button onclick="showListProduct()" class="btn-primary">List a Product</button>
+  <a href="/marketplace/apply" class="btn-secondary">Become a Seller</a>
+</div>
+
+<div id="list-product-form" class="product-form" style="display:none">
+  <h3>List a Product</h3>
+  <label>Product name
+    <input type="text" id="product-name" maxlength="300" placeholder="What are you selling?">
+  </label>
+  <label>Description
+    <textarea id="product-desc" placeholder="Describe your product..." rows="4"></textarea>
+  </label>
+  <label>Price ($)
+    <input type="number" id="product-price" min="0.01" max="10000" step="0.01" placeholder="0.00">
+  </label>
+  <p class="fee-note">Buyers pay your price + $1 platform fee. The $1 covers operating costs only. No profit taken.</p>
+  <button onclick="listProduct()" class="btn-primary">List Product</button>
+  <button onclick="hideListProduct()" class="btn-secondary">Cancel</button>
+</div>
+
+<div class="products-grid" id="products-grid">
+  <div class="loading">Loading marketplace...</div>
+</div>
+
+<div id="product-modal" class="modal" style="display:none">
+  <div class="modal-content">
+    <button onclick="closeModal()" class="modal-close">&times;</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+async function loadMarketplace() {
+  const res  = await fetch('/api/marketplace');
+  const data = await res.json();
+  const grid = document.getElementById('products-grid');
+  if (!data.products || data.products.length === 0) {
+    grid.innerHTML = '<div class="empty-marketplace"><h3>The marketplace is open.</h3><p>Be the first to list a product.</p></div>';
+    return;
+  }
+  grid.innerHTML = data.products.map(p => `
+    <div class="product-card" onclick="viewProduct(${p.id})">
+      ${p.media_path ? `<img src="/media/${p.media_path}" class="product-image" alt="${p.name}">` : '<div class="product-no-image">📦</div>'}
+      <div class="product-info">
+        <h3 class="product-name">${p.name}</h3>
+        <p class="product-seller">by ${p.seller}</p>
+        <div class="product-footer">
+          <span class="product-price">$${p.price.toFixed(2)}</span>
+          <span class="product-fee">+ $1.00 fee</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function viewProduct(id) {
+  const res  = await fetch(`/api/marketplace/${id}`);
+  const data = await res.json();
+  if (!data.ok) return;
+  const p = data.product;
+  document.getElementById('modal-body').innerHTML = `
+    <h2>${p.name}</h2>
+    <p class="product-seller-full">Sold by ${p.seller} · ${p.business_type}</p>
+    <p class="product-description">${p.description}</p>
+    <div class="purchase-breakdown">
+      <div class="price-row"><span>Product price</span><span>$${p.price.toFixed(2)}</span></div>
+      <div class="price-row fee"><span>Platform fee</span><span>$1.00</span></div>
+      <div class="price-row total"><span>Total</span><span>$${(p.price + 1).toFixed(2)}</span></div>
+      <p class="fee-explanation">The $1 platform fee covers operating costs only. No profit. Codex Law 12.</p>
+    </div>
+    <button onclick="purchase(${p.id})" class="btn-primary btn-full">Purchase · $${(p.price + 1).toFixed(2)}</button>
+  `;
+  document.getElementById('product-modal').style.display = 'flex';
+}
+
+async function purchase(productId) {
+  const token = localStorage.getItem('token');
+  if (!token) { window.location = '/login'; return; }
+  const form = new FormData();
+  form.append('product_id', productId);
+  const res  = await fetch('/api/marketplace/purchase', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.ok) {
+    closeModal();
+    showMessage('Purchase initiated! Check your account for details.');
+  } else {
+    showMessage(data.error, true);
+  }
+}
+
+async function listProduct() {
+  const token = localStorage.getItem('token');
+  if (!token) { window.location = '/login'; return; }
+  const form = new FormData();
+  form.append('name',        document.getElementById('product-name').value);
+  form.append('description', document.getElementById('product-desc').value);
+  form.append('price',       document.getElementById('product-price').value);
+  const res  = await fetch('/api/marketplace/products', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.ok) {
+    hideListProduct();
+    showMessage('Product listed!');
+    loadMarketplace();
+  } else {
+    showMessage(data.error, true);
+  }
+}
+
+function showListProduct() { document.getElementById('list-product-form').style.display = 'block'; }
+function hideListProduct() { document.getElementById('list-product-form').style.display = 'none'; }
+function closeModal() { document.getElementById('product-modal').style.display = 'none'; }
+
+window.addEventListener('click', (e) => {
+  if (e.target === document.getElementById('product-modal')) closeModal();
+});
+
+loadMarketplace();
+</script>
+{% endblock %}

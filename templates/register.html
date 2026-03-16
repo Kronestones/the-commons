@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Join The Commons{% endblock %}
+{% block content %}
+
+<div class="auth-container">
+  <h1>Join The Commons</h1>
+  <p class="auth-note">No phone number required. No biometrics. Ever. Just a username and password.</p>
+
+  <form id="register-form" class="auth-form">
+    <label>Username
+      <input type="text" id="username" placeholder="your_username" maxlength="50" required>
+    </label>
+    <label>Email
+      <input type="email" id="email" placeholder="you@example.com" required>
+    </label>
+    <label>Password
+      <input type="password" id="password" placeholder="At least 8 characters" required>
+    </label>
+    <label>Display name (optional)
+      <input type="text" id="display-name" placeholder="How you appear to others">
+    </label>
+    <label class="checkbox-label">
+      <input type="checkbox" id="is-minor">
+      I am under 18
+    </label>
+    <div id="form-error" class="form-error" style="display:none"></div>
+    <button type="submit" class="btn-primary btn-full">Join The Commons</button>
+  </form>
+
+  <p class="auth-switch">Already have an account? <a href="/login">Sign in</a></p>
+
+  <div class="auth-promise">
+    <h3>Our promise to you</h3>
+    <ul>
+      <li>No advertising — ever</li>
+      <li>No data selling — ever</li>
+      <li>No biometrics — ever</li>
+      <li>Your data is yours — export or delete anytime</li>
+      <li>The platform exists for you, not shareholders</li>
+    </ul>
+    <a href="/codex">Read the full Codex →</a>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = new FormData();
+  form.append('username',     document.getElementById('username').value);
+  form.append('email',        document.getElementById('email').value);
+  form.append('password',     document.getElementById('password').value);
+  form.append('display_name', document.getElementById('display-name').value);
+  form.append('is_minor',     document.getElementById('is-minor').checked);
+  const res  = await fetch('/auth/register', { method: 'POST', body: form });
+  const data = await res.json();
+  if (data.ok) {
+    localStorage.setItem('token',    data.token);
+    localStorage.setItem('username', data.user.username);
+    window.location = '/';
+  } else {
+    const err = document.getElementById('form-error');
+    err.textContent = data.error;
+    err.style.display = 'block';
+  }
+});
+</script>
+{% endblock %}

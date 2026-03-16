@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}The Codex — The Commons{% endblock %}
+{% block content %}
+
+<div class="codex-container">
+  <h1>The Commons Codex</h1>
+  <p class="codex-spirit">{{ codex.SPIRIT }}</p>
+  <p class="codex-sovereign">Founded by {{ codex.SOVEREIGN }} · Ratified {{ codex.RATIFIED }}</p>
+
+  <div class="codex-preamble">
+    <p>{{ codex.PREAMBLE }}</p>
+  </div>
+
+  <h2>The Sixteen Laws</h2>
+  <div class="codex-laws">
+    {% for law in codex.LAWS %}
+    <div class="codex-law {% if law.immutable %}immutable{% endif %}">
+      <div class="law-header">
+        <span class="law-number">Law {{ law.number }}</span>
+        <span class="law-name">{{ law.name }}</span>
+        {% if law.immutable %}<span class="law-lock">Immutable</span>{% endif %}
+      </div>
+      <p class="law-text">{{ law.text }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h2>Verified Sources</h2>
+  <p>The Fingerprint checks content against these sources. This list is public. The Global Circle reviews it quarterly.</p>
+  <div class="sources-list">
+    {% for source in sources %}
+    <div class="source-item">
+      <span class="source-name">{{ source.name }}</span>
+      <span class="source-category">{{ source.category.replace('_', ' ') }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
