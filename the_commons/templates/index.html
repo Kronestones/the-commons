@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}The Commons — Feed{% endblock %}
+{% block content %}
+
+<div class="feed-layout">
+
+  <div class="post-composer" id="composer" style="display:none">
+    <h3>Share something</h3>
+    <textarea id="post-content" placeholder="What's on your mind?" maxlength="10000"></textarea>
+    <div class="composer-options">
+      <label><input type="checkbox" id="is-news"> This is news
+      <label><input type="checkbox" id="is-political"> This is political content
+    </div>
+    <div class="composer-actions">
+      <select id="algo-mode">
+        <option value="transparent">Transparent feed</option>
+        <option value="chronological">Chronological</option>
+        <option value="community">Community governed</option>
+      </select>
+      <button onclick="createPost()" class="btn-primary">Post</button>
+    </div>
+    <p class="composer-note">Political and news content is verified before publishing. This usually takes seconds.</p>
+  </div>
+
+  <div class="feed" id="feed">
+    {% if posts %}
+      {% for post in posts %}
+      <div class="post-card">
+        <div class="post-header">
+          <span class="post-author">@{{ post.author.username if post.author else 'unknown' }}</span>
+          <span class="post-time">{{ post.published_at.strftime('%b %d') if post.published_at else '' }}</span>
+        </div>
+        <div class="post-content">{{ post.content }}</div>
+        <div class="post-actions">
+          <button onclick="vote({{ post.id }}, 1)" class="vote-btn">↑ Valuable</button>
+          <span class="community-score">{{ post.community_score | int }}</span>
+          <button onclick="vote({{ post.id }}, -1)" class="vote-btn">↓</button>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-feed">
+        <h2>The Commons is open.</h2>
+        <p>Be the first to post.</p>
+        <a href="/register" class="btn-primary">Join</a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+async function createPost() {
+  const token = localStorage.getItem('token');
+  if (!token) { window.location = '/login'; return; }
+  const content     = document.getElementById('post-content').value;
+  const is_news     = document.getElementById('is-news').checked;
+  const is_political = document.getElementById('is-political').checked;
+  const form = new FormData();
+  form.append('content', content);
+  form.append('post_type', 'text');
+  form.append('is_news', is_news);
+  form.append('is_political', is_political);
+  const res  = await fetch('/api/posts', { method: 'POST', headers: {'Authorization': 'Bearer ' + token}, body: form });
+  const data = await res.json();
+  if (data.ok) {
+    document.getElementById('post-content').value = '';
+    showMessage(data.message);
+    setTimeout(() => location.reload(), 1500);
+  } else {
+    showMessage(data.error, true);
+  }
+}
+async function vote(postId, value) {
+  const token = localStorage.getItem('token');
+  if (!token) { window.location = '/login'; return; }
+  const form = new FormData();
+  form.append('value', value);
+  await fetch(`/api/posts/${postId}/vote`, { method: 'POST', headers: {'Authorization': 'Bearer ' + token}, body: form });
+}
+</script>
+{% endblock %}

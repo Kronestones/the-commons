@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: the-commons
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: false
+      - key: DATABASE_URL
+        value: sqlite:///./the_commons.db
+      - key: FINGERPRINT_ENABLED
+        value: true
+      - key: TRANSACTION_FEE
+        value: "1.00"
+      - key: MIN_CIRCLE_SIZE
+        value: "3"

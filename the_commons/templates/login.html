@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Sign In — The Commons{% endblock %}
+{% block content %}
+
+<div class="auth-container">
+  <h1>Welcome back</h1>
+
+  <form id="login-form" class="auth-form">
+    <label>Username
+      <input type="text" id="username" placeholder="your_username" required>
+    </label>
+    <label>Password
+      <input type="password" id="password" placeholder="Your password" required>
+    </label>
+    <div id="form-error" class="form-error" style="display:none"></div>
+    <button type="submit" class="btn-primary btn-full">Sign In</button>
+  </form>
+
+  <p class="auth-switch">New here? <a href="/register">Join The Commons</a></p>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = new FormData();
+  form.append('username', document.getElementById('username').value);
+  form.append('password', document.getElementById('password').value);
+  const res  = await fetch('/auth/login', { method: 'POST', body: form });
+  const data = await res.json();
+  if (data.ok) {
+    localStorage.setItem('token',    data.token);
+    localStorage.setItem('username', data.user.username);
+    window.location = '/';
+  } else {
+    const err = document.getElementById('form-error');
+    err.textContent = data.error;
+    err.style.display = 'block';
+  }
+});
+</script>
+{% endblock %}
