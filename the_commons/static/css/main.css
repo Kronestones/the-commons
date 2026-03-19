@@ -554,3 +554,32 @@ a:hover { text-decoration: underline; }
 .history-category { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
 .history-votes { font-size: 13px; color: var(--text-muted); }
 .history-message { font-size: 14px; color: var(--text-dark); margin-top: 8px; font-style: italic; }
+
+/* ── AI Statement ─────────────────────────────────────────────────────────── */
+.ai-statement {
+  background: var(--green-light);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--green-mid);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 28px 32px;
+  margin: 40px 0;
+  max-width: 800px;
+}
+.ai-statement h2 {
+  font-size: 22px;
+  color: var(--green-dark);
+  margin-bottom: 16px;
+}
+.ai-statement p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-dark);
+  margin-bottom: 14px;
+}
+.ai-statement p:last-child { margin-bottom: 0; }
+.ai-statement em { font-style: italic; color: var(--green-dark); }
+.ai-statement-sig {
+  font-weight: 600;
+  color: var(--green-mid) !important;
+  margin-top: 20px !important;
+}
