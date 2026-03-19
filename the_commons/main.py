@@ -64,7 +64,9 @@ from commons.features    import (
     follow_manager, profile_manager, notification_manager,
     search_manager, bookmark_manager, creator_stats,
     trending_manager, dm_manager,
-    Follow, Notification, Hashtag, PostHashtag, Bookmark, DirectMessage
+    block_manager, report_manager, video_response_manager,
+    Follow, Notification, Hashtag, PostHashtag, Bookmark, DirectMessage,
+    UserBlock, ContentReport, VideoResponse
 )
 from commons.security    import (
     SecurityHeadersMiddleware, RequestSizeLimitMiddleware,
@@ -108,7 +110,7 @@ async def startup():
     from commons.preferences import UserTopicPreference, UserCreatorAffinity, UserContentTypePreference, WatchEvent
     from commons.social import Like, Comment, Share
     from commons.parental import ParentalControl
-    from commons.features import Follow, Notification, Hashtag, PostHashtag, Bookmark, DirectMessage
+    from commons.features import Follow, Notification, Hashtag, PostHashtag, Bookmark, DirectMessage, UserBlock, ContentReport, VideoResponse
     from commons.captions import Caption
     from commons.circle_assistants import AssistantAnalysis
     from commons.payments import UserCurrencyPreference, LiveGift, CreatorWallet
@@ -515,26 +517,6 @@ async def api_share(
 
 
 
-
-# ── Search (Ecosia) ───────────────────────────────────────────────────────────
-
-@app.get("/api/web-search")
-async def api_web_search(
-    q:            str,
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Web search powered by Ecosia — search the web, plant trees.
-    Ecosia uses search revenue to plant trees. Aligned with The Commons values.
-    """
-    ecosia_url = f"https://www.ecosia.org/search?q={q}"
-    return JSONResponse({
-        "ok":          True,
-        "query":       q,
-        "ecosia_url":  ecosia_url,
-        "note":        "Search powered by Ecosia — every search helps plant trees.",
-        "open_url":    ecosia_url,
-    })
 
 # ── Support API ───────────────────────────────────────────────────────────────
 
@@ -1203,6 +1185,99 @@ async def api_confirm_donation(
         raise HTTPException(403, "Sovereign authority required.")
     result = surplus_manager.confirm_donation(db, donation_id)
     return JSONResponse(result)
+
+
+# ── Block API ─────────────────────────────────────────────────────────────────
+
+@app.post("/api/users/{user_id}/block")
+async def api_block(
+    user_id:      int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(block_manager.toggle_block(db, current_user, user_id))
+
+@app.get("/api/blocked")
+async def api_get_blocked(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse({"ok": True, "blocked": block_manager.get_blocked_users(db, current_user.id)})
+
+# ── Report API ────────────────────────────────────────────────────────────────
+
+@app.get("/api/report/reasons")
+async def api_report_reasons():
+    return JSONResponse({"ok": True, "reasons": report_manager.REPORT_REASONS})
+
+@app.post("/api/posts/{post_id}/report")
+async def api_report_post(
+    post_id:      int,
+    reason:       str = Form(...),
+    details:      str = Form(default=""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(report_manager.submit_report(db, current_user.id, post_id, reason, details))
+
+@app.get("/api/reports/pending")
+async def api_pending_reports(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.value not in ("circle", "sovereign"):
+        raise HTTPException(403, "Circle access required.")
+    return JSONResponse({"ok": True, "reports": report_manager.get_pending_reports(db)})
+
+# ── Verified Checkmark ────────────────────────────────────────────────────────
+
+VERIFIED_THRESHOLD = 10000
+
+@app.post("/api/users/{user_id}/check-verified")
+async def api_check_verified(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    """Auto-verify users who reach 10k followers."""
+    from commons.features import Follow
+    followers = db.query(Follow).filter(Follow.following_id == user_id).count()
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found.")
+    if followers >= VERIFIED_THRESHOLD and not user.is_verified:
+        user.is_verified = True
+        db.commit()
+        return JSONResponse({"ok": True, "verified": True, "message": "✓ Verified — 10,000 followers reached!"})
+    return JSONResponse({"ok": True, "verified": user.is_verified, "followers": followers, "threshold": VERIFIED_THRESHOLD})
+
+# ── Stitch & Duet API ─────────────────────────────────────────────────────────
+
+@app.post("/api/posts/{post_id}/stitch")
+async def api_stitch(
+    post_id:          int,
+    response_post_id: int = Form(...),
+    current_user:     User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Stitch — respond to someone's video with your own."""
+    return JSONResponse(video_response_manager.create_stitch(db, current_user, post_id, response_post_id))
+
+@app.post("/api/posts/{post_id}/duet")
+async def api_duet(
+    post_id:          int,
+    response_post_id: int = Form(...),
+    current_user:     User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Duet — side by side video response."""
+    return JSONResponse(video_response_manager.create_duet(db, current_user, post_id, response_post_id))
+
+@app.get("/api/posts/{post_id}/responses")
+async def api_video_responses(
+    post_id: int,
+    db: Session = Depends(get_db)
+):
+    return JSONResponse({"ok": True, "responses": video_response_manager.get_responses(db, post_id)})
 
 # ── Health ────────────────────────────────────────────────────────────────────
 

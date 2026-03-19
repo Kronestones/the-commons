@@ -758,3 +758,153 @@ bookmark_manager     = BookmarkManager()
 creator_stats        = CreatorStats()
 trending_manager     = TrendingManager()
 dm_manager           = DirectMessageManager()
+
+
+# ── Block System ──────────────────────────────────────────────────────────────
+
+class UserBlock(Base):
+    """Block a user. They cannot see your content or interact with you."""
+    __tablename__ = "user_blocks"
+    id          = Column(Integer, primary_key=True, index=True)
+    blocker_id  = Column(Integer, ForeignKey("users.id"), nullable=False)
+    blocked_id  = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+
+
+class ContentReport(Base):
+    """User report of content that violates the Codex."""
+    __tablename__ = "content_reports"
+    id          = Column(Integer, primary_key=True, index=True)
+    reporter_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    post_id     = Column(Integer, ForeignKey("posts.id"), nullable=True)
+    reason      = Column(String(100), nullable=False)
+    details     = Column(Text, default="")
+    status      = Column(String(50), default="pending")
+    created_at  = Column(DateTime, default=datetime.utcnow)
+
+
+class VideoResponse(Base):
+    """Stitch or Duet — video response to another post."""
+    __tablename__ = "video_responses"
+    id              = Column(Integer, primary_key=True, index=True)
+    response_type   = Column(String(20), nullable=False)  # stitch / duet
+    original_post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+    response_post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+    created_at      = Column(DateTime, default=datetime.utcnow)
+
+
+class BlockManager:
+
+    def toggle_block(self, db: Session, blocker: User, blocked_id: int) -> dict:
+        if blocker.id == blocked_id:
+            return {"ok": False, "error": "You cannot block yourself."}
+        existing = db.query(UserBlock).filter(
+            UserBlock.blocker_id == blocker.id,
+            UserBlock.blocked_id == blocked_id
+        ).first()
+        if existing:
+            db.delete(existing)
+            db.commit()
+            return {"ok": True, "blocked": False, "message": "User unblocked."}
+        db.add(UserBlock(blocker_id=blocker.id, blocked_id=blocked_id))
+        db.commit()
+        return {"ok": True, "blocked": True, "message": "User blocked. They can no longer see your content or interact with you."}
+
+    def is_blocked(self, db: Session, blocker_id: int, blocked_id: int) -> bool:
+        return db.query(UserBlock).filter(
+            UserBlock.blocker_id == blocker_id,
+            UserBlock.blocked_id == blocked_id
+        ).first() is not None
+
+    def get_blocked_users(self, db: Session, user_id: int) -> list:
+        blocks = db.query(UserBlock).filter(UserBlock.blocker_id == user_id).all()
+        result = []
+        for b in blocks:
+            user = db.query(User).filter(User.id == b.blocked_id).first()
+            if user:
+                result.append({"id": user.id, "username": user.username})
+        return result
+
+
+class ReportManager:
+
+    REPORT_REASONS = [
+        "Nudity or sexual content",
+        "Violence or dangerous content",
+        "Hate speech or discrimination",
+        "Misinformation",
+        "Spam",
+        "Harassment",
+        "Copyright violation",
+        "Other Codex violation",
+    ]
+
+    def submit_report(self, db: Session, reporter_id: int,
+                      post_id: int, reason: str, details: str = "") -> dict:
+        # Zero tolerance — auto-flag nudity reports immediately
+        if "nudity" in reason.lower() or "sexual" in reason.lower():
+            from .database import Post, PostStatus
+            post = db.query(Post).filter(Post.id == post_id).first()
+            if post:
+                post.status = PostStatus.REMOVED
+                db.commit()
+                print(f"[SAFETY] Zero tolerance: Post {post_id} removed — nudity/sexual content report")
+
+        report = ContentReport(
+            reporter_id = reporter_id,
+            post_id     = post_id,
+            reason      = reason,
+            details     = details,
+        )
+        db.add(report)
+        db.commit()
+        return {"ok": True, "message": "Report submitted. The Circle will review it."}
+
+    def get_pending_reports(self, db: Session) -> list:
+        reports = db.query(ContentReport).filter(
+            ContentReport.status == "pending"
+        ).order_by(ContentReport.created_at).all()
+        return [
+            {"id": r.id, "post_id": r.post_id, "reason": r.reason,
+             "details": r.details, "created_at": r.created_at.isoformat()}
+            for r in reports
+        ]
+
+
+class VideoResponseManager:
+
+    def create_stitch(self, db: Session, user: User,
+                      original_post_id: int, response_post_id: int) -> dict:
+        """Stitch — respond to someone's video with your own."""
+        db.add(VideoResponse(
+            response_type    = "stitch",
+            original_post_id = original_post_id,
+            response_post_id = response_post_id,
+        ))
+        db.commit()
+        return {"ok": True, "type": "stitch",
+                "note": "Full credit given to original creator."}
+
+    def create_duet(self, db: Session, user: User,
+                    original_post_id: int, response_post_id: int) -> dict:
+        """Duet — side by side video response."""
+        db.add(VideoResponse(
+            response_type    = "duet",
+            original_post_id = original_post_id,
+            response_post_id = response_post_id,
+        ))
+        db.commit()
+        return {"ok": True, "type": "duet",
+                "note": "Full credit given to original creator."}
+
+    def get_responses(self, db: Session, post_id: int) -> list:
+        responses = db.query(VideoResponse).filter(
+            VideoResponse.original_post_id == post_id
+        ).all()
+        return [{"type": r.response_type, "response_post_id": r.response_post_id}
+                for r in responses]
+
+
+block_manager        = BlockManager()
+report_manager       = ReportManager()
+video_response_manager = VideoResponseManager()

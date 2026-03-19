@@ -50,6 +50,26 @@ VERIFIED_SOURCES = [
 # Basic heuristic signals that suggest manipulation.
 # More sophisticated detection added as platform grows.
 
+# ── Content Safety — Zero Tolerance ──────────────────────────────────────────
+# Nudity and sexual content: instant removal, no appeal, no exceptions.
+# Codex Law 8: Children are protected. Codex Law 1: People First.
+
+ZERO_TOLERANCE_PATTERNS = [
+    r"\b(nude|nudity|naked|explicit|nsfw|pornograph|sexual content|adult content)\b",
+    r"\b(genitalia|genital|breast|nipple)\b",
+]
+
+def check_zero_tolerance(text: str) -> bool:
+    """Returns True if content triggers zero tolerance removal."""
+    import re
+    if not text:
+        return False
+    text_lower = text.lower()
+    for pattern in ZERO_TOLERANCE_PATTERNS:
+        if re.search(pattern, text_lower, re.IGNORECASE):
+            return True
+    return False
+
 MANIPULATION_SIGNALS = [
     r"\b(deepfake|synthetic|ai.generated|fake.video|manipulated)\b",
     r"\b(voice.clone|cloned.voice|generated.audio)\b",

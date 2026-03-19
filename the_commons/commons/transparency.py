@@ -76,10 +76,11 @@ COST_CATEGORIES = [
     "Hosting — Render",
     "Domain registration",
     "Payment processing infrastructure",
-    "Mobile data and device — personal hardware hosting Sentinel",
+    "Mobile data and device — personal hardware",
+    "Travel and conference — platform operations",
     "SSL certificate",
     "Email service",
-    "Other infrastructure",
+    "Other reasonable operational costs",
 ]
 
 

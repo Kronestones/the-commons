@@ -512,3 +512,18 @@ a:hover { text-decoration: underline; }
 .report-notes { background: var(--green-light); border-radius: var(--radius); padding: 12px 16px; margin-top: 16px; font-size: 14px; }
 .noted-by { font-size: 13px; color: var(--text-muted); font-style: italic; }
 .transparency-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+
+/* ── Facebook Community Link ─────────────────────────────────────────────── */
+.fb-community {
+  text-align: center;
+  padding: 12px;
+  background: var(--green-light);
+  border-top: 1px solid var(--border);
+}
+.fb-community a {
+  color: var(--green-dark);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.fb-community a:hover { text-decoration: underline; }

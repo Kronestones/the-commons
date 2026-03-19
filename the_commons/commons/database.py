@@ -76,6 +76,7 @@ class User(Base):
     algorithm_mode  = Column(Enum(AlgorithmMode), default=AlgorithmMode.TRANSPARENT)
     is_active       = Column(Boolean, default=True)
     is_minor        = Column(Boolean, default=False)
+    is_verified     = Column(Boolean, default=False)  # Blue checkmark at 10k followers
     created_at      = Column(DateTime, default=datetime.utcnow)
     last_seen       = Column(DateTime, default=datetime.utcnow)
 
