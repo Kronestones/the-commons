@@ -199,6 +199,24 @@ class TheCommonsCodex:
             "immutable": False,
         },
         {
+            "number": 18,
+            "name": "The Monthly Blessing",
+            "text": (
+                "Each month, The Commons community selects one member "
+                "in genuine life-sustaining need to receive a Blessing. "
+                "Ten percent of monthly surplus is set aside for this purpose. "
+                "The Circle verifies need — medical, housing, food security. "
+                "Not wants. The community votes. The highest vote wins. "
+                "One blessing. One person or family. Every month. "
+                "Maximum $19,000 for individuals, $38,000 for families "
+                "per calendar year. Every application, every vote, "
+                "every dollar is published publicly. "
+                "The Commons is a facilitator only. "
+                "This is the community caring for its own."
+            ),
+            "immutable": True,
+        },
+        {
             "number": 17,
             "name": "Surplus to the World",
             "text": (
@@ -227,7 +245,7 @@ class TheCommonsCodex:
     # ── Amendment Rules ───────────────────────────────────────────────────────
 
     AMENDMENT_THRESHOLD = 0.67   # Two-thirds of Circle required
-    IMMUTABLE_LAWS = [1, 2, 3, 4, 6, 8, 9, 11, 12, 14, 16, 17]  # Cannot be amended
+    IMMUTABLE_LAWS = [1, 2, 3, 4, 6, 8, 9, 11, 12, 14, 16, 17, 18]  # Cannot be amended
 
     @classmethod
     def display(cls):

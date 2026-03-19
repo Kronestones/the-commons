@@ -82,6 +82,11 @@ class SocialManager:
 
     def toggle_like(self, db: Session, user: User, post_id: int) -> dict:
         """Like or unlike a post. One like per user per post."""
+        # Zero tolerance content check
+        from .fingerprint import check_zero_tolerance
+        if check_zero_tolerance(content):
+            return {"ok": False, "error": "Your comment contains content that is not permitted on The Commons."}
+
         post = db.query(Post).filter(
             Post.id == post_id,
             Post.status == PostStatus.PUBLISHED
@@ -124,6 +129,11 @@ class SocialManager:
             return {"ok": False, "error": "Comment cannot be empty."}
         if len(content) > 2000:
             return {"ok": False, "error": "Comment cannot exceed 2000 characters."}
+
+        # Zero tolerance content check
+        from .fingerprint import check_zero_tolerance
+        if check_zero_tolerance(content):
+            return {"ok": False, "error": "Your comment contains content that is not permitted on The Commons."}
 
         post = db.query(Post).filter(
             Post.id == post_id,

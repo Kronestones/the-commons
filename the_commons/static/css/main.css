@@ -527,3 +527,30 @@ a:hover { text-decoration: underline; }
   text-decoration: none;
 }
 .fb-community a:hover { text-decoration: underline; }
+
+/* ── Monthly Blessing ─────────────────────────────────────────────────────── */
+.blessing-container h1 { font-size: 32px; color: var(--green-dark); margin-bottom: 4px; }
+.blessing-spirit { color: var(--green-mid); font-style: italic; margin-bottom: 20px; }
+.blessing-statement { background: var(--green-light); border-left: 4px solid var(--green-mid); padding: 20px; border-radius: 0 var(--radius) var(--radius) 0; margin-bottom: 32px; font-size: 15px; line-height: 1.7; }
+.blessing-statement p { margin-bottom: 10px; }
+.blessing-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.blessing-category { font-size: 13px; font-weight: 700; color: var(--green-mid); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.blessing-description { font-size: 15px; color: var(--text-dark); line-height: 1.6; margin-bottom: 12px; }
+.family-badge { background: var(--green-light); color: var(--green-dark); font-size: 12px; padding: 3px 8px; border-radius: 10px; font-weight: 600; }
+.blessing-footer { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.blessing-amount { font-size: 14px; color: var(--text-muted); }
+.blessing-votes { font-size: 14px; font-weight: 600; color: var(--green-dark); }
+.vote-btn { background: var(--green-mid); color: white; border: none; padding: 8px 20px; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; }
+.vote-btn:hover { background: var(--green-dark); }
+.apply-btn { display: inline-block; background: var(--green-mid); color: white; padding: 12px 24px; border-radius: var(--radius); font-weight: 600; text-decoration: none; margin-top: 12px; }
+.blessing-apply { margin: 32px 0; }
+.blessing-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); margin-bottom: 32px; }
+.vote-note { color: var(--text-muted); font-style: italic; margin-bottom: 16px; }
+.history-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+.history-month { font-weight: 700; color: var(--green-dark); }
+.history-amount { font-size: 18px; font-weight: 700; color: var(--green-mid); }
+.history-status { font-size: 13px; color: var(--text-muted); }
+.history-category { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+.history-votes { font-size: 13px; color: var(--text-muted); }
+.history-message { font-size: 14px; color: var(--text-dark); margin-top: 8px; font-style: italic; }

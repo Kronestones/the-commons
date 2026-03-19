@@ -54,6 +54,26 @@ VERIFIED_SOURCES = [
 # Nudity and sexual content: instant removal, no appeal, no exceptions.
 # Codex Law 8: Children are protected. Codex Law 1: People First.
 
+# The following word is blocked in all forms and variations.
+# Zero tolerance. No exceptions. No context makes it acceptable.
+# Codex Law 1: People First. Codex Law 8: Protection.
+
+ZERO_TOLERANCE_SLURS = [
+    "nigger",
+    "niggers", 
+    "nigga",
+    "nigg3r",
+    "n1gger",
+    "n!gger",
+]
+
+def check_slurs(text: str) -> bool:
+    """Zero tolerance for racial slurs. Instant block."""
+    if not text:
+        return False
+    text_lower = text.lower().replace(" ", "").replace("*", "")
+    return any(slur in text_lower for slur in ZERO_TOLERANCE_SLURS)
+
 ZERO_TOLERANCE_PATTERNS = [
     r"\b(nude|nudity|naked|explicit|nsfw|pornograph|sexual content|adult content)\b",
     r"\b(genitalia|genital|breast|nipple)\b",
@@ -64,6 +84,9 @@ def check_zero_tolerance(text: str) -> bool:
     import re
     if not text:
         return False
+    # Check racial slurs first
+    if check_slurs(text):
+        return True
     text_lower = text.lower()
     for pattern in ZERO_TOLERANCE_PATTERNS:
         if re.search(pattern, text_lower, re.IGNORECASE):

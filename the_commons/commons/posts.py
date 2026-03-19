@@ -28,6 +28,10 @@ class PostManager:
     def create(self, db: Session, author: User, post_type: str,
                content: str = "", media_path: str = "",
                is_news: bool = False, is_political: bool = False) -> dict:
+        # Zero tolerance content check — blocks before anything else
+        from .fingerprint import check_zero_tolerance
+        if check_zero_tolerance(content):
+            return {"ok": False, "error": "Your post contains content that is not permitted on The Commons."}
 
         if not content and not media_path:
             return {"ok": False, "error": "Post must have content or media."}

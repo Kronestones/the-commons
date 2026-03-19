@@ -56,6 +56,7 @@ from commons.maintenance    import maintenance
 from commons.circle_assistants import circle_assistants, AssistantAnalysis
 from commons.payments        import payment_manager, UserCurrencyPreference, LiveGift, CreatorWallet
 from commons.support         import support_manager, SupportTicket, SupportMessage
+from commons.blessing        import blessing_manager, BlessingApplication, BlessingVote, MonthlyBlessingRecord
 from commons.transparency    import transparency_manager, OperatingCostEntry, MonthlyReport
 from commons.uploads         import upload_manager
 from commons.translation import translation_manager
@@ -115,6 +116,7 @@ async def startup():
     from commons.circle_assistants import AssistantAnalysis
     from commons.payments import UserCurrencyPreference, LiveGift, CreatorWallet
     from commons.support import SupportTicket, SupportMessage
+    from commons.blessing import BlessingApplication, BlessingVote, MonthlyBlessingRecord
     from commons.transparency import OperatingCostEntry, MonthlyReport
     from commons.database import Base, engine
     Base.metadata.create_all(bind=engine)
@@ -639,6 +641,96 @@ async def api_publish_report(
     return JSONResponse(transparency_manager.publish_monthly_report(
         db, month, total_fees, notes
     ))
+
+
+# ── Monthly Blessing API ──────────────────────────────────────────────────────
+
+@app.get("/blessing")
+async def blessing_page(request: Request, db: Session = Depends(get_db)):
+    """Public Blessing page — current month voting and full history."""
+    from datetime import datetime
+    month   = datetime.utcnow().strftime("%Y-%m")
+    current = blessing_manager.get_current_applications(db, month)
+    history = blessing_manager.get_public_record(db)
+    return templates.TemplateResponse("blessing.html", {
+        "request": request,
+        "month":   month,
+        "current": current,
+        "history": history,
+    })
+
+@app.get("/api/blessing/current")
+async def api_blessing_current(db: Session = Depends(get_db)):
+    from datetime import datetime
+    month = datetime.utcnow().strftime("%Y-%m")
+    return JSONResponse({
+        "ok":           True,
+        "month":        month,
+        "applications": blessing_manager.get_current_applications(db, month),
+        "note":         "Codex Law 18 — The Monthly Blessing. One person. One month. Community chosen."
+    })
+
+@app.get("/api/blessing/history")
+async def api_blessing_history(db: Session = Depends(get_db)):
+    return JSONResponse({
+        "ok":      True,
+        "history": blessing_manager.get_public_record(db)
+    })
+
+@app.post("/api/blessing/apply")
+async def api_blessing_apply(
+    need_category:    str   = Form(...),
+    need_description: str   = Form(...),
+    amount_needed:    float = Form(...),
+    is_family:        bool  = Form(default=False),
+    family_size:      int   = Form(default=1),
+    current_user:     User  = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    from datetime import datetime
+    month = datetime.utcnow().strftime("%Y-%m")
+    result = blessing_manager.apply(
+        db, current_user, month,
+        need_category, need_description,
+        amount_needed, is_family, family_size
+    )
+    return JSONResponse(result)
+
+@app.post("/api/blessing/vote/{application_id}")
+async def api_blessing_vote(
+    application_id: int,
+    current_user:   User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    from datetime import datetime
+    month = datetime.utcnow().strftime("%Y-%m")
+    return JSONResponse(blessing_manager.vote(db, current_user, application_id, month))
+
+@app.post("/api/blessing/verify/{application_id}")
+async def api_blessing_verify(
+    application_id: int,
+    decision:       str = Form(...),
+    circle_notes:   str = Form(default=""),
+    current_user:   User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.value not in ("circle", "sovereign"):
+        raise HTTPException(403, "Circle access required.")
+    return JSONResponse(blessing_manager.verify_application(
+        db, application_id, decision, circle_notes, current_user.username
+    ))
+
+@app.post("/api/blessing/close/{month}")
+async def api_blessing_close(
+    month:             str,
+    surplus_amount:    float = Form(...),
+    sovereign_message: str   = Form(default=""),
+    current_user:      User  = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.value != "sovereign":
+        raise HTTPException(403, "Sovereign authority required.")
+    return JSONResponse(blessing_manager.close_month(db, month, surplus_amount, sovereign_message))
 
 # ── Checkout API ─────────────────────────────────────────────────────────────
 
