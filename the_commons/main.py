@@ -52,6 +52,14 @@ from commons.preferences import preference_engine, WatchEvent
 from commons.surplus     import surplus_manager
 from commons.social      import social, Like, Comment, Share
 from commons.parental    import parental, ParentalControl
+from commons.maintenance    import maintenance
+from commons.circle_assistants import circle_assistants, AssistantAnalysis
+from commons.payments        import payment_manager, UserCurrencyPreference, LiveGift, CreatorWallet
+from commons.support         import support_manager, SupportTicket, SupportMessage
+from commons.transparency    import transparency_manager, OperatingCostEntry, MonthlyReport
+from commons.uploads         import upload_manager
+from commons.translation import translation_manager
+from commons.captions    import caption_manager, Caption
 from commons.features    import (
     follow_manager, profile_manager, notification_manager,
     search_manager, bookmark_manager, creator_stats,
@@ -101,6 +109,11 @@ async def startup():
     from commons.social import Like, Comment, Share
     from commons.parental import ParentalControl
     from commons.features import Follow, Notification, Hashtag, PostHashtag, Bookmark, DirectMessage
+    from commons.captions import Caption
+    from commons.circle_assistants import AssistantAnalysis
+    from commons.payments import UserCurrencyPreference, LiveGift, CreatorWallet
+    from commons.support import SupportTicket, SupportMessage
+    from commons.transparency import OperatingCostEntry, MonthlyReport
     from commons.database import Base, engine
     Base.metadata.create_all(bind=engine)
 
@@ -498,6 +511,434 @@ async def api_share(
     result = social.share_post(db, current_user, post_id, note)
     return JSONResponse(result)
 
+
+
+
+
+
+# ── Search (Ecosia) ───────────────────────────────────────────────────────────
+
+@app.get("/api/web-search")
+async def api_web_search(
+    q:            str,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Web search powered by Ecosia — search the web, plant trees.
+    Ecosia uses search revenue to plant trees. Aligned with The Commons values.
+    """
+    ecosia_url = f"https://www.ecosia.org/search?q={q}"
+    return JSONResponse({
+        "ok":          True,
+        "query":       q,
+        "ecosia_url":  ecosia_url,
+        "note":        "Search powered by Ecosia — every search helps plant trees.",
+        "open_url":    ecosia_url,
+    })
+
+# ── Support API ───────────────────────────────────────────────────────────────
+
+@app.post("/api/support/chat")
+async def api_support_chat(
+    message:      str = Form(...),
+    ticket_id:    int = Form(default=None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """AI-powered support chat. Escalates to Circle if needed."""
+    result = support_manager.get_ai_response(message)
+
+    # Save the conversation
+    support_manager.save_message(db, ticket_id, current_user.id, "user", message)
+    support_manager.save_message(db, ticket_id, current_user.id, "ai", result["response"])
+
+    # Create ticket if escalation needed
+    if result["escalate"]:
+        ticket = support_manager.create_ticket(
+            db, current_user.id,
+            subject     = message[:200],
+            description = message,
+            category    = result["category"]
+        )
+        return JSONResponse({
+            "ok":       True,
+            "response": result["response"],
+            "escalated": True,
+            "ticket_id": ticket["ticket_id"],
+        })
+
+    return JSONResponse({
+        "ok":       True,
+        "response": result["response"],
+        "escalated": False,
+    })
+
+@app.get("/api/support/faq")
+async def api_faq():
+    """Get FAQ — common questions answered."""
+    return JSONResponse({"ok": True, "faq": support_manager.get_faq()})
+
+@app.post("/api/support/ticket")
+async def api_create_ticket(
+    subject:      str = Form(...),
+    description:  str = Form(...),
+    category:     str = Form(default="general"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    result = support_manager.create_ticket(db, current_user.id, subject, description, category)
+    return JSONResponse(result)
+
+@app.get("/api/support/tickets")
+async def api_get_tickets(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.value not in ("circle", "sovereign"):
+        raise HTTPException(403, "Circle access required.")
+    tickets = support_manager.get_open_tickets(db)
+    return JSONResponse({"ok": True, "tickets": tickets})
+
+@app.post("/api/support/tickets/{ticket_id}/resolve")
+async def api_resolve_ticket(
+    ticket_id:    int,
+    resolution:   str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.value not in ("circle", "sovereign"):
+        raise HTTPException(403, "Circle access required.")
+    return JSONResponse(support_manager.resolve_ticket(db, ticket_id, resolution))
+
+# ── Transparency API ──────────────────────────────────────────────────────────
+
+@app.get("/transparency")
+async def transparency_page(request: Request, db: Session = Depends(get_db)):
+    reports = transparency_manager.get_public_reports(db)
+    return templates.TemplateResponse("transparency.html", {
+        "request": request,
+        "reports": reports,
+    })
+
+@app.get("/api/transparency")
+async def api_transparency(db: Session = Depends(get_db)):
+    return JSONResponse({
+        "ok":      True,
+        "reports": transparency_manager.get_public_reports(db),
+        "note":    "Full operating cost transparency. Codex Law 5."
+    })
+
+@app.post("/api/transparency/cost")
+async def api_add_cost(
+    month:        str   = Form(...),
+    category:     str   = Form(...),
+    description:  str   = Form(...),
+    amount_usd:   float = Form(...),
+    is_recurring: bool  = Form(default=False),
+    current_user: User  = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.value != "sovereign":
+        raise HTTPException(403, "Sovereign authority required.")
+    return JSONResponse(transparency_manager.add_cost(
+        db, month, category, description, amount_usd, is_recurring
+    ))
+
+@app.post("/api/transparency/publish/{month}")
+async def api_publish_report(
+    month:         str,
+    total_fees:    float = Form(...),
+    notes:         str   = Form(default=""),
+    current_user:  User  = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.value != "sovereign":
+        raise HTTPException(403, "Sovereign authority required.")
+    return JSONResponse(transparency_manager.publish_monthly_report(
+        db, month, total_fees, notes
+    ))
+
+# ── Checkout API ─────────────────────────────────────────────────────────────
+
+@app.get("/api/checkout/breakdown")
+async def api_checkout_breakdown(
+    product_price: float = 0.0,
+    gift_value:    float = 0.0,
+    include_platform_fee: bool = True,
+):
+    """
+    Get a full transparent price breakdown before checkout.
+    Shows exactly where every dollar goes.
+    No surprises. Codex Law 5.
+    """
+    from commons.payments import build_checkout_breakdown
+    breakdown = build_checkout_breakdown(
+        product_price        = product_price,
+        platform_fee         = 1.00 if include_platform_fee else 0.0,
+        gift_value           = gift_value,
+    )
+    return JSONResponse({"ok": True, **breakdown})
+
+# ── Currency API ──────────────────────────────────────────────────────────────
+
+@app.get("/api/currencies")
+async def api_currencies():
+    return JSONResponse({"ok": True, "currencies": payment_manager.get_supported_currencies()})
+
+@app.post("/api/currency/preference")
+async def api_set_currency(
+    currency:     str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(payment_manager.set_currency_preference(db, current_user.id, currency))
+
+# ── Live Gifts API ────────────────────────────────────────────────────────────
+
+@app.get("/api/gifts/types")
+async def api_gift_types():
+    return JSONResponse({"ok": True, "gifts": payment_manager.get_gift_types()})
+
+@app.post("/api/gifts/send")
+async def api_send_gift(
+    live_post_id: int = Form(...),
+    creator_id:   int = Form(...),
+    gift_type:    str = Form(...),
+    currency:     str = Form(default="USD"),
+    message:      str = Form(default=""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    result = payment_manager.send_gift(
+        db, current_user.id, creator_id,
+        live_post_id, gift_type, currency, message
+    )
+    return JSONResponse(result)
+
+@app.get("/api/gifts/live/{live_post_id}")
+async def api_live_gifts(
+    live_post_id: int,
+    db: Session = Depends(get_db)
+):
+    gifts = payment_manager.get_live_gifts(db, live_post_id)
+    return JSONResponse({"ok": True, "gifts": gifts})
+
+@app.get("/api/wallet")
+async def api_wallet(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(payment_manager.get_creator_wallet(db, current_user.id))
+
+# ── Upload API ────────────────────────────────────────────────────────────────
+
+@app.get("/api/upload/limits")
+async def api_upload_limits():
+    return JSONResponse({"ok": True, "limits": upload_manager.get_upload_limits()})
+
+@app.get("/api/upload/ai-tools")
+async def api_ai_tools():
+    return JSONResponse({"ok": True, "tools": upload_manager.get_ai_tools()})
+
+@app.post("/api/upload")
+async def api_upload(
+    request:        Request,
+    post_type:      str  = Form(...),
+    content:        str  = Form(default=""),
+    is_ai_generated: bool = Form(default=False),
+    ai_tool:        str  = Form(default=""),
+    is_news:        bool = Form(default=False),
+    is_political:   bool = Form(default=False),
+    current_user:   User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Upload media and create a post.
+    Supports all major video, image, and audio formats.
+    AI-generated content welcome — disclosure optional but encouraged.
+    """
+    from fastapi import UploadFile, File
+    import json
+
+    # Get file from form
+    form    = await request.form()
+    file    = form.get("file")
+
+    media_path = ""
+    if file and hasattr(file, "filename") and file.filename:
+        file_data = await file.read()
+        save_result = await upload_manager.save_upload(
+            file_data, file.filename, current_user.id
+        )
+        if not save_result["ok"]:
+            return JSONResponse({"ok": False, "error": save_result["error"]}, status_code=400)
+        media_path = save_result["path"]
+        post_type  = save_result["media_type"]
+
+    # Build AI disclosure
+    ai_disclosure = upload_manager.build_ai_disclosure(ai_tool, is_ai_generated)
+
+    # Sanitize content
+    c = sanitizer.sanitize_text(content, max_length=10000)
+    if not c["ok"]:
+        return JSONResponse({"ok": False, "error": c["error"]}, status_code=400)
+
+    # Add AI disclosure to content if applicable
+    final_content = c["value"]
+    if ai_disclosure.get("is_ai_generated") and ai_disclosure.get("disclosure_text"):
+        final_content = final_content  # Store disclosure separately in future
+
+    from commons.posts import posts
+    result = posts.create(
+        db, current_user, post_type,
+        content      = final_content,
+        media_path   = media_path,
+        is_news      = is_news,
+        is_political = is_political,
+    )
+
+    if not result["ok"]:
+        return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
+
+    post = result["post"]
+
+    # Index hashtags
+    search_manager.index_post_hashtags(db, post)
+
+    # Notify followers
+    import threading
+    def notify_followers():
+        try:
+            from commons.features import Follow, notification_manager
+            db2 = __import__('commons.database', fromlist=['SessionLocal']).SessionLocal()
+            followers = db2.query(Follow).filter(Follow.following_id == current_user.id).all()
+            for f in followers:
+                notification_manager.create(
+                    db2, f.follower_id, current_user.id,
+                    "post", f"@{current_user.username} posted something new",
+                    post_id=post.id
+                )
+            db2.close()
+        except Exception:
+            pass
+    threading.Thread(target=notify_followers, daemon=True).start()
+
+    return JSONResponse({
+        "ok":             True,
+        "post_id":        post.id,
+        "status":         post.status.value,
+        "ai_disclosure":  ai_disclosure,
+        "message": (
+            "Your post is live." if post.status == PostStatus.PUBLISHED
+            else "Your post is being verified and will appear shortly."
+        )
+    })
+
+# ── Circle Assistant API ──────────────────────────────────────────────────────
+
+@app.post("/api/circle/assistants/analyze/{post_id}")
+async def api_assistant_analyze(
+    post_id:       int,
+    circle_member: str = Form(...),
+    current_user:  User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Run all four assistants for a Circle member on a post."""
+    if current_user.role.value not in ("circle", "sovereign"):
+        raise HTTPException(403, "Circle access required.")
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        raise HTTPException(404, "Post not found.")
+    result = circle_assistants.analyze_for_member(
+        db, circle_member, post_id, post.content or "",
+        context={
+            "is_political":   post.is_political,
+            "is_news":        post.is_news,
+            "human_reviewed": post.status == PostStatus.PUBLISHED,
+        }
+    )
+    return JSONResponse(result)
+
+@app.get("/api/circle/assistants/pending/{circle_member}")
+async def api_assistant_pending(
+    circle_member: str,
+    current_user:  User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get pending assistant analyses for a Circle member."""
+    if current_user.role.value not in ("circle", "sovereign"):
+        raise HTTPException(403, "Circle access required.")
+    analyses = circle_assistants.get_pending_analyses(db, circle_member)
+    return JSONResponse({"ok": True, "analyses": analyses})
+
+@app.post("/api/circle/assistants/reviewed/{analysis_id}")
+async def api_assistant_reviewed(
+    analysis_id:  int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Mark an assistant analysis as reviewed."""
+    if current_user.role.value not in ("circle", "sovereign"):
+        raise HTTPException(403, "Circle access required.")
+    return JSONResponse(circle_assistants.mark_reviewed(db, analysis_id))
+
+@app.get("/api/circle/assistants/profiles/{circle_member}")
+async def api_assistant_profiles(
+    circle_member: str,
+    current_user:  User = Depends(get_current_user),
+):
+    """Get the four assistant profiles for a Circle member."""
+    if current_user.role.value not in ("circle", "sovereign"):
+        raise HTTPException(403, "Circle access required.")
+    return JSONResponse(circle_assistants.get_assistant_profiles(circle_member))
+
+# ── Translation API ───────────────────────────────────────────────────────────
+
+@app.post("/api/translate")
+async def api_translate(
+    text:            str = Form(...),
+    target_language: str = Form(...),
+    source_language: str = Form(default="auto"),
+    current_user: User = Depends(get_current_user),
+):
+    result = await translation_manager.translate(text, target_language, source_language)
+    return JSONResponse(result)
+
+@app.get("/api/translate/languages")
+async def api_languages():
+    return JSONResponse({
+        "ok": True,
+        "languages": translation_manager.get_supported_languages()
+    })
+
+# ── Captions API ──────────────────────────────────────────────────────────────
+
+@app.get("/api/posts/{post_id}/captions")
+async def api_get_captions(
+    post_id: int,
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(caption_manager.get_captions(db, post_id))
+
+# ── Maintenance API (Sovereign only) ──────────────────────────────────────────
+
+@app.get("/api/maintenance/status")
+async def api_maintenance_status(
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role.value != "sovereign":
+        raise HTTPException(403, "Sovereign authority required.")
+    return JSONResponse({"ok": True, "status": maintenance.get_status()})
+
+@app.post("/api/maintenance/run")
+async def api_maintenance_run(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.value != "sovereign":
+        raise HTTPException(403, "Sovereign authority required.")
+    results = maintenance.run()
+    return JSONResponse({"ok": True, "results": results})
 
 # ── Follow API ────────────────────────────────────────────────────────────────
 

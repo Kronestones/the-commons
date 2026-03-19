@@ -72,7 +72,19 @@ class Commerce:
         db.refresh(profile)
 
         print(f"[COMMERCE] Seller registered: {business_name} ({business_type})")
-        return {"ok": True, "profile": profile}
+        return {
+            "ok":      True,
+            "profile": profile,
+            "seller_agreement": (
+                "By registering as a seller on The Commons you agree that: "
+                "you are solely responsible for your products and services; "
+                "The Commons acts as a technology facilitator only and is not "
+                "liable for any buyer disputes, chargebacks, product quality issues, "
+                "delivery failures, or legal claims arising from your listings; "
+                "you will resolve disputes directly with buyers in good faith; "
+                "your listings comply with all applicable laws."
+            )
+        }
 
     def verify_seller(self, db: Session, seller_id: int,
                       reviewer: User) -> dict:
@@ -235,7 +247,12 @@ class Commerce:
                 "platform_fee": PLATFORM_FEE,
                 "fee_note":     "$1 flat fee per sale — not per item. Codex Law 12.",
                 "order_total":  order_total,
-            }
+            },
+            "legal_notice": (
+                "The Commons is a payment facilitator only and is not a party to this transaction. "
+                "The Commons is not responsible for product quality, delivery, or disputes. "
+                "All issues should be resolved directly between buyer and seller."
+            )
         }
 
     def complete_order(self, db: Session, order_id: int) -> dict:
