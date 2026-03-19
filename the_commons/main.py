@@ -57,6 +57,7 @@ from commons.circle_assistants import circle_assistants, AssistantAnalysis
 from commons.payments        import payment_manager, UserCurrencyPreference, LiveGift, CreatorWallet
 from commons.support         import support_manager, SupportTicket, SupportMessage
 from commons.blessing        import blessing_manager, BlessingApplication, BlessingVote, MonthlyBlessingRecord
+from commons.livestream      import livestream_manager, LiveStream, LiveChatMessage, StreamViewer, StreamGiftEvent, COMING_SOON
 from commons.transparency    import transparency_manager, OperatingCostEntry, MonthlyReport
 from commons.uploads         import upload_manager
 from commons.translation import translation_manager
@@ -117,6 +118,7 @@ async def startup():
     from commons.payments import UserCurrencyPreference, LiveGift, CreatorWallet
     from commons.support import SupportTicket, SupportMessage
     from commons.blessing import BlessingApplication, BlessingVote, MonthlyBlessingRecord
+    from commons.livestream import LiveStream, LiveChatMessage, StreamViewer, StreamGiftEvent
     from commons.transparency import OperatingCostEntry, MonthlyReport
     from commons.database import Base, engine
     Base.metadata.create_all(bind=engine)
@@ -642,6 +644,113 @@ async def api_publish_report(
         db, month, total_fees, notes
     ))
 
+
+
+# ── Live Streaming API ────────────────────────────────────────────────────────
+
+@app.get("/api/live/status")
+async def api_live_status():
+    """Coming soon status for live streaming."""
+    return JSONResponse({"ok": True, "live_streaming": COMING_SOON})
+
+@app.get("/api/live/streams")
+async def api_active_streams(db: Session = Depends(get_db)):
+    """Get all currently live streams."""
+    streams = livestream_manager.get_active_streams(db)
+    return JSONResponse({"ok": True, "streams": streams, "count": len(streams)})
+
+@app.post("/api/live/create")
+async def api_create_stream(
+    title:         str  = Form(...),
+    description:   str  = Form(default=""),
+    category:      str  = Form(default="general"),
+    chat_enabled:  bool = Form(default=True),
+    gifts_enabled: bool = Form(default=True),
+    current_user:  User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(livestream_manager.create_stream(
+        db, current_user, title, description,
+        category, None, chat_enabled, gifts_enabled
+    ))
+
+@app.post("/api/live/{stream_id}/go-live")
+async def api_go_live(
+    stream_id:    int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(livestream_manager.go_live(db, stream_id, current_user))
+
+@app.post("/api/live/{stream_id}/end")
+async def api_end_stream(
+    stream_id:    int,
+    make_replay:  bool = Form(default=True),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(livestream_manager.end_stream(db, stream_id, current_user, make_replay))
+
+@app.get("/api/live/{stream_id}")
+async def api_stream_info(
+    stream_id: int,
+    db: Session = Depends(get_db)
+):
+    info = livestream_manager.get_stream_info(db, stream_id)
+    if not info:
+        raise HTTPException(404, "Stream not found.")
+    return JSONResponse({"ok": True, "stream": info})
+
+@app.post("/api/live/{stream_id}/join")
+async def api_join_stream(
+    stream_id:    int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(livestream_manager.join_stream(db, stream_id, current_user.id))
+
+@app.post("/api/live/{stream_id}/leave")
+async def api_leave_stream(
+    stream_id:    int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(livestream_manager.leave_stream(db, stream_id, current_user.id))
+
+@app.post("/api/live/{stream_id}/chat")
+async def api_live_chat(
+    stream_id:    int,
+    message:      str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(livestream_manager.send_chat(db, stream_id, current_user, message))
+
+@app.get("/api/live/{stream_id}/chat")
+async def api_get_chat(
+    stream_id: int,
+    limit:     int = 50,
+    since_id:  int = 0,
+    db: Session = Depends(get_db)
+):
+    messages = livestream_manager.get_chat(db, stream_id, limit, since_id)
+    return JSONResponse({"ok": True, "messages": messages})
+
+@app.delete("/api/live/chat/{message_id}")
+async def api_remove_chat(
+    message_id:   int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(livestream_manager.remove_chat_message(db, message_id, current_user))
+
+@app.post("/api/live/chat/{message_id}/pin")
+async def api_pin_chat(
+    message_id:   int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(livestream_manager.pin_chat_message(db, message_id, current_user))
 
 # ── Monthly Blessing API ──────────────────────────────────────────────────────
 
