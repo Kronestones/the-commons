@@ -249,3 +249,68 @@ window.vote = async function(postId, value) {
   await originalVote(postId, value);
   // Voting is already handled — preference engine picks it up server-side
 };
+
+// ── Install App Banner ────────────────────────────────────────────────────────
+// Shows a prompt to add The Commons to home screen on mobile
+// Works on Android (PWA install) and iOS (manual instructions)
+
+let deferredInstallPrompt = null;
+
+// Capture the install prompt on Android
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+
+  // Show banner if not dismissed before
+  if (!localStorage.getItem('installDismissed')) {
+    document.getElementById('install-banner').style.display = 'block';
+  }
+});
+
+// Android — tap Add button
+const installBtn = document.getElementById('install-btn');
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const result = await deferredInstallPrompt.userChoice;
+      if (result.outcome === 'accepted') {
+        document.getElementById('install-banner').style.display = 'none';
+      }
+      deferredInstallPrompt = null;
+    }
+  });
+}
+
+// Dismiss buttons
+const dismissBtn = document.getElementById('install-dismiss');
+if (dismissBtn) {
+  dismissBtn.addEventListener('click', () => {
+    document.getElementById('install-banner').style.display = 'none';
+    localStorage.setItem('installDismissed', 'true');
+  });
+}
+
+const iosDismiss = document.getElementById('ios-dismiss');
+if (iosDismiss) {
+  iosDismiss.addEventListener('click', () => {
+    document.getElementById('ios-banner').style.display = 'none';
+    localStorage.setItem('installDismissed', 'true');
+  });
+}
+
+// iOS detection — show manual instructions
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
+
+if (isIOS && !isInStandaloneMode && !localStorage.getItem('installDismissed')) {
+  document.getElementById('ios-banner').style.display = 'block';
+}
+
+// Hide banner if already installed
+if (isInStandaloneMode) {
+  const banner = document.getElementById('install-banner');
+  const iosBanner = document.getElementById('ios-banner');
+  if (banner) banner.style.display = 'none';
+  if (iosBanner) iosBanner.style.display = 'none';
+}

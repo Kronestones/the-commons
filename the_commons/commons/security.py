@@ -271,8 +271,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         )
 
         # Remove server header to not reveal platform info
-        response.headers.pop("server", None)
-        response.headers.pop("x-powered-by", None)
+        if "server" in response.headers:
+            del response.headers["server"]
+        if "x-powered-by" in response.headers:
+            del response.headers["x-powered-by"]
 
         return response
 

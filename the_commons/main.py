@@ -646,6 +646,11 @@ async def api_publish_report(
 
 
 
+@app.get("/live")
+async def live_page(request: Request):
+    """Live streaming coming soon page."""
+    return templates.TemplateResponse("live.html", {"request": request})
+
 # ── Live Streaming API ────────────────────────────────────────────────────────
 
 @app.get("/api/live/status")
