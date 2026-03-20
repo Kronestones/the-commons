@@ -14,16 +14,15 @@
       <input type="email" id="email" placeholder="you@example.com" required>
     </label>
     <label>Password
-      <input type="password" id="password" placeholder="At least 8 characters" required>
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="At least 8 characters" required>
+        <button type="button" class="show-password-btn" onclick="togglePassword('password', this)">Show</button>
+      </div>
     </label>
     <label>Display name (optional)
       <input type="text" id="display-name" placeholder="How you appear to others">
     </label>
-    <label class="checkbox-label">
-      <input type="checkbox" id="is-minor">
-      I am under 18
-    </label>
-    <div id="form-error" class="form-error" style="display:none"></div>
+    <div id="form-error" class="form-error" style="display:none;padding:12px;background:#fee;border:1px solid #c00;border-radius:6px;color:#c00;font-size:14px;margin-bottom:12px;"></div>
     <button type="submit" class="btn-primary btn-full">Join The Commons</button>
   </form>
 
@@ -52,16 +51,24 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
   form.append('email',        document.getElementById('email').value);
   form.append('password',     document.getElementById('password').value);
   form.append('display_name', document.getElementById('display-name').value);
-  form.append('is_minor',     document.getElementById('is-minor').checked);
-  const res  = await fetch('/auth/register', { method: 'POST', body: form });
-  const data = await res.json();
+  form.append('is_minor', false);
+  const res = await fetch('/auth/register', { method: 'POST', body: form });
+  let data;
+  try {
+    data = await res.json();
+  } catch(e) {
+    const err = document.getElementById('form-error');
+    err.textContent = 'Server error — please try again.';
+    err.style.display = 'block';
+    return;
+  }
   if (data.ok) {
     localStorage.setItem('token',    data.token);
     localStorage.setItem('username', data.user.username);
     window.location = '/';
   } else {
     const err = document.getElementById('form-error');
-    err.textContent = data.error;
+    err.textContent = data.error || 'Registration failed — please check your details.';
     err.style.display = 'block';
   }
 });
