@@ -190,7 +190,7 @@ class TheCommonsCodex:
         },
         {
             "number": 15,
-            "name": "Open Source",
+            "name": "Transparency",
             "text": (
                 "The core codebase of The Commons is open source. "
                 "The people can see how it works. "
