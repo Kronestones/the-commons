@@ -750,3 +750,26 @@ a:hover { text-decoration: underline; }
 .codex-doc .source-doc-cat {
   font-family: Georgia, 'Times New Roman', Times, serif;
 }
+
+/* ── Show Password ────────────────────────────────────────────────────────── */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-wrapper input {
+  flex: 1;
+  padding-right: 70px;
+}
+.show-password-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--green-mid);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.show-password-btn:hover { color: var(--green-dark); }

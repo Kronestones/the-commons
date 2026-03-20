@@ -314,3 +314,15 @@ if (isInStandaloneMode) {
   if (banner) banner.style.display = 'none';
   if (iosBanner) iosBanner.style.display = 'none';
 }
+
+// ── Show/Hide Password ────────────────────────────────────────────────────────
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = 'Hide';
+  } else {
+    input.type = 'password';
+    btn.textContent = 'Show';
+  }
+}
