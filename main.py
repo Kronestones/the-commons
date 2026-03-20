@@ -185,15 +185,18 @@ async def api_register(
     if not d["ok"]:
         return JSONResponse({"ok": False, "error": d["error"]}, status_code=400)
 
-    result = register_user(db, u["value"], e["value"], password,
-                           d["value"], is_minor)
-    if not result["ok"]:
-        return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
-    return JSONResponse({
-        "ok":    True,
-        "token": result["token"],
-        "user":  {"id": result["user"].id, "username": result["user"].username}
-    })
+    try:
+        result = register_user(db, u["value"], e["value"], password,
+                               d["value"], is_minor)
+        if not result["ok"]:
+            return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
+        return JSONResponse({
+            "ok":    True,
+            "token": result["token"],
+            "user":  {"id": result["user"].id, "username": result["user"].username}
+        })
+    except Exception as ex:
+        return JSONResponse({"ok": False, "error": f"Registration failed: {str(ex)}"}, status_code=500)
 
 @app.post("/auth/login")
 async def api_login(

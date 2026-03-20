@@ -11,7 +11,7 @@
     <p>{{ codex.PREAMBLE }}</p>
   </div>
 
-  <h2>The Sixteen Laws</h2>
+  <h2>The {{ codex.LAWS|length }} Laws</h2>
   <div class="codex-laws">
     {% for law in codex.LAWS %}
     <div class="codex-law {% if law.immutable %}immutable{% endif %}">
