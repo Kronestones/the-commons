@@ -660,3 +660,93 @@ a:hover { text-decoration: underline; }
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(4px); }
 }
+
+/* ── Codex Document Style ─────────────────────────────────────────────────── */
+.codex-doc { max-width: 780px; margin: 0 auto; font-family: Georgia, serif; }
+
+.codex-cover {
+  background: var(--green-dark);
+  color: white;
+  padding: 48px 32px;
+  border-radius: var(--radius);
+  margin-bottom: 40px;
+  text-align: center;
+}
+.codex-platform { font-size: 13px; letter-spacing: 4px; opacity: 0.7; margin-bottom: 8px; font-family: Arial, sans-serif; }
+.codex-title { font-size: 42px; font-weight: 700; margin-bottom: 8px; font-family: Georgia, serif; }
+.codex-subtitle { font-size: 18px; opacity: 0.85; margin-bottom: 20px; font-style: italic; }
+.codex-meta { font-size: 13px; opacity: 0.7; margin-bottom: 4px; font-family: Arial, sans-serif; }
+.codex-spirit-doc { font-size: 16px; margin-top: 20px; opacity: 0.9; font-style: italic; }
+
+.codex-section { margin-bottom: 40px; }
+.codex-section h2 { font-size: 22px; color: var(--green-dark); border-bottom: 2px solid var(--green-mid); padding-bottom: 8px; margin-bottom: 20px; font-family: Georgia, serif; }
+.codex-section p { font-size: 15px; line-height: 1.9; color: #2a2a2a; margin-bottom: 16px; }
+
+.codex-divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+.codex-laws-intro { font-style: italic; color: var(--text-muted); margin-bottom: 24px; }
+
+.codex-law-doc {
+  border-left: 3px solid var(--border);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  background: #fafafa;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.law-immutable {
+  border-left-color: var(--green-mid);
+  background: var(--green-light);
+}
+.law-doc-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.law-doc-num { font-size: 13px; font-weight: 700; color: var(--green-mid); font-family: Arial, sans-serif; }
+.law-doc-name { font-size: 16px; font-weight: 700; color: var(--green-dark); font-family: Georgia, serif; flex: 1; }
+.law-doc-lock { font-size: 11px; background: var(--green-mid); color: white; padding: 2px 8px; border-radius: 10px; font-family: Arial, sans-serif; font-weight: 600; }
+.law-doc-text { font-size: 14px; line-height: 1.8; color: #333; margin: 0; }
+
+.codex-disclaimer { background: #fffbf0; border: 1px solid #f0d080; border-radius: var(--radius); padding: 24px; }
+.codex-disclaimer h2 { border-bottom-color: #f0d080; color: #7a5c00; }
+.codex-disclaimer p { color: #5a4000; }
+
+.sources-doc { margin-top: 16px; }
+.source-doc-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.source-doc-name { font-weight: 600; color: var(--green-dark); }
+.source-doc-cat { color: var(--text-muted); font-style: italic; font-size: 13px; }
+
+.codex-footer-doc {
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--green-light);
+  border-radius: var(--radius);
+  margin-bottom: 40px;
+}
+.codex-footer-doc p { font-size: 15px; line-height: 2; color: var(--green-dark); margin-bottom: 4px; font-style: italic; }
+.codex-footer-sig { font-weight: 700; font-size: 18px !important; font-style: normal !important; margin-top: 20px !important; }
+.codex-footer-spirit { font-size: 20px !important; font-style: normal !important; }
+
+/* ── Codex Full Georgia Font ──────────────────────────────────────────────── */
+.codex-doc,
+.codex-doc p,
+.codex-doc h1,
+.codex-doc h2,
+.codex-doc h3,
+.codex-law-doc,
+.law-doc-text,
+.codex-section p,
+.codex-footer-doc p {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.codex-doc .law-doc-num,
+.codex-doc .law-doc-lock,
+.codex-doc .codex-platform,
+.codex-doc .codex-meta,
+.codex-doc .source-doc-name,
+.codex-doc .source-doc-cat {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}

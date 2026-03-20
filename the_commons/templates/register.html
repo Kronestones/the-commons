@@ -20,8 +20,6 @@
       <input type="text" id="display-name" placeholder="How you appear to others">
     </label>
     <label class="checkbox-label">
-      <input type="checkbox" id="is-minor">
-      I am under 18
     </label>
     <div id="form-error" class="form-error" style="display:none"></div>
     <button type="submit" class="btn-primary btn-full">Join The Commons</button>
@@ -52,16 +50,24 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
   form.append('email',        document.getElementById('email').value);
   form.append('password',     document.getElementById('password').value);
   form.append('display_name', document.getElementById('display-name').value);
-  form.append('is_minor',     document.getElementById('is-minor').checked);
+  form.append('is_minor', false);
   const res  = await fetch('/auth/register', { method: 'POST', body: form });
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch(e) {
+    const err = document.getElementById('form-error');
+    err.textContent = 'Server error — please try again.';
+    err.style.display = 'block';
+    return;
+  }
   if (data.ok) {
     localStorage.setItem('token',    data.token);
     localStorage.setItem('username', data.user.username);
     window.location = '/';
   } else {
     const err = document.getElementById('form-error');
-    err.textContent = data.error;
+    err.textContent = data.error || 'Registration failed — please try again.';
     err.style.display = 'block';
   }
 });
