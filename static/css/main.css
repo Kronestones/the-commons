@@ -478,3 +478,6 @@ a:hover { text-decoration: underline; }
 
 .giving-empty h3 { color: var(--green-dark); margin-bottom: 8px; }
 .giving-empty p  { margin-bottom: 8px; }
+.password-wrapper { position: relative; display: flex; align-items: center; }
+.password-wrapper input { flex: 1; padding-right: 70px; }
+.show-password-btn { position: absolute; right: 10px; background: none; border: none; color: #2E7D4F; font-size: 13px; font-weight: 600; cursor: pointer; }
