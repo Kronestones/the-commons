@@ -166,8 +166,11 @@ async def api_register(
     is_minor:     bool = Form(default=False),
     db: Session = Depends(get_db)
 ):
-    ip = get_client_ip(request)
-    enforce_rate_limit(ip, "register")
+    try:
+        ip = get_client_ip(request)
+        enforce_rate_limit(ip, "register")
+    except Exception:
+        pass
 
     # Sanitize all inputs
     u = sanitizer.sanitize_username(username)
@@ -199,8 +202,11 @@ async def api_login(
     password: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    ip = get_client_ip(request)
-    enforce_rate_limit(ip, "login")
+    try:
+        ip = get_client_ip(request)
+        enforce_rate_limit(ip, "login")
+    except Exception:
+        pass
 
     # Sanitize inputs
     u = sanitizer.sanitize_username(username)
