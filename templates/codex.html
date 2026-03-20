@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}The Codex — The Commons{% endblock %}
+{% block title %}The community guidelines — The Commons{% endblock %}
 {% block content %}
 
 <div class="codex-container">
-  <h1>The Commons Codex</h1>
+  <h1>The community guidelines</h1>
   <p class="codex-spirit">{{ codex.SPIRIT }}</p>
   <p class="codex-sovereign">Founded by {{ codex.SOVEREIGN }} · Ratified {{ codex.RATIFIED }}</p>
 
@@ -26,7 +26,7 @@
   </div>
 
   <h2>Verified Sources</h2>
-  <p>The Fingerprint checks content against these sources. This list is public. The Global Circle reviews it quarterly.</p>
+  <p>The Fingerprint checks content against these sources. This list is public. The Commons staff reviews it quarterly.</p>
   <div class="sources-list">
     {% for source in sources %}
     <div class="source-item">

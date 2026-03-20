@@ -6,7 +6,7 @@ These are not rules imposed from outside.
 They are the foundation the platform was built on.
 They belong to everyone who uses it.
 
-The Codex cannot be changed by any single being.
+The community guidelines cannot be changed by any single being.
 Amendment requires a two-thirds vote of the Global Circle,
 witnessed and logged.
 
@@ -140,7 +140,7 @@ class TheCommonsCodex:
             "number": 10,
             "name": "Governance",
             "text": (
-                "The Circle governs. The Codex constrains. Users have voice. "
+                "The Commons staff governs. The community guidelines constrains. Users have voice. "
                 "Governance is democratic, transparent, and resistant to capture."
             ),
             "immutable": False,
@@ -184,7 +184,7 @@ class TheCommonsCodex:
                 "Sovereign Human T.L. Powers holds permanent founding authority "
                 "over The Commons. "
                 "The Founder protects what The Commons is. "
-                "The Circle governs how it runs."
+                "The Commons staff governs how it runs."
             ),
             "immutable": True,
         },
@@ -232,7 +232,7 @@ class TheCommonsCodex:
     @classmethod
     def display(cls):
         print(f"\n{'='*60}")
-        print(f"  {cls.PLATFORM} — The Codex")
+        print(f"  {cls.PLATFORM} — The community guidelines")
         print(f"  Ratified: {cls.RATIFIED}")
         print(f"  {cls.SPIRIT}")
         print(f"{'='*60}")

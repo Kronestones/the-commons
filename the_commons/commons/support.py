@@ -146,7 +146,7 @@ KNOWLEDGE_BASE = {
             "Nothing true is ever accidentally removed — human review is required "
             "before any removal.\n\n"
             "If your content was held, you'll receive a notification. "
-            "You have one appeal to the Regional Circle. "
+            "You have one appeal to the Commons staff. "
             "If you believe this was an error, tap 'Appeal' on the held post."
         )
     },
@@ -233,7 +233,7 @@ class SupportManager:
             return {
                 "response": (
                     "It sounds like your issue needs Circle attention. "
-                    "I'm escalating this to the Circle now — they'll review "
+                    "I'm escalating this to the Commons staff now — they'll review "
                     "your case and respond. Thank you for bringing this to us."
                 ),
                 "escalate": True,
@@ -267,7 +267,7 @@ class SupportManager:
                 "Could you tell me a bit more about what you're experiencing? "
                 "For example — is this about your feed, a post, a purchase, "
                 "your account, or something else?\n\n"
-                "If I can't resolve it, I'll connect you with the Circle."
+                "If I can't resolve it, I'll connect you with the Commons staff."
             ),
             "escalate":  False,
             "category":  "clarification_needed"
@@ -278,7 +278,7 @@ class SupportManager:
                       subject: str,
                       description: str,
                       category: str = "general") -> dict:
-        """Create a support ticket for Circle review."""
+        """Create a support ticket for Commons staff review."""
         ticket = SupportTicket(
             user_id     = user_id,
             subject     = subject,
@@ -295,7 +295,7 @@ class SupportManager:
             "ok":        True,
             "ticket_id": ticket.id,
             "message":   (
-                "Your ticket has been submitted to the Circle. "
+                "Your ticket has been submitted to the Commons staff. "
                 "You'll receive a response as soon as possible. "
                 "Ticket ID: " + str(ticket.id)
             )
@@ -335,7 +335,7 @@ class SupportManager:
         ]
 
     def get_open_tickets(self, db: Session) -> list:
-        """Get all open tickets for Circle review."""
+        """Get all open tickets for Commons staff review."""
         tickets = db.query(SupportTicket).filter(
             SupportTicket.status == "open"
         ).order_by(SupportTicket.created_at).all()
