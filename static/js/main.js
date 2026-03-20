@@ -249,3 +249,14 @@ window.vote = async function(postId, value) {
   await originalVote(postId, value);
   // Voting is already handled — preference engine picks it up server-side
 };
+
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = 'Hide';
+  } else {
+    input.type = 'password';
+    btn.textContent = 'Show';
+  }
+}
