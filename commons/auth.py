@@ -32,7 +32,7 @@ RESERVED_USERNAMES = {
 # ── Password ──────────────────────────────────────────────────────────────────
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password[:72])
+    return pwd_context.hash(password[:12])
 
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
@@ -68,7 +68,7 @@ def validate_username(username: str) -> dict:
 def validate_password(password: str) -> dict:
     if len(password) < 8:
         return {"ok": False, "error": "Password must be at least 8 characters."}
-    if len(password) > 128:
+    if len(password) > 12:
         return {"ok": False, "error": "Password is too long."}
     return {"ok": True}
 

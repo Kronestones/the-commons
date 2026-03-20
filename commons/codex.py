@@ -1,5 +1,5 @@
 """
-codex.py — The Commons Codex
+codex.py — The community guidelines
 
 The constitution of The Commons.
 These are not rules imposed from outside.
@@ -192,8 +192,8 @@ class TheCommonsCodex:
             "number": 15,
             "name": "Transparency",
             "text": (
-                "The core codebase of The Commons is open source. "
-                "The people can see how it works. "
+                "The community guidelines are the foundation this platform is built on. "
+                "Every law exists to protect the people. "
                 "The people can verify it does what it says."
             ),
             "immutable": False,
