@@ -32,6 +32,13 @@ class Config:
         self.jwt_algorithm    = "HS256"
         self.jwt_expire_hours = 24 * 7   # 7 days
 
+        # Email
+        self.email_host     = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+        self.email_port     = int(os.getenv("EMAIL_PORT", 587))
+        self.email_user     = os.getenv("EMAIL_USER", "")
+        self.email_password = os.getenv("EMAIL_PASSWORD", "")
+        self.base_url       = os.getenv("BASE_URL", "https://the-commons.onrender.com")
+
         # Ensure media directory exists
         self.media_dir.mkdir(parents=True, exist_ok=True)
 
