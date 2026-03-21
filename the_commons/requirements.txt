@@ -1,12 +1,13 @@
 fastapi
-uvicorn
-gunicorn
+uvicorn==0.27.1
+gunicorn==21.2.0
 python-multipart
 jinja2
 python-jose[cryptography]
+bcrypt==4.0.1
 passlib[bcrypt]==1.7.4
 aiofiles
 python-dotenv
 sqlalchemy
 aiosqlite
-bcrypt==4.0.1
+setuptools
