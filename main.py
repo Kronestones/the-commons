@@ -38,6 +38,7 @@ if args.version:
 
 # ── Imports ───────────────────────────────────────────────────────────────────
 
+from commons.email_auth import generate_magic_token, verify_magic_token, send_magic_link
 from commons.config   import config
 from commons.database import init_db, get_db, User, Post, PostStatus
 from commons.codex    import TheCommonsCodex
