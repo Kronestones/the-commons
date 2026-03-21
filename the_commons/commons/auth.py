@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 from .database import get_db, User, UserRole
 from .config import config
 
-pwd_context   = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context   = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__truncate_error=False)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 RESERVED_USERNAMES = {
