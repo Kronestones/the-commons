@@ -29,6 +29,12 @@ class Config:
         self.transaction_fee  = float(os.getenv("TRANSACTION_FEE", 1.00))
         self.min_circle_size  = int(os.getenv("MIN_CIRCLE_SIZE", 3))
 
+        # Email
+        self.email_host     = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+        self.email_port     = int(os.getenv("EMAIL_PORT", "587"))
+        self.email_user     = os.getenv("EMAIL_USER", "")
+        self.email_password = os.getenv("EMAIL_PASSWORD", "")
+
         # JWT
         self.jwt_algorithm    = "HS256"
         self.jwt_expire_hours = 24 * 7   # 7 days
