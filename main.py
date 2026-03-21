@@ -186,7 +186,7 @@ async def api_register(
         return JSONResponse({"ok": False, "error": d["error"]}, status_code=400)
 
     try:
-        result = register_user(db, u["value"], e["value"], password,
+        result = register_user(db, u["value"], e["value"], "",
                                d["value"], is_minor)
         if not result["ok"]:
             return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
