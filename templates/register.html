@@ -13,25 +13,34 @@
         <div id="error-box" class="error-box" style="display:none;"></div>
         <div id="success-box" class="success-box" style="display:none;"></div>
         <label>Username</label>
-        <input type="text" id="username" placeholder="Username" required>
+        <small>Letters, numbers, underscores and hyphens only. No spaces. (3-50 characters)</small>
+        <input type="text" id="username" placeholder="e.g. Krone or krone_1" required>
         <label>Email</label>
         <input type="email" id="email" placeholder="Email" required>
         <label>Display name (optional)</label>
-        <input type="text" id="display_name" placeholder="Display name">
+        <input type="text" id="display_name" placeholder="How you want to appear to others">
         <button onclick="register()">Join The Commons</button>
         <p>Already have an account? <a href="/login">Sign in</a></p>
     </div>
     <script>
     async function register() {
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const display_name = document.getElementById('display_name').value;
+        if (username.includes(' ')) {
+            document.getElementById('error-box').style.display = 'block';
+            document.getElementById('error-box').innerText = 'Username cannot contain spaces. Try using an underscore instead, e.g. krone_1';
+            return;
+        }
         const body = new FormData();
-        body.append('username', document.getElementById('username').value);
-        body.append('email', document.getElementById('email').value);
-        body.append('display_name', document.getElementById('display_name').value);
+        body.append('username', username);
+        body.append('email', email);
+        body.append('display_name', display_name);
         const res = await fetch('/auth/register', { method: 'POST', body });
         const data = await res.json();
         if (data.ok) {
             document.getElementById('success-box').style.display = 'block';
-            document.getElementById('success-box').innerText = 'Welcome! Check your email for your sign-in link.';
+            document.getElementById('success-box').innerText = 'Welcome! Check your email for your sign-in link. If you don\'t see it, check your spam folder.';
             document.getElementById('error-box').style.display = 'none';
         } else {
             document.getElementById('error-box').style.display = 'block';
