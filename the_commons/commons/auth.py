@@ -12,14 +12,13 @@ Passwords hashed with bcrypt — never stored plaintext.
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from .database import get_db, User, UserRole
 from .config import config
 
-pwd_context   = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__truncate_error=False)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 RESERVED_USERNAMES = {
@@ -32,10 +31,10 @@ RESERVED_USERNAMES = {
 # ── Password ──────────────────────────────────────────────────────────────────
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password[:12])
+    return bcrypt.hashpw(password[:12].encode(), bcrypt.gensalt()).decode()
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return bcrypt.checkpw(plain[:12].encode(), hashed.encode())
 
 
 # ── JWT ───────────────────────────────────────────────────────────────────────
