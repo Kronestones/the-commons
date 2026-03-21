@@ -1,76 +1,44 @@
-{% extends "base.html" %}
-{% block title %}Join The Commons{% endblock %}
-{% block content %}
-
-<div class="auth-container">
-  <h1>Join The Commons</h1>
-  <p class="auth-note">No phone number required. No biometrics. Ever. Just a username and password.</p>
-
-  <form id="register-form" class="auth-form">
-    <label>Username
-      <input type="text" id="username" placeholder="your_username" maxlength="50" required>
-    </label>
-    <label>Email
-      <input type="email" id="email" placeholder="you@example.com" required>
-    </label>
-    <label>Password
-      <div class="password-wrapper">
-        <input type="password" id="password" placeholder="At least 8 characters" required>
-        <button type="button" class="show-password-btn" onclick="togglePassword('password', this)">Show</button>
-      </div>
-    </label>
-    <label>Display name (optional)
-      <input type="text" id="display-name" placeholder="How you appear to others">
-    </label>
-    <div id="form-error" class="form-error" style="display:none;padding:12px;background:#fee;border:1px solid #c00;border-radius:6px;color:#c00;font-size:14px;margin-bottom:12px;"></div>
-    <button type="submit" class="btn-primary btn-full">Join The Commons</button>
-  </form>
-
-  <p class="auth-switch">Already have an account? <a href="/login">Sign in</a></p>
-
-  <div class="auth-promise">
-    <h3>Our promise to you</h3>
-    <ul>
-      <li>No advertising — ever</li>
-      <li>No data selling — ever</li>
-      <li>No biometrics — ever</li>
-      <li>Your data is yours — export or delete anytime</li>
-      <li>The platform exists for you, not shareholders</li>
-    </ul>
-    <a href="/codex">Read the full Codex →</a>
-  </div>
-</div>
-
-{% endblock %}
-{% block scripts %}
-<script>
-document.getElementById('register-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = new FormData();
-  form.append('username',     document.getElementById('username').value);
-  form.append('email',        document.getElementById('email').value);
-  form.append('password',     document.getElementById('password').value);
-  form.append('display_name', document.getElementById('display-name').value);
-  form.append('is_minor', false);
-  const res = await fetch('/auth/register', { method: 'POST', body: form });
-  let data;
-  try {
-    data = await res.json();
-  } catch(e) {
-    const err = document.getElementById('form-error');
-    err.textContent = 'Server error — please try again.';
-    err.style.display = 'block';
-    return;
-  }
-  if (data.ok) {
-    localStorage.setItem('token',    data.token);
-    localStorage.setItem('username', data.user.username);
-    window.location = '/';
-  } else {
-    const err = document.getElementById('form-error');
-    err.textContent = data.error || 'Registration failed — please check your details.';
-    err.style.display = 'block';
-  }
-});
-</script>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join The Commons</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Join The Commons</h1>
+    <p class="auth-note">No phone number required. No biometrics. No password stored. Ever. Just your email.</p>
+    <div class="auth-form">
+        <div id="error-box" class="error-box" style="display:none;"></div>
+        <div id="success-box" class="success-box" style="display:none;"></div>
+        <label>Username</label>
+        <input type="text" id="username" placeholder="Username" required>
+        <label>Email</label>
+        <input type="email" id="email" placeholder="Email" required>
+        <label>Display name (optional)</label>
+        <input type="text" id="display_name" placeholder="Display name">
+        <button onclick="register()">Join The Commons</button>
+        <p>Already have an account? <a href="/login">Sign in</a></p>
+    </div>
+    <script>
+    async function register() {
+        const body = new FormData();
+        body.append('username', document.getElementById('username').value);
+        body.append('email', document.getElementById('email').value);
+        body.append('display_name', document.getElementById('display_name').value);
+        const res = await fetch('/auth/register', { method: 'POST', body });
+        const data = await res.json();
+        if (data.ok) {
+            document.getElementById('success-box').style.display = 'block';
+            document.getElementById('success-box').innerText = 'Welcome! Check your email for your sign-in link.';
+            document.getElementById('error-box').style.display = 'none';
+        } else {
+            document.getElementById('error-box').style.display = 'block';
+            document.getElementById('error-box').innerText = data.error || 'Registration failed.';
+            document.getElementById('success-box').style.display = 'none';
+        }
+    }
+    </script>
+</body>
+</html>
