@@ -4,8 +4,9 @@ gunicorn
 python-multipart
 jinja2
 python-jose[cryptography]
-passlib[bcrypt]
+passlib[bcrypt]==1.7.4
 aiofiles
 python-dotenv
 sqlalchemy
 aiosqlite
+bcrypt==4.0.1
