@@ -19,6 +19,7 @@ class Config:
         self.debug            = os.getenv("DEBUG", "true").lower() == "true"
         self.host             = os.getenv("HOST", "0.0.0.0")
         self.port             = int(os.getenv("PORT", 8000))
+        self.base_url = os.getenv("BASE_URL", "https://the-commons.onrender.com")
         self.database_url     = os.getenv("DATABASE_URL", "sqlite:///./the_commons.db")
         self.media_dir        = Path(os.getenv("MEDIA_DIR", "./media"))
         self.max_upload_mb    = int(os.getenv("MAX_UPLOAD_MB", 100))
