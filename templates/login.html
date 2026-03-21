@@ -21,7 +21,7 @@
     async function requestLink() {
         const body = new FormData();
         body.append('email', document.getElementById('email').value);
-        const res = await fetch('/auth/magic-link', { method: 'POST', body });
+        const res = await fetch('/auth/magic/request', { method: 'POST', body });
         const data = await res.json();
         if (data.ok) {
             document.getElementById('success-box').style.display = 'block';
