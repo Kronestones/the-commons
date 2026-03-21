@@ -190,6 +190,8 @@ async def api_register(
                                d["value"], is_minor)
         if not result["ok"]:
             return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
+        token = generate_magic_token(e["value"])
+        send_magic_link(e["value"], token)
         return JSONResponse({
             "ok":    True,
             "token": result["token"],
