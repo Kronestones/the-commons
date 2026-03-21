@@ -40,7 +40,7 @@
         const data = await res.json();
         if (data.ok) {
             document.getElementById('success-box').style.display = 'block';
-            document.getElementById('success-box').innerText = 'Welcome! Check your email for your sign-in link. If you don\'t see it, check your spam folder.';
+            document.getElementById('success-box').innerText = 'Welcome to The Commons! Your sign-in link is on its way. Gmail usually delivers in under a minute. Other providers may take 2-5 minutes. If you don\'t see it, check your spam folder — and mark us as safe so it never lands there again.';
             document.getElementById('error-box').style.display = 'none';
         } else {
             document.getElementById('error-box').style.display = 'block';
