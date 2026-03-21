@@ -81,10 +81,6 @@ def register_user(db: Session, username: str, email: str,
     if not v["ok"]:
         return {"ok": False, "error": v["error"]}
 
-    # Validate password
-    v = validate_password(password)
-    if not v["ok"]:
-        return {"ok": False, "error": v["error"]}
 
     # Check uniqueness
     if db.query(User).filter(User.username == username).first():
@@ -95,7 +91,7 @@ def register_user(db: Session, username: str, email: str,
     user = User(
         username      = username,
         email         = email,
-        password_hash = hash_password(password),
+        password_hash    = None,
         display_name  = display_name or username,
         is_minor      = is_minor,
     )

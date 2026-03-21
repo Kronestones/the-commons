@@ -161,7 +161,7 @@ async def api_register(
     request:      Request,
     username:     str  = Form(...),
     email:        str  = Form(...),
-    password:     str  = Form(...),
+    password:     str   = Form(default=""),
     display_name: str  = Form(default=""),
     is_minor:     bool = Form(default=False),
     db: Session = Depends(get_db)
@@ -202,7 +202,7 @@ async def api_register(
 async def api_login(
     request:  Request,
     username: str = Form(...),
-    password: str = Form(...),
+    password:     str   = Form(default=""),
     db: Session = Depends(get_db)
 ):
     try:
