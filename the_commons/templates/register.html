@@ -11,13 +11,7 @@
       <input type="text" id="username" placeholder="your_username" maxlength="50" required>
     </label>
     <label>Email
-      <input type="email" id="email" placeholder="you@example.com" required>
-    </label>
-    <label>Email
-      
-        <input type="email" id="email" placeholder="your@email.com" required>
-        
-      </div>
+      <input type="email" id="email" placeholder="your@email.com" required>
     </label>
     <label>Display name (optional)
       <input type="text" id="display-name" placeholder="How you appear to others">
@@ -47,29 +41,23 @@
 document.getElementById('register-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = new FormData();
-  form.append('username',     document.getElementById('username').value);
-  form.append('email',        document.getElementById('email').value);
-  form.append('password',     document.getElementById('password').value);
+  form.append('username', document.getElementById('username').value);
+  form.append('email', document.getElementById('email').value);
   form.append('display_name', document.getElementById('display-name').value);
   form.append('is_minor', false);
-  const res  = await fetch('/auth/register', { method: 'POST', body: form });
+  const res = await fetch('/auth/register', { method: 'POST', body: form });
   let data;
-  try {
-    data = await res.json();
-  } catch(e) {
-    const err = document.getElementById('form-error');
-    err.textContent = 'Server error — please try again.';
+  try { data = await res.json(); } catch(e) {}
+  const err = document.getElementById('form-error');
+  if (data && data.ok) {
     err.style.display = 'block';
-    return;
-  }
-  if (data.ok) {
-    localStorage.setItem('token',    data.token);
-    localStorage.setItem('username', data.user.username);
-    window.location = '/';
+    err.style.background = '#efe';
+    err.style.color = '#060';
+    err.style.borderColor = '#0a0';
+    err.textContent = 'Check your email for a sign-in link!';
   } else {
-    const err = document.getElementById('form-error');
-    err.textContent = data.error || 'Registration failed — please try again.';
     err.style.display = 'block';
+    err.textContent = data ? data.error : 'Something went wrong.';
   }
 });
 </script>
