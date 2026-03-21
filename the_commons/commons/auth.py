@@ -154,3 +154,4 @@ def require_sovereign(user: User = Depends(get_current_user)) -> User:
     if user.role != UserRole.SOVEREIGN:
         raise HTTPException(status_code=403, detail="Sovereign authority required.")
     return user
+# force redeploy Fri Mar 20 20:03:00 PDT 2026
