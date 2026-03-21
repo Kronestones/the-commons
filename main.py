@@ -632,3 +632,34 @@ async def api_set_algorithm_mode(
         return JSONResponse({"ok": True, "mode": mode})
     except ValueError:
         return JSONResponse({"ok": False, "error": "Invalid mode."}, status_code=400)
+
+
+# --- Magic Link Auth ---
+
+@app.post("/auth/magic/request")
+async def request_magic_link(
+    request: Request,
+    email: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email.lower().strip()).first()
+    if not user:
+        return JSONResponse({"ok": False, "error": "No account with that email."}, status_code=400)
+    token = generate_magic_token(email.lower().strip())
+    sent = send_magic_link(email.lower().strip(), token)
+    if not sent:
+        return JSONResponse({"ok": False, "error": "Failed to send email. Please try again."}, status_code=500)
+    return JSONResponse({"ok": True, "message": "Check your email for a sign-in link."})
+
+@app.get("/auth/magic")
+async def verify_magic_link(token: str, db: Session = Depends(get_db)):
+    email = verify_magic_token(token)
+    if not email:
+        return HTMLResponse("<h2>This link has expired or is invalid. Please request a new one.</h2>")
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        return HTMLResponse("<h2>Account not found.</h2>")
+    jwt_token = create_token(user.id, user.username)
+    response = RedirectResponse(url="/feed")
+    response.set_cookie("token", jwt_token, httponly=True, max_age=60*60*24*30)
+    return response
