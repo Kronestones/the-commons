@@ -21,7 +21,7 @@ def generate_magic_token(email: str, db: Session) -> str:
     mt = MagicToken(
         token=token,
         email=email,
-        expires=datetime.utcnow() + timedelta(minutes=30)
+        expires=datetime.utcnow() + timedelta(hours=24)
     )
     db.add(mt)
     db.commit()
@@ -56,7 +56,7 @@ def send_magic_link(email: str, token: str) -> bool:
                 "text": f"""Hello,
 
 Click the link below to sign in to The Commons.
-This link expires in 30 minutes.
+This link expires in 24 hours.
 
 {link}
 
