@@ -38,7 +38,7 @@ if args.version:
 
 # ── Imports ───────────────────────────────────────────────────────────────────
 
-from commons.email_auth import generate_magic_token, verify_magic_token, send_magic_link
+from commons.email_auth import generate_magic_token, verify_magic_token, send_magic_link, MagicToken
 from commons.config   import config
 from commons.database import init_db, get_db, User, Post, PostStatus
 from commons.codex    import TheCommonsCodex
@@ -654,13 +654,16 @@ async def request_magic_link(
 
 @app.get("/auth/magic")
 async def verify_magic_link(token: str, db: Session = Depends(get_db)):
-    email = verify_magic_token(token, db)
-    if not email:
-        return HTMLResponse("<h2>This link has expired or is invalid. Please request a new one.</h2>")
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        return HTMLResponse("<h2>Account not found.</h2>")
-    jwt_token = create_token(user.id, user.username)
-    response = RedirectResponse(url="/feed")
-    response.set_cookie("token", jwt_token, httponly=True, max_age=60*60*24*30)
-    return response
+    try:
+        email = verify_magic_token(token, db)
+        if not email:
+            return HTMLResponse("<h2>This link has expired or is invalid. Please request a new one.</h2>")
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            return HTMLResponse("<h2>Account not found.</h2>")
+        jwt_token = create_token(user.id, user.username)
+        response = RedirectResponse(url="/feed")
+        response.set_cookie("token", jwt_token, httponly=True, max_age=60*60*24*30)
+        return response
+    except Exception as e:
+        return HTMLResponse(f"<h2>Error: {str(e)}</h2>")
