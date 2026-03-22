@@ -129,11 +129,11 @@ async def home(request: Request, db: Session = Depends(get_db)):
         .limit(20)
         .all()
     )
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "posts":   recent_posts,
-        "version": VERSION,
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"posts": recent_posts, "version": VERSION}
+    )
 
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
