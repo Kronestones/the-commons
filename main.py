@@ -660,7 +660,8 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
             return HTMLResponse("<h2>Account not found.</h2>")
         jwt_token = create_token(user.id, user.username)
         response = RedirectResponse(url="/")
-        response.set_cookie("token", jwt_token, httponly=True, max_age=60*60*24*30)
+        response.set_cookie("token", jwt_token, httponly=False, max_age=60*60*24*30)
+        response.set_cookie("username", user.username, httponly=False, max_age=60*60*24*30)
         return response
     except Exception as e:
         return HTMLResponse(f"<h2>Error: {str(e)}</h2>")
