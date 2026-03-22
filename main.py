@@ -137,11 +137,11 @@ async def home(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="register.html")
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="login.html")
 
 @app.get("/codex", response_class=HTMLResponse)
 async def codex_page(request: Request):
@@ -153,7 +153,7 @@ async def codex_page(request: Request):
 
 @app.get("/marketplace", response_class=HTMLResponse)
 async def marketplace_page(request: Request, db: Session = Depends(get_db)):
-    return templates.TemplateResponse("marketplace.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="marketplace.html")
 
 # ── Auth API ──────────────────────────────────────────────────────────────────
 
@@ -445,11 +445,8 @@ async def api_personalized_feed(
 async def giving_page(request: Request, db: Session = Depends(get_db)):
     """Public page showing every donation ever made. Full transparency."""
     record = surplus_manager.get_public_record(db)
-    return templates.TemplateResponse("giving.html", {
-        "request": request,
-        "donations": record,
-        "codex": TheCommonsCodex,
-    })
+    return templates.TemplateResponse(request=request, name="giving.html", context={"donations": record,
+        "codex": TheCommonsCodex})
 
 @app.get("/api/giving")
 async def api_giving(db: Session = Depends(get_db)):
