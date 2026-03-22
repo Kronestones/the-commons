@@ -191,7 +191,7 @@ async def api_register(
                                d["value"], is_minor)
         if not result["ok"]:
             return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
-        token = generate_magic_token(e["value"])
+        token = generate_magic_token(e["value"], db)
         send_magic_link(e["value"], token)
         return JSONResponse({
             "ok":    True,
@@ -646,7 +646,7 @@ async def request_magic_link(
     user = db.query(User).filter(User.email == email.lower().strip()).first()
     if not user:
         return JSONResponse({"ok": False, "error": "No account with that email."}, status_code=400)
-    token = generate_magic_token(email.lower().strip())
+    token = generate_magic_token(email.lower().strip(), db)
     sent = send_magic_link(email.lower().strip(), token)
     if not sent:
         return JSONResponse({"ok": False, "error": "Failed to send email. Please try again."}, status_code=500)
@@ -654,7 +654,7 @@ async def request_magic_link(
 
 @app.get("/auth/magic")
 async def verify_magic_link(token: str, db: Session = Depends(get_db)):
-    email = verify_magic_token(token)
+    email = verify_magic_token(token, db)
     if not email:
         return HTMLResponse("<h2>This link has expired or is invalid. Please request a new one.</h2>")
     user = db.query(User).filter(User.email == email).first()

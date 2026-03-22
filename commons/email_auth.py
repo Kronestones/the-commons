@@ -6,29 +6,39 @@ import secrets
 import requests
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from .database import get_db, User
+from .database import get_db, User, Base
+from sqlalchemy import Column, String, DateTime
 from .config import config
 
-# Store magic tokens in memory
-magic_tokens = {}
+class MagicToken(Base):
+    __tablename__ = "magic_tokens"
+    token    = Column(String, primary_key=True)
+    email    = Column(String, nullable=False)
+    expires  = Column(DateTime, nullable=False)
 
-def generate_magic_token(email: str) -> str:
+def generate_magic_token(email: str, db: Session) -> str:
     token = secrets.token_urlsafe(32)
-    magic_tokens[token] = {
-        "email": email,
-        "expires": datetime.utcnow() + timedelta(minutes=15)
-    }
+    mt = MagicToken(
+        token=token,
+        email=email,
+        expires=datetime.utcnow() + timedelta(minutes=30)
+    )
+    db.add(mt)
+    db.commit()
     return token
 
-def verify_magic_token(token: str) -> str | None:
-    data = magic_tokens.get(token)
-    if not data:
+def verify_magic_token(token: str, db: Session) -> str | None:
+    mt = db.query(MagicToken).filter(MagicToken.token == token).first()
+    if not mt:
         return None
-    if datetime.utcnow() > data["expires"]:
-        del magic_tokens[token]
+    if datetime.utcnow() > mt.expires:
+        db.delete(mt)
+        db.commit()
         return None
-    del magic_tokens[token]
-    return data["email"]
+    email = mt.email
+    db.delete(mt)
+    db.commit()
+    return email
 
 def send_magic_link(email: str, token: str) -> bool:
     link = f"{config.base_url}/auth/magic?token={token}"
@@ -46,7 +56,7 @@ def send_magic_link(email: str, token: str) -> bool:
                 "text": f"""Hello,
 
 Click the link below to sign in to The Commons.
-This link expires in 15 minutes.
+This link expires in 30 minutes.
 
 {link}
 
