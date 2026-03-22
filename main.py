@@ -145,11 +145,11 @@ async def login_page(request: Request):
 
 @app.get("/codex", response_class=HTMLResponse)
 async def codex_page(request: Request):
-    return templates.TemplateResponse("codex.html", {
-        "request": request,
-        "codex":   TheCommonsCodex,
-        "sources": fingerprint.get_verified_sources(),
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="codex.html",
+        context={"codex": TheCommonsCodex, "sources": fingerprint.get_verified_sources()}
+    )
 
 @app.get("/marketplace", response_class=HTMLResponse)
 async def marketplace_page(request: Request, db: Session = Depends(get_db)):
