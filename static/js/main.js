@@ -202,7 +202,11 @@ setInterval(() => {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
+  const c = document.cookie.split(";").find(x => x.trim().startsWith("token="));
+  if (c) localStorage.setItem("token", c.split("=")[1].trim());
+  const u = document.cookie.split(";").find(x => x.trim().startsWith("username="));
+  if (u) localStorage.setItem("username", u.split("=")[1].trim());
   updateNav();
   addFeedReasons();
 });
