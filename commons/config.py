@@ -30,6 +30,7 @@ class Config:
         self.min_circle_size  = int(os.getenv("MIN_CIRCLE_SIZE", 3))
 
         # Email
+        self.resend_api_key = os.getenv("RESEND_API_KEY", "")
         self.email_host     = os.getenv("EMAIL_HOST", "smtp.gmail.com")
         self.email_port     = int(os.getenv("EMAIL_PORT", "587"))
         self.email_user     = os.getenv("EMAIL_USER", "")
