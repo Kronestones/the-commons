@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}@{{ profile_user.username }} — The Commons{% endblock %}
+{% block content %}
+
+<div class="profile-layout">
+
+  <div class="profile-header">
+    <div class="profile-avatar">{{ profile_user.username[0].upper() }}</div>
+    <div class="profile-info">
+      <h1 class="profile-username">@{{ profile_user.username }}</h1>
+      <p class="profile-displayname">{{ profile_user.display_name or profile_user.username }}</p>
+      <p class="profile-bio">{{ profile_user.bio or '' }}</p>
+      <p class="profile-joined">Member since {{ profile_user.created_at.strftime('%B %Y') }}</p>
+      <p class="profile-postcount">{{ posts|length }} post{{ 's' if posts|length != 1 else '' }}</p>
+    </div>
+  </div>
+
+  <div class="profile-composer" id="composer" style="display:none">
+    <h3>Share something</h3>
+    <textarea id="post-content" placeholder="What's on your mind?" maxlength="10000"></textarea>
+    <button onclick="createPost()" class="btn-primary">Post</button>
+    <p class="composer-note">Political and news content is verified before publishing.</p>
+  </div>
+
+  <div class="profile-posts">
+    {% if posts %}
+      {% for post in posts %}
+      <div class="post-card">
+        <div class="post-header">
+          <span class="post-author">@{{ profile_user.username }}</span>
+          <span class="post-time">{{ post.published_at.strftime('%b %d') if post.published_at else '' }}</span>
+        </div>
+        <div class="post-content">{{ post.content }}</div>
+        <div class="post-actions">
+          <button onclick="vote({{ post.id }}, 1)" class="vote-btn">↑ Valuable</button>
+          <span class="community-score">{{ post.community_score | int }}</span>
+          <button onclick="vote({{ post.id }}, -1)" class="vote-btn">↓</button>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-feed">
+        <p>No posts yet.</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}

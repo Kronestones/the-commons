@@ -151,6 +151,26 @@ async def codex_page(request: Request):
         context={"codex": TheCommonsCodex, "sources": fingerprint.get_verified_sources()}
     )
 
+
+@app.get("/profile/{username}", response_class=HTMLResponse)
+async def profile_page(username: str, request: Request, db: Session = Depends(get_db)):
+    profile_user = db.query(User).filter(User.username == username).first()
+    if not profile_user:
+        return HTMLResponse("<h2>User not found.</h2>", status_code=404)
+    user_posts = (
+        db.query(Post)
+        .filter(Post.author_id == profile_user.id)
+        .filter(Post.status == PostStatus.PUBLISHED)
+        .order_by(Post.published_at.desc())
+        .limit(50)
+        .all()
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="profile.html",
+        context={"profile_user": profile_user, "posts": user_posts}
+    )
+
 @app.get("/marketplace", response_class=HTMLResponse)
 async def marketplace_page(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse(request=request, name="marketplace.html")
@@ -659,7 +679,7 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
         if not user:
             return HTMLResponse("<h2>Account not found.</h2>")
         jwt_token = create_token(user.id, user.username)
-        response = RedirectResponse(url=f"/?tk={jwt_token}&un={user.username}")
+        response = RedirectResponse(url=f"/profile/{user.username}?tk={jwt_token}&un={user.username}")
         response.set_cookie("token", jwt_token, httponly=False, max_age=60*60*24*30)
         response.set_cookie("username", user.username, httponly=False, max_age=60*60*24*30)
         return response
