@@ -78,7 +78,7 @@ class TheCommonsCodex:
             "text": (
                 "The Commons collects no biometric data. "
                 "No fingerprints, no facial recognition, no voice prints. "
-                "A username and password is enough. "
+                "A username and email is enough. No password ever stored. "
                 "Your body is yours."
             ),
             "immutable": True,
