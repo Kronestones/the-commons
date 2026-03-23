@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}The Commons{% endblock %}</title>
   <link rel="stylesheet" href="/static/css/main.css">
+<script>
+(function(){
+  const p = new URLSearchParams(window.location.search);
+  const t = p.get('tk');
+  const u = p.get('un');
+  if(t) localStorage.setItem('token', t);
+  if(u) localStorage.setItem('username', u);
+})();
+</script>
 </head>
 <body>
 
