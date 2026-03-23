@@ -1,3 +1,13 @@
+function syncCookiesToStorage() {
+  document.cookie.split(';').forEach(c => {
+    const parts = c.trim().split('=');
+    if (parts[0] === 'token' || parts[0] === 'username') {
+      localStorage.setItem(parts[0], parts[1]);
+    }
+  });
+}
+syncCookiesToStorage();
+
 /**
  * main.js — The Commons
  *
