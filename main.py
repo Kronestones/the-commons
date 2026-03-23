@@ -104,7 +104,7 @@ async def startup():
     print("╠══════════════════════════════════════════════════════╣")
     print(f"║  Version:  {VERSION:<43}║")
     print(f"║  Host:     {config.host}:{config.port:<38}║")
-    print(f"║  Mode:     {'Development' if config.debug else 'Production':<43}║")
+    print(f"║  Mode:     {'Production':<43}║")
     print("╠══════════════════════════════════════════════════════╣")
     print("║  Sovereign Human T.L. Powers                         ║")
     print("║  Power to the People                                 ║")

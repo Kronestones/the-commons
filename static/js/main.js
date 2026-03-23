@@ -2,8 +2,21 @@ function syncCookiesToStorage() {
   const params = new URLSearchParams(window.location.search);
   const tk = params.get('tk');
   const un = params.get('un');
-  if (tk) localStorage.setItem('token', tk);
-  if (un) localStorage.setItem('username', un);
+  if (tk) {
+    localStorage.setItem('token', tk);
+    document.cookie = "token=" + tk + ";path=/;max-age=" + (60*60*24*30);
+  }
+  if (un) {
+    localStorage.setItem('username', un);
+    document.cookie = "username=" + un + ";path=/;max-age=" + (60*60*24*30);
+  }
+  if (!localStorage.getItem('token')) {
+    document.cookie.split(';').forEach(c => {
+      const parts = c.trim().split('=');
+      if (parts[0] === 'token') localStorage.setItem('token', parts[1]);
+      if (parts[0] === 'username') localStorage.setItem('username', parts[1]);
+    });
+  }
 }
 syncCookiesToStorage();
 
@@ -37,10 +50,9 @@ function updateNav() {
 
   if (isLoggedIn()) {
     navUser.innerHTML = `
-      <span class="nav-username">@${getUsername()}</span>
+      <a href="/profile/${getUsername()}" class="nav-username">@${getUsername()}</a>
       <button onclick="logout()" class="nav-logout">Sign out</button>
     `;
-    // Show composer if on home page
     const composer = document.getElementById('composer');
     if (composer) composer.style.display = 'block';
   } else {
