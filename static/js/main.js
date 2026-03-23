@@ -1,6 +1,6 @@
 function syncCookiesToStorage() {
   const params = new URLSearchParams(window.location.search);
-  if (params.get('token')) localStorage.setItem('token', params.get('token'));
+  if (params.get('token')) localStorage.setItem('token', decodeURIComponent(params.get('token')));
   if (params.get('username')) localStorage.setItem('username', params.get('username'));
   document.cookie.split(';').forEach(c => {
     const parts = c.trim().split('=');
