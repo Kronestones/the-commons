@@ -288,6 +288,7 @@ function togglePassword(inputId, btn) {
 
 // -- Create Post
 async function createPost() {
+  const dbg = localStorage.getItem("token"); alert("TOKEN:" + (dbg ? dbg.substring(0,10) : "NULL"));
   const token = getToken();
   if (!token) { showMessage('Please sign in first.', true); return; }
   const content = document.getElementById('post-content').value.trim();
