@@ -31,6 +31,9 @@ class Config:
 
         # Email
         self.resend_api_key = os.getenv("RESEND_API_KEY", "")
+        self.cloudinary_cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME", "")
+        self.cloudinary_api_key    = os.getenv("CLOUDINARY_API_KEY", "")
+        self.cloudinary_api_secret = os.getenv("CLOUDINARY_API_SECRET", "")
         self.email_host     = os.getenv("EMAIL_HOST", "smtp.gmail.com")
         self.email_port     = int(os.getenv("EMAIL_PORT", "587"))
         self.email_user     = os.getenv("EMAIL_USER", "")
