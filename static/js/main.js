@@ -1,13 +1,9 @@
 function syncCookiesToStorage() {
   const params = new URLSearchParams(window.location.search);
-  if (params.get('token')) localStorage.setItem('token', decodeURIComponent(params.get('token')));
-  if (params.get('username')) localStorage.setItem('username', params.get('username'));
-  document.cookie.split(';').forEach(c => {
-    const parts = c.trim().split('=');
-    if (parts[0] === 'token' || parts[0] === 'username') {
-      localStorage.setItem(parts[0], parts[1]);
-    }
-  });
+  const tk = params.get('tk');
+  const un = params.get('un');
+  if (tk) localStorage.setItem('token', tk);
+  if (un) localStorage.setItem('username', un);
 }
 syncCookiesToStorage();
 
