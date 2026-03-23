@@ -277,3 +277,31 @@ function togglePassword(inputId, btn) {
     btn.textContent = 'Show';
   }
 }
+
+// -- Create Post
+async function createPost() {
+  const token = getToken();
+  if (!token) { showMessage('Please sign in first.', true); return; }
+  const content = document.getElementById('post-content').value.trim();
+  if (!content) { showMessage('Write something first.', true); return; }
+  try {
+    const form = new FormData();
+    form.append('content', content);
+    form.append('post_type', 'text');
+    const res = await fetch('/api/posts', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: form
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showMessage('Posted!');
+      document.getElementById('post-content').value = '';
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      showMessage(data.detail || data.error || 'Failed to post.', true);
+    }
+  } catch(e) {
+    showMessage('Error: ' + e.message, true);
+  }
+}
