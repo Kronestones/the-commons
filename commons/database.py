@@ -103,7 +103,6 @@ class Post(Base):
     author          = relationship("User", back_populates="posts")
     fingerprint     = relationship("FingerprintRecord", back_populates="post", uselist=False)
     community_votes = relationship
-    avatar_url = Column(String, default='')
     community_votes = relationship("CommunityVote", back_populates="post")
     product_tags    = relationship("ProductTag", back_populates="post")
 
