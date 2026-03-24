@@ -2,6 +2,23 @@
 {% block title %}Feed — The Commons{% endblock %}
 {% block content %}
 <div class="feed-layout">
+
+  {% if current_user %}
+  <div class="post-compose">
+    <form method="POST" action="/api/posts" id="post-form">
+      <textarea name="content" placeholder="What's on your mind? Share with The Commons..." maxlength="10000" required></textarea>
+      <div class="compose-actions">
+        <select name="post_type">
+          <option value="text">Text</option>
+          <option value="image">Image</option>
+          <option value="video">Video</option>
+        </select>
+        <button type="submit" class="btn-primary">Post</button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
   <div class="feed" id="feed">
     {% if posts %}
       {% for post in posts %}
