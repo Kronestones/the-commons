@@ -1,0 +1,20 @@
+<nav class="nav">
+  <div class="nav-left">
+    <a href="/" class="nav-logo">The Commons</a>
+  </div>
+  <div class="nav-links">
+    <a href="/feed">Feed</a>
+    <a href="/giving">Giving</a>
+    <a href="/codex">Codex</a>
+    <a href="/marketplace">Marketplace</a>
+  </div>
+  <div class="nav-right">
+    {% if current_user %}
+      <a href="/profile/{{ current_user.username }}">@{{ current_user.username }}</a>
+      <a href="/logout">Logout</a>
+    {% else %}
+      <a href="/login">Login</a>
+      <a href="/register" class="btn-primary">Join</a>
+    {% endif %}
+  </div>
+</nav>

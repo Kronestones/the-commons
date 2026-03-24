@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile — The Commons{% endblock %}
+{% block content %}
+<div class="form-layout">
+  <h2>Edit Profile</h2>
+  {% if error %}
+    <p class="error">{{ error }}</p>
+  {% endif %}
+  <form method="POST" action="/profile/edit">
+    <label>Username
+      <input type="text" name="username" value="{{ current_user.username }}" required>
+    </label>
+    <label>Bio
+      <textarea name="bio" maxlength="300">{{ current_user.bio or '' }}</textarea>
+    </label>
+    <label>Avatar URL
+      <input type="url" name="avatar_url" value="{{ current_user.avatar_url or '' }}" placeholder="https://...">
+    </label>
+    <button type="submit" class="btn-primary">Save</button>
+    <a href="/profile/{{ current_user.username }}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

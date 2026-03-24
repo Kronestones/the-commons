@@ -1,24 +1,15 @@
 {% extends "base.html" %}
-{% block title %}@{{ profile_user.username }} — The Commons{% endblock %}
+{% block title %}Feed — The Commons{% endblock %}
 {% block content %}
-<div class="profile-layout">
-  <div class="profile-header">
-    {% if profile_user.avatar_url %}
-      <img src="{{ profile_user.avatar_url }}" alt="avatar" class="profile-avatar">
-    {% endif %}
-    <h2>@{{ profile_user.username }}</h2>
-    {% if profile_user.bio %}
-      <p class="profile-bio">{{ profile_user.bio }}</p>
-    {% endif %}
-    {% if is_own %}
-      <a href="/profile/edit" class="btn-primary">Edit Profile</a>
-    {% endif %}
-  </div>
-  <div class="feed">
+<div class="feed-layout">
+  <div class="feed" id="feed">
     {% if posts %}
       {% for post in posts %}
       <div class="post-card">
         <div class="post-header">
+          <a href="/profile/{{ post.author.username if post.author else '#' }}" class="post-author">
+            @{{ post.author.username if post.author else 'unknown' }}
+          </a>
           <span class="post-time">{{ post.published_at.strftime("%b %d") if post.published_at else "" }}</span>
         </div>
         <div class="post-content">{{ post.content }}</div>
@@ -40,7 +31,11 @@
       </div>
       {% endfor %}
     {% else %}
-      <p class="empty-feed">No posts yet.</p>
+      <div class="empty-feed">
+        <h2>The Commons is open.</h2>
+        <p>Be the first to post.</p>
+        <a href="/register" class="btn-primary">Join</a>
+      </div>
     {% endif %}
   </div>
 </div>
