@@ -1,35 +1,15 @@
 {% extends "base.html" %}
-{% block title %}The Commons — Feed{% endblock %}
+{% block title %}The Commons — Power to the People{% endblock %}
 {% block content %}
-
-<div class="feed-layout">
-
-  <div class="feed" id="feed">
-    {% if posts %}
-      {% for post in posts %}
-      <div class="post-card">
-        <div class="post-header">
-          <span class="post-author">@{{ post.author.username if post.author else "unknown" }}</span>
-          <span class="post-time">{{ post.published_at.strftime("%b %d") if post.published_at else "" }}</span>
-        </div>
-        <div class="post-content">{{ post.content }}</div>
-        <div class="post-actions">
-          <button onclick="vote({{ post.id }}, 1)" class="vote-btn">↑ Valuable</button>
-          <span class="community-score">{{ post.community_score | int }}</span>
-          <button onclick="vote({{ post.id }}, -1)" class="vote-btn">↓</button>
-        </div>
-      </div>
-      {% endfor %}
-    {% else %}
-      <div class="empty-feed">
-        <h2>The Commons is open.</h2>
-        <p>Be the first to post.</p>
-        <a href="/register" class="btn-primary">Join</a>
-      </div>
-    {% endif %}
+<div class="landing">
+  <div class="landing-hero">
+    <h1>The Commons</h1>
+    <p class="landing-slogan">The first and only social media platform dedicated to redistributing the wealth.</p>
+    <p class="landing-sub">No advertising. No data selling. No biometrics. Power to the People.</p>
+    <div class="landing-actions">
+      <a href="/register" class="btn-primary">Join The Commons</a>
+      <a href="/login" class="btn-secondary">Sign In</a>
+    </div>
   </div>
-
 </div>
-
 {% endblock %}
-{% block scripts %}{% endblock %}

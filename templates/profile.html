@@ -11,9 +11,26 @@
       <p class="profile-bio">{{ profile_user.bio }}</p>
     {% endif %}
     {% if is_own %}
-      <a href="/profile/edit" class="btn-primary">Edit Profile</a>
+      <a href="/profile/edit" class="btn-secondary">Edit Profile</a>
     {% endif %}
   </div>
+
+  {% if is_own %}
+  <div class="post-compose">
+    <form method="POST" action="/api/posts" id="post-form">
+      <textarea name="content" placeholder="Share something with The Commons..." maxlength="10000" required></textarea>
+      <div class="compose-actions">
+        <select name="post_type">
+          <option value="text">Text</option>
+          <option value="image">Image</option>
+          <option value="video">Video</option>
+        </select>
+        <button type="submit" class="btn-primary">Post</button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
   <div class="feed">
     {% if posts %}
       {% for post in posts %}
@@ -40,7 +57,7 @@
       </div>
       {% endfor %}
     {% else %}
-      <p class="empty-feed">No posts yet.</p>
+      <p class="empty-feed">No posts yet. Say something! 👋</p>
     {% endif %}
   </div>
 </div>

@@ -154,18 +154,12 @@ def attach_vote_data(posts_list, current_user, db):
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user_from_cookie(request, db)
-    recent_posts = (
-        db.query(Post)
-        .filter(Post.status == PostStatus.PUBLISHED)
-        .order_by(Post.published_at.desc())
-        .limit(20)
-        .all()
-    )
-    attach_vote_data(recent_posts, current_user, db)
+    if current_user:
+        return RedirectResponse("/feed", status_code=302)
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"posts": recent_posts, "version": VERSION, "current_user": current_user}
+        context={"version": VERSION, "current_user": None}
     )
 
 @app.get("/register", response_class=HTMLResponse)
@@ -406,7 +400,7 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
         if not user:
             return HTMLResponse("<h2>Account not found.</h2>")
         jwt_token = create_token(user.id, user.username)
-        response = RedirectResponse(url=f"/profile/{user.username}?tk={jwt_token}&un={user.username}")
+        response = RedirectResponse(url="/feed")
         response.set_cookie("token",    jwt_token,     httponly=False, max_age=60*60*24*30)
         response.set_cookie("username", user.username, httponly=False, max_age=60*60*24*30)
         return response
