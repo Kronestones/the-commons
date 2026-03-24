@@ -288,11 +288,11 @@ function togglePassword(inputId, btn) {
 
 // -- Create Post
 async function createPost() {
-  const dbg = localStorage.getItem("token"); alert("TOKEN:" + (dbg ? dbg.substring(0,10) : "NULL"));
   const token = getToken();
-  if (!token) { showMessage('Please sign in first.', true); return; }
+  if (!token) { alert('No token!'); return; }
   const content = document.getElementById('post-content').value.trim();
-  if (!content) { showMessage('Write something first.', true); return; }
+  if (!content) { alert('No content!'); return; }
+  alert('Sending post...');
   try {
     const form = new FormData();
     form.append('content', content);
@@ -302,15 +302,10 @@ async function createPost() {
       headers: { 'Authorization': 'Bearer ' + token },
       body: form
     });
+    alert('Response status: ' + res.status);
     const data = await res.json();
-    if (data.ok) {
-      showMessage('Posted!');
-      document.getElementById('post-content').value = '';
-      setTimeout(() => location.reload(), 1000);
-    } else {
-      showMessage(data.detail || data.error || 'Failed to post.', true);
-    }
+    alert('Response: ' + JSON.stringify(data));
   } catch(e) {
-    showMessage('Error: ' + e.message, true);
+    alert('Error: ' + e.message);
   }
 }
