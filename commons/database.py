@@ -5,7 +5,7 @@ SQLite for development. PostgreSQL ready for production.
 All state written to disk. Nothing held only in memory.
 """
 
-from sqlalchemy import (
+from sqlalchemy import UniqueConstraint, (
     create_engine, Column, Integer, String, Text, Boolean,
     DateTime, Float, ForeignKey, Enum
 )
@@ -103,7 +103,8 @@ class Post(Base):
     author          = relationship("User", back_populates="posts")
     fingerprint     = relationship("FingerprintRecord", back_populates="post", uselist=False)
     community_votes = relationship
-    avatar_url = Column(String, default='')("CommunityVote", back_populates="post")
+    avatar_url = Column(String, default='')
+    community_votes = relationship("CommunityVote", back_populates="post")
     product_tags    = relationship("ProductTag", back_populates="post")
 
 
