@@ -5,18 +5,41 @@
 
   {% if current_user %}
   <div class="post-compose">
-    <form method="POST" action="/api/posts" id="post-form">
-      <textarea name="content" placeholder="What's on your mind? Share with The Commons..." maxlength="10000" required></textarea>
-      <div class="compose-actions">
-        <select name="post_type">
-          <option value="text">Text</option>
-          <option value="image">Image</option>
-          <option value="video">Video</option>
-        </select>
-        <button type="submit" class="btn-primary">Post</button>
-      </div>
-    </form>
+    <textarea id="post-content" placeholder="What's on your mind? Share with The Commons..." maxlength="10000"></textarea>
+    <div class="compose-actions">
+      <select id="post-type">
+        <option value="text">Text</option>
+        <option value="image">Image</option>
+        <option value="video">Video</option>
+      </select>
+      <button onclick="submitPost()" class="btn-primary">Post</button>
+    </div>
+    <div id="post-error" style="color:red;display:none;"></div>
   </div>
+  <script>
+  async function submitPost() {
+    const content = document.getElementById("post-content").value;
+    const post_type = document.getElementById("post-type").value;
+    if (!content.trim()) return;
+    const body = new FormData();
+    body.append("content", content);
+    body.append("post_type", post_type);
+    const token = document.cookie.split(";").find(c => c.trim().startsWith("token="));
+    const tok = token ? token.trim().split("=")[1] : "";
+    const res = await fetch("/api/posts", {
+      method: "POST",
+      headers: tok ? {"Authorization": "Bearer " + tok} : {},
+      body: body
+    });
+    const data = await res.json();
+    if (data.ok) {
+      window.location.reload();
+    } else {
+      document.getElementById("post-error").style.display = "block";
+      document.getElementById("post-error").innerText = data.error || "Post failed.";
+    }
+  }
+  </script>
   {% endif %}
 
   <div class="feed" id="feed">
