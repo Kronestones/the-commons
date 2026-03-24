@@ -5,9 +5,9 @@ SQLite for development. PostgreSQL ready for production.
 All state written to disk. Nothing held only in memory.
 """
 
-from sqlalchemy import UniqueConstraint, (
-    create_engine, Column, Integer, String, Text, Boolean,
-    DateTime, Float, ForeignKey, Enum
+from sqlalchemy import (
+    UniqueConstraint, create_engine, Column, Integer, String,
+    Text, Boolean, DateTime, Float, ForeignKey, Enum
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
