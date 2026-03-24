@@ -20,13 +20,14 @@ from fastapi import FastAPI, Request, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
+from sqlalchemy import UniqueConstraint
+from sqlalchemy.orm import Session, relationship
 
 # ── Parse args ────────────────────────────────────────────────────────────────
 
 parser = argparse.ArgumentParser(description="The Commons — A public platform for the people")
-parser.add_argument("--check", action="store_true", help="Check configuration and exit")
-parser.add_argument("--dev",   action="store_true", help="Development mode")
+parser.add_argument("--check",   action="store_true", help="Check configuration and exit")
+parser.add_argument("--dev",     action="store_true", help="Development mode")
 parser.add_argument("--version", action="store_true", help="Print version and exit")
 args = parser.parse_args()
 
@@ -39,23 +40,37 @@ if args.version:
 # ── Imports ───────────────────────────────────────────────────────────────────
 
 from commons.email_auth import generate_magic_token, verify_magic_token, send_magic_link, MagicToken
-from commons.config   import config
-from commons.database import init_db, get_db, User, Post, PostStatus
-from commons.codex    import TheCommonsCodex
-from commons.auth     import (register_user, login_user, get_current_user,
-                               get_current_user_optional, create_token)
-from commons.posts    import posts
-from commons.circle   import circle
-from commons.fingerprint import fingerprint
-from commons.commerce    import commerce
-from commons.resilience  import heartbeat, revival
-from commons.preferences import preference_engine, WatchEvent
-from commons.surplus     import surplus_manager
-from commons.security    import (
+from commons.config     import config
+from commons.database   import init_db, get_db, User, Post, PostStatus, Base, engine
+from commons.codex      import TheCommonsCodex
+from commons.auth       import (register_user, login_user, get_current_user,
+                                get_current_user_optional, create_token)
+from commons.posts      import posts
+from commons.circle     import circle
+from commons.fingerprint    import fingerprint
+from commons.commerce       import commerce
+from commons.resilience     import heartbeat, revival
+from commons.preferences    import preference_engine, WatchEvent
+from commons.surplus        import surplus_manager
+from commons.security       import (
     SecurityHeadersMiddleware, RequestSizeLimitMiddleware,
     RateLimitMiddleware, rate_limiter, sanitizer, get_client_ip,
     enforce_rate_limit
 )
+
+# ── Vote model ────────────────────────────────────────────────────────────────
+
+from sqlalchemy import Column, Integer, ForeignKey
+
+class Vote(Base):
+    __tablename__ = "votes"
+    id      = Column(Integer, primary_key=True)
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    value   = Column(Integer, nullable=False)
+    __table_args__ = (
+        UniqueConstraint("post_id", "user_id", name="one_vote_per_post"),
+    )
 
 # ── Check ─────────────────────────────────────────────────────────────────────
 
@@ -72,7 +87,6 @@ app = FastAPI(
     docs_url    = "/api/docs" if config.debug else None,
 )
 
-# ── Security Middleware ───────────────────────────────────────────────────────
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware)
 app.add_middleware(RateLimitMiddleware)
@@ -85,19 +99,13 @@ templates = Jinja2Templates(directory="templates")
 
 @app.on_event("startup")
 async def startup():
-    # Revival check — detects unclean shutdown, runs recovery
     revival.startup_check()
-
     init_db()
-
-    # Start heartbeat — writes pulse every 30s so we know if we crash
-    heartbeat.start()
-
-    # Register preference tables
-    from commons.preferences import UserTopicPreference, UserCreatorAffinity, UserContentTypePreference, WatchEvent
-    from commons.database import Base, engine
     Base.metadata.create_all(bind=engine)
-
+    heartbeat.start()
+    from commons.preferences import (UserTopicPreference, UserCreatorAffinity,
+                                      UserContentTypePreference, WatchEvent)
+    Base.metadata.create_all(bind=engine)
     print()
     print("╔══════════════════════════════════════════════════════╗")
     print("║              T H E   C O M M O N S                  ║")
@@ -113,15 +121,39 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
-    # Write clean shutdown marker so watchdog knows this was intentional
     heartbeat.stop()
     print("[THE COMMONS] Clean shutdown. The platform is pausing — not ending.")
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def get_current_user_from_cookie(request: Request, db: Session):
+    token = request.cookies.get("token")
+    if not token:
+        return None
+    try:
+        return get_current_user_optional(db, token)
+    except Exception:
+        return None
+
+def attach_vote_data(posts_list, current_user, db):
+    for p in posts_list:
+        ups   = db.query(Vote).filter_by(post_id=p.id, value=1).count()
+        downs = db.query(Vote).filter_by(post_id=p.id, value=-1).count()
+        p.vote_score = ups - downs
+        p.up_count   = ups
+        p.down_count = downs
+        if current_user:
+            v = db.query(Vote).filter_by(post_id=p.id, user_id=current_user.id).first()
+            p.user_voted = v.value if v else 0
+        else:
+            p.user_voted = 0
+    return posts_list
 
 # ── Pages ─────────────────────────────────────────────────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: Session = Depends(get_db)):
-    # Get recent published posts for the landing feed
+    current_user = get_current_user_from_cookie(request, db)
     recent_posts = (
         db.query(Post)
         .filter(Post.status == PostStatus.PUBLISHED)
@@ -129,31 +161,87 @@ async def home(request: Request, db: Session = Depends(get_db)):
         .limit(20)
         .all()
     )
+    attach_vote_data(recent_posts, current_user, db)
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"posts": recent_posts, "version": VERSION}
+        context={"posts": recent_posts, "version": VERSION, "current_user": current_user}
     )
 
 @app.get("/register", response_class=HTMLResponse)
-async def register_page(request: Request):
-    return templates.TemplateResponse(request=request, name="register.html")
+async def register_page(request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    return templates.TemplateResponse(request=request, name="register.html", context={"current_user": current_user})
 
 @app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    return templates.TemplateResponse(request=request, name="login.html")
+async def login_page(request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    return templates.TemplateResponse(request=request, name="login.html", context={"current_user": current_user})
 
 @app.get("/codex", response_class=HTMLResponse)
-async def codex_page(request: Request):
+async def codex_page(request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
     return templates.TemplateResponse(
         request=request,
         name="codex.html",
-        context={"codex": TheCommonsCodex, "sources": fingerprint.get_verified_sources()}
+        context={"codex": TheCommonsCodex, "sources": fingerprint.get_verified_sources(), "current_user": current_user}
     )
 
+@app.get("/feed", response_class=HTMLResponse)
+async def feed_page(request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    feed_posts = (
+        db.query(Post)
+        .filter(Post.status == PostStatus.PUBLISHED)
+        .order_by(Post.published_at.desc())
+        .limit(50)
+        .all()
+    )
+    attach_vote_data(feed_posts, current_user, db)
+    return templates.TemplateResponse(
+        request=request,
+        name="feed.html",
+        context={"posts": feed_posts, "current_user": current_user}
+    )
+
+@app.get("/profile/edit", response_class=HTMLResponse)
+async def profile_edit_page(request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+    return templates.TemplateResponse(request=request, name="profile_edit.html", context={"current_user": current_user})
+
+@app.post("/profile/edit", response_class=HTMLResponse)
+async def profile_edit_save(
+    request:    Request,
+    username:   str = Form(...),
+    bio:        str = Form(default=""),
+    avatar_url: str = Form(default=""),
+    db: Session = Depends(get_db)
+):
+    current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+    bio        = bio.strip()[:300]
+    avatar_url = avatar_url.strip()[:500]
+    new_username = username.strip()
+    if new_username and new_username != current_user.username:
+        clash = db.query(User).filter(User.username == new_username).first()
+        if clash:
+            return templates.TemplateResponse(
+                request=request,
+                name="profile_edit.html",
+                context={"current_user": current_user, "error": "That username is already taken."}
+            )
+        current_user.username = new_username
+    current_user.bio        = bio
+    current_user.avatar_url = avatar_url
+    db.commit()
+    return RedirectResponse(f"/profile/{current_user.username}", status_code=302)
 
 @app.get("/profile/{username}", response_class=HTMLResponse)
 async def profile_page(username: str, request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
     profile_user = db.query(User).filter(User.username == username).first()
     if not profile_user:
         return HTMLResponse("<h2>User not found.</h2>", status_code=404)
@@ -165,15 +253,68 @@ async def profile_page(username: str, request: Request, db: Session = Depends(ge
         .limit(50)
         .all()
     )
+    attach_vote_data(user_posts, current_user, db)
     return templates.TemplateResponse(
         request=request,
         name="profile.html",
-        context={"profile_user": profile_user, "posts": user_posts}
+        context={
+            "profile_user": profile_user,
+            "posts":        user_posts,
+            "current_user": current_user,
+            "is_own":       current_user and current_user.id == profile_user.id,
+        }
     )
 
 @app.get("/marketplace", response_class=HTMLResponse)
 async def marketplace_page(request: Request, db: Session = Depends(get_db)):
-    return templates.TemplateResponse(request=request, name="marketplace.html")
+    current_user = get_current_user_from_cookie(request, db)
+    return templates.TemplateResponse(request=request, name="marketplace.html", context={"current_user": current_user})
+
+@app.get("/giving", response_class=HTMLResponse)
+async def giving_page(request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    record = surplus_manager.get_public_record(db)
+    return templates.TemplateResponse(
+        request=request,
+        name="giving.html",
+        context={"donations": record, "codex": TheCommonsCodex, "current_user": current_user}
+    )
+
+# ── Voting ────────────────────────────────────────────────────────────────────
+
+@app.post("/post/{post_id}/vote", response_class=HTMLResponse)
+async def vote_on_post(
+    post_id: int,
+    request: Request,
+    value:   int = Form(...),
+    db: Session = Depends(get_db)
+):
+    current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        return HTMLResponse("Post not found", status_code=404)
+    existing = db.query(Vote).filter_by(post_id=post_id, user_id=current_user.id).first()
+    if existing:
+        if existing.value == value:
+            db.delete(existing)
+        else:
+            existing.value = value
+    else:
+        db.add(Vote(post_id=post_id, user_id=current_user.id, value=value))
+    db.commit()
+    referer = request.headers.get("referer", "/feed")
+    return RedirectResponse(referer, status_code=302)
+
+# ── Logout ────────────────────────────────────────────────────────────────────
+
+@app.get("/logout")
+async def logout():
+    response = RedirectResponse("/", status_code=302)
+    response.delete_cookie("token")
+    response.delete_cookie("username")
+    return response
 
 # ── Auth API ──────────────────────────────────────────────────────────────────
 
@@ -182,7 +323,7 @@ async def api_register(
     request:      Request,
     username:     str  = Form(...),
     email:        str  = Form(...),
-    password:     str   = Form(default=""),
+    password:     str  = Form(default=""),
     display_name: str  = Form(default=""),
     is_minor:     bool = Form(default=False),
     db: Session = Depends(get_db)
@@ -192,23 +333,17 @@ async def api_register(
         enforce_rate_limit(ip, "register")
     except Exception:
         pass
-
-    # Sanitize all inputs
     u = sanitizer.sanitize_username(username)
     if not u["ok"]:
         return JSONResponse({"ok": False, "error": u["error"]}, status_code=400)
-
     e = sanitizer.sanitize_email(email)
     if not e["ok"]:
         return JSONResponse({"ok": False, "error": e["error"]}, status_code=400)
-
     d = sanitizer.sanitize_text(display_name or username, max_length=100)
     if not d["ok"]:
         return JSONResponse({"ok": False, "error": d["error"]}, status_code=400)
-
     try:
-        result = register_user(db, u["value"], e["value"], "",
-                               d["value"], is_minor)
+        result = register_user(db, u["value"], e["value"], "", d["value"], is_minor)
         if not result["ok"]:
             return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
         token = generate_magic_token(e["value"], db)
@@ -225,7 +360,7 @@ async def api_register(
 async def api_login(
     request:  Request,
     username: str = Form(...),
-    password:     str   = Form(default=""),
+    password: str = Form(default=""),
     db: Session = Depends(get_db)
 ):
     try:
@@ -233,24 +368,50 @@ async def api_login(
         enforce_rate_limit(ip, "login")
     except Exception:
         pass
-
-    # Sanitize inputs
     u = sanitizer.sanitize_username(username)
     if not u["ok"]:
         return JSONResponse({"ok": False, "error": u["error"]}, status_code=400)
-
     result = login_user(db, u["value"], password)
     if not result["ok"]:
         return JSONResponse({"ok": False, "error": result["error"]}, status_code=401)
-
-    # Clear login cooldown on success
     rate_limiter.clear_cooldown(ip, "login")
-
     return JSONResponse({
         "ok":    True,
         "token": result["token"],
         "user":  {"id": result["user"].id, "username": result["user"].username}
     })
+
+@app.post("/auth/magic/request")
+async def request_magic_link(
+    request: Request,
+    email:   str = Form(...),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email.lower().strip()).first()
+    if not user:
+        return JSONResponse({"ok": False, "error": "No account with that email."}, status_code=400)
+    token = generate_magic_token(email.lower().strip(), db)
+    sent  = send_magic_link(email.lower().strip(), token)
+    if not sent:
+        return JSONResponse({"ok": False, "error": "Failed to send email. Please try again."}, status_code=500)
+    return JSONResponse({"ok": True, "message": "Check your email for a sign-in link."})
+
+@app.get("/auth/magic")
+async def verify_magic_link(token: str, db: Session = Depends(get_db)):
+    try:
+        email = verify_magic_token(token, db)
+        if not email:
+            return HTMLResponse("<h2>This link has expired or is invalid. Please request a new one.</h2>")
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            return HTMLResponse("<h2>Account not found.</h2>")
+        jwt_token = create_token(user.id, user.username)
+        response = RedirectResponse(url=f"/profile/{user.username}?tk={jwt_token}&un={user.username}")
+        response.set_cookie("token",    jwt_token,     httponly=False, max_age=60*60*24*30)
+        response.set_cookie("username", user.username, httponly=False, max_age=60*60*24*30)
+        return response
+    except Exception as e:
+        return HTMLResponse(f"<h2>Error: {str(e)}</h2>")
 
 # ── Posts API ─────────────────────────────────────────────────────────────────
 
@@ -266,24 +427,15 @@ async def api_create_post(
 ):
     ip = get_client_ip(request)
     enforce_rate_limit(ip, "post")
-
-    # Sanitize content
     c = sanitizer.sanitize_text(content, max_length=10000)
     if not c["ok"]:
         return JSONResponse({"ok": False, "error": c["error"]}, status_code=400)
-
-    # Validate post type
     allowed_types = {"text", "image", "video", "audio", "live"}
     if post_type not in allowed_types:
         return JSONResponse({"ok": False, "error": "Invalid post type."}, status_code=400)
-
-    result = posts.create(db, current_user, post_type,
-                          content=c["value"],
-                          is_news=is_news,
-                          is_political=is_political)
+    result = posts.create(db, current_user, post_type, content=c["value"], is_news=is_news, is_political=is_political)
     if not result["ok"]:
         return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
-
     post = result["post"]
     return JSONResponse({
         "ok":      True,
@@ -306,14 +458,14 @@ async def api_feed(
     feed = []
     for post in result["posts"]:
         feed.append({
-            "id":            post.id,
-            "author":        post.author.username if post.author else "unknown",
-            "content":       post.content,
-            "post_type":     post.post_type.value,
+            "id":              post.id,
+            "author":          post.author.username if post.author else "unknown",
+            "content":         post.content,
+            "post_type":       post.post_type.value,
             "community_score": post.community_score,
-            "view_count":    post.view_count,
-            "published_at":  post.published_at.isoformat() if post.published_at else None,
-            "reason":        posts.get_feed_reason(post, current_user),
+            "view_count":      post.view_count,
+            "published_at":    post.published_at.isoformat() if post.published_at else None,
+            "reason":          posts.get_feed_reason(post, current_user),
         })
     return JSONResponse({"ok": True, "feed": feed, "mode": result["mode"].value})
 
@@ -327,7 +479,7 @@ async def api_vote(
     result = posts.cast_community_vote(db, current_user, post_id, value)
     return JSONResponse(result)
 
-# ── Fingerprint API (Circle only) ─────────────────────────────────────────────
+# ── Fingerprint API ───────────────────────────────────────────────────────────
 
 @app.get("/api/fingerprint/pending")
 async def api_fingerprint_pending(
@@ -355,9 +507,7 @@ async def api_fingerprint_review(
 ):
     if current_user.role.value not in ("circle", "sovereign"):
         raise HTTPException(403, "Circle access required")
-    result = fingerprint.human_review(
-        db, post_id, current_user.username, decision, reason, notes
-    )
+    result = fingerprint.human_review(db, post_id, current_user.username, decision, reason, notes)
     return JSONResponse(result)
 
 # ── Circle API ────────────────────────────────────────────────────────────────
@@ -369,7 +519,6 @@ async def api_appeal(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Verify the poster is the one appealing
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post or post.author_id != current_user.id:
         raise HTTPException(403, "You can only appeal your own posts.")
@@ -379,14 +528,13 @@ async def api_appeal(
 @app.get("/api/codex")
 async def api_codex():
     return JSONResponse({
-        "ok":       True,
-        "platform": TheCommonsCodex.PLATFORM,
-        "spirit":   TheCommonsCodex.SPIRIT,
+        "ok":        True,
+        "platform":  TheCommonsCodex.PLATFORM,
+        "spirit":    TheCommonsCodex.SPIRIT,
         "sovereign": TheCommonsCodex.SOVEREIGN,
-        "laws":     TheCommonsCodex.LAWS,
-        "sources":  fingerprint.get_verified_sources(),
+        "laws":      TheCommonsCodex.LAWS,
+        "sources":   fingerprint.get_verified_sources(),
     })
-
 
 # ── Preference API ────────────────────────────────────────────────────────────
 
@@ -395,10 +543,6 @@ async def api_get_preferences(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """
-    Get your full preference profile.
-    Transparent — you can see exactly what The Commons knows about your interests.
-    """
     profile = preference_engine.get_profile(db, current_user.id)
     return JSONResponse({
         "ok":      True,
@@ -411,18 +555,16 @@ async def api_reset_preferences(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Reset your preference profile completely. Fresh start."""
     result = preference_engine.reset_preferences(db, current_user.id)
     return JSONResponse(result)
 
 @app.post("/api/posts/{post_id}/watch")
 async def api_record_watch(
-    post_id:      int,
+    post_id:       int,
     watch_percent: float = Form(...),
-    current_user: User = Depends(get_current_user),
+    current_user:  User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Record how much of a video the user watched."""
     post = db.query(Post).filter(Post.id == post_id).first()
     if not post:
         raise HTTPException(404, "Post not found")
@@ -437,10 +579,6 @@ async def api_personalized_feed(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """
-    Personalized feed — learns from what you value.
-    Every post shows why it was chosen. Nothing is hidden.
-    """
     results = preference_engine.get_personalized_feed(db, current_user, limit, offset)
     feed = []
     for item in results:
@@ -458,19 +596,10 @@ async def api_personalized_feed(
         })
     return JSONResponse({"ok": True, "feed": feed, "mode": "personalized"})
 
-
-# ── Surplus Donation API ──────────────────────────────────────────────────────
-
-@app.get("/giving")
-async def giving_page(request: Request, db: Session = Depends(get_db)):
-    """Public page showing every donation ever made. Full transparency."""
-    record = surplus_manager.get_public_record(db)
-    return templates.TemplateResponse(request=request, name="giving.html", context={"donations": record,
-        "codex": TheCommonsCodex})
+# ── Giving API ────────────────────────────────────────────────────────────────
 
 @app.get("/api/giving")
 async def api_giving(db: Session = Depends(get_db)):
-    """Public API — full donation history."""
     return JSONResponse({
         "ok":        True,
         "donations": surplus_manager.get_public_record(db),
@@ -490,7 +619,6 @@ async def api_designate_donation(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Sovereign Human T.L. Powers designates a humanitarian cause."""
     if current_user.role.value != "sovereign":
         raise HTTPException(403, "Sovereign authority required. Codex Law 17.")
     from datetime import datetime
@@ -498,12 +626,8 @@ async def api_designate_donation(
         db,
         datetime.fromisoformat(period_start),
         datetime.fromisoformat(period_end),
-        operating_costs,
-        total_collected,
-        cause_name,
-        cause_url,
-        cause_description,
-        public_note,
+        operating_costs, total_collected,
+        cause_name, cause_url, cause_description, public_note,
     )
     return JSONResponse(result)
 
@@ -513,51 +637,30 @@ async def api_confirm_donation(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Confirm donation was sent."""
     if current_user.role.value != "sovereign":
         raise HTTPException(403, "Sovereign authority required.")
     result = surplus_manager.confirm_donation(db, donation_id)
     return JSONResponse(result)
 
-# ── Health ────────────────────────────────────────────────────────────────────
-
-@app.get("/health")
-async def health():
-    return {"status": "ok", "platform": "The Commons", "spirit": "Power to the People"}
-
-# ── Run ───────────────────────────────────────────────────────────────────────
-
-if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host    = config.host,
-        port    = config.port,
-        reload  = config.debug,
-        workers = 1 if config.debug else 4,
-    )
-
 # ── Marketplace API ───────────────────────────────────────────────────────────
 
 @app.get("/api/marketplace")
-async def api_marketplace(
-    limit:  int = 40,
-    offset: int = 0,
-    db: Session = Depends(get_db)
-):
+async def api_marketplace(limit: int = 40, offset: int = 0, db: Session = Depends(get_db)):
     products = commerce.get_marketplace(db, limit, offset)
     result = []
     for p in products:
-        seller = db.query(__import__('commons.database', fromlist=['SellerProfile']).SellerProfile).filter_by(id=p.seller_id).first()
+        from commons.database import SellerProfile
+        seller = db.query(SellerProfile).filter_by(id=p.seller_id).first()
         seller_user = db.query(User).filter_by(id=seller.user_id).first() if seller else None
         result.append({
-            "id":            p.id,
-            "name":          p.name,
-            "description":   p.description,
-            "price":         p.price,
-            "media_path":    p.media_path,
+            "id":              p.id,
+            "name":            p.name,
+            "description":     p.description,
+            "price":           p.price,
+            "media_path":      p.media_path,
             "community_score": p.community_score,
-            "seller":        seller_user.username if seller_user else "unknown",
-            "business_type": seller.business_type if seller else "unknown",
+            "seller":          seller_user.username if seller_user else "unknown",
+            "business_type":   seller.business_type if seller else "unknown",
         })
     return JSONResponse({"ok": True, "products": result})
 
@@ -594,27 +697,18 @@ async def api_list_product(
 
 @app.post("/api/marketplace/purchase")
 async def api_purchase(
-    product_ids:  str  = Form(...),  # comma-separated: "1,2,3"
+    product_ids:  str  = Form(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """
-    One order = one $1 fee. No matter how many items.
-    Pass product_ids as comma-separated string: "1" or "1,2,3"
-    """
     try:
         ids = [int(x.strip()) for x in product_ids.split(",") if x.strip()]
     except ValueError:
         return JSONResponse({"ok": False, "error": "Invalid product IDs."}, status_code=400)
-
     result = commerce.initiate_purchase(db, current_user, ids)
     if not result["ok"]:
         return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
-    return JSONResponse({
-        "ok":        True,
-        "breakdown": result["breakdown"],
-        "order_id":  result["order"].id,
-    })
+    return JSONResponse({"ok": True, "breakdown": result["breakdown"], "order_id": result["order"].id})
 
 @app.post("/api/marketplace/seller/register")
 async def api_register_seller(
@@ -629,10 +723,7 @@ async def api_register_seller(
     return JSONResponse({"ok": True})
 
 @app.get("/api/marketplace/stats/platform")
-async def api_platform_stats(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
+async def api_platform_stats(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if current_user.role.value not in ("circle", "sovereign"):
         raise HTTPException(403, "Circle access required")
     return JSONResponse(commerce.platform_stats(db))
@@ -651,37 +742,19 @@ async def api_set_algorithm_mode(
     except ValueError:
         return JSONResponse({"ok": False, "error": "Invalid mode."}, status_code=400)
 
+# ── Health ────────────────────────────────────────────────────────────────────
 
-# --- Magic Link Auth ---
+@app.get("/health")
+async def health():
+    return {"status": "ok", "platform": "The Commons", "spirit": "Power to the People"}
 
-@app.post("/auth/magic/request")
-async def request_magic_link(
-    request: Request,
-    email: str = Form(...),
-    db: Session = Depends(get_db)
-):
-    user = db.query(User).filter(User.email == email.lower().strip()).first()
-    if not user:
-        return JSONResponse({"ok": False, "error": "No account with that email."}, status_code=400)
-    token = generate_magic_token(email.lower().strip(), db)
-    sent = send_magic_link(email.lower().strip(), token)
-    if not sent:
-        return JSONResponse({"ok": False, "error": "Failed to send email. Please try again."}, status_code=500)
-    return JSONResponse({"ok": True, "message": "Check your email for a sign-in link."})
+# ── Run ───────────────────────────────────────────────────────────────────────
 
-@app.get("/auth/magic")
-async def verify_magic_link(token: str, db: Session = Depends(get_db)):
-    try:
-        email = verify_magic_token(token, db)
-        if not email:
-            return HTMLResponse("<h2>This link has expired or is invalid. Please request a new one.</h2>")
-        user = db.query(User).filter(User.email == email).first()
-        if not user:
-            return HTMLResponse("<h2>Account not found.</h2>")
-        jwt_token = create_token(user.id, user.username)
-        response = RedirectResponse(url=f"/profile/{user.username}?tk={jwt_token}&un={user.username}")
-        response.set_cookie("token", jwt_token, httponly=False, max_age=60*60*24*30)
-        response.set_cookie("username", user.username, httponly=False, max_age=60*60*24*30)
-        return response
-    except Exception as e:
-        return HTMLResponse(f"<h2>Error: {str(e)}</h2>")
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host    = config.host,
+        port    = config.port,
+        reload  = config.debug,
+        workers = 1 if config.debug else 4,
+    )
