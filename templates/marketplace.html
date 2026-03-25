@@ -26,6 +26,9 @@
   <label>Photo
     <input type="file" id="product-photo" accept="image/*">
   </label>
+  <label>Photo
+    <input type="file" id="product-photo" accept="image/*">
+  </label>
   <p class="fee-note">Buyers pay your price + $1 platform fee. The $1 covers operating costs only. No profit taken.</p>
   <button onclick="listProduct()" class="btn-primary">List Product</button>
   <button onclick="hideListProduct()" class="btn-secondary">Cancel</button>
@@ -114,6 +117,8 @@ async function listProduct() {
   form.append('name',        document.getElementById('product-name').value);
   form.append('description', document.getElementById('product-desc').value);
   form.append('price',       document.getElementById('product-price').value);
+  const photo = document.getElementById('product-photo').files[0];
+  if (photo) form.append('photo', photo);
   const photo = document.getElementById('product-photo').files[0];
   if (photo) form.append('photo', photo);
   const res  = await fetch('/api/marketplace/products', {
