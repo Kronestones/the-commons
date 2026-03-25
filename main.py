@@ -678,13 +678,24 @@ async def api_get_product(product_id: int, db: Session = Depends(get_db)):
 
 @app.post("/api/marketplace/products")
 async def api_list_product(
+    request:     Request,
     name:        str   = Form(...),
     description: str   = Form(default=""),
     price:       float = Form(...),
+    photo:       UploadFile = File(default=None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    result = commerce.create_product(db, current_user, name, description, price)
+    media_path = None
+    if photo and photo.filename:
+        import shutil, uuid
+        ext = photo.filename.rsplit(".", 1)[-1].lower()
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        dest = config.media_dir / filename
+        with open(dest, "wb") as f:
+            shutil.copyfileobj(photo.file, f)
+        media_path = filename
+    result = commerce.create_product(db, current_user, name, description, price, media_path=media_path)
     if not result["ok"]:
         return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
     return JSONResponse({"ok": True, "product_id": result["product"].id})
