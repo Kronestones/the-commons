@@ -7,17 +7,26 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+
 {% include "nav.html" %}
+
 <div class="marketplace-container">
+
   <div class="marketplace-hero card">
     <h1>Marketplace</h1>
     <p class="giving-tagline">Local creators and small businesses only. No corporations. Flat $1 platform fee per transaction.</p>
     <p><strong>The marketplace is open.</strong></p>
   </div>
+
   <div class="marketplace-toolbar">
     <form method="GET" action="/marketplace" style="flex:1; display:flex; gap:0.5rem;">
-      <input type="text" name="q" value="{{ q }}" placeholder="Search listings…"
-             style="flex:1; padding:0.55rem 0.9rem; border:1px solid #ccc; border-radius:6px; font-size:0.95rem;">
+      <input
+        type="text"
+        name="q"
+        value="{{ q }}"
+        placeholder="Search listings…"
+        style="flex:1; padding:0.55rem 0.9rem; border:1px solid #ccc; border-radius:6px; font-size:0.95rem;"
+      >
       <button type="submit" class="btn" style="padding:0.55rem 1rem;">Search</button>
     </form>
     {% if current_user %}
@@ -27,6 +36,7 @@
       <a href="/login" class="btn-secondary">Log in to sell</a>
     {% endif %}
   </div>
+
   {% if listings %}
     <div class="listing-grid">
       {% for listing in listings %}
@@ -39,9 +49,17 @@
             {% endif %}
           </div>
           <div class="listing-body">
-            <div class="listing-price">{% if listing.price == 0 %}Free{% else %}${{ "%.2f"|format(listing.price) }}{% endif %}</div>
+            <div class="listing-price">
+              {% if listing.price == 0 %}Free{% else %}${{ "%.2f"|format(listing.price) }}{% endif %}
+            </div>
             <div class="listing-title">{{ listing.title }}</div>
-            <div class="listing-seller">{{ listing.seller.username }}</div>
+            <div class="listing-seller">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              {{ listing.seller.username }}
+            </div>
           </div>
         </a>
       {% endfor %}
@@ -57,6 +75,7 @@
       {% endif %}
     </div>
   {% endif %}
+
 </div>
 </body>
 </html>

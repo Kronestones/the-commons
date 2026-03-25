@@ -3,18 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ listing.title }} — The Commons</title>
+  <title>{{ listing.title }} — The Commons Marketplace</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+
 {% include "nav.html" %}
+
 <div class="marketplace-container" style="max-width:680px;">
-  <a href="/marketplace" class="btn-secondary" style="display:inline-block; margin-bottom:1rem;">← Back</a>
+
+  <a href="/marketplace" class="btn-secondary" style="display:inline-block; margin-bottom:1rem;">← Back to Marketplace</a>
+
   <div class="card" style="padding:0; overflow:hidden;">
+
     {% if listing.media_path %}
       <img src="{{ listing.media_path }}" alt="{{ listing.title }}"
            style="width:100%; max-height:360px; object-fit:cover; display:block;">
     {% endif %}
+
     <div style="padding:1.5rem;">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
         <div>
@@ -26,55 +32,83 @@
         {% if is_seller %}
           <form method="POST" action="/marketplace/{{ listing.id }}/delete"
                 onsubmit="return confirm('Delete this listing?');">
-            <button type="submit" class="btn-secondary"
-                    style="color:#c0392b; border-color:#c0392b; font-size:0.85rem;">Delete listing</button>
+            <button type="submit" class="btn-secondary" style="color:#c0392b; border-color:#c0392b; font-size:0.85rem;">
+              Delete listing
+            </button>
           </form>
         {% endif %}
       </div>
+
       <div class="listing-seller" style="margin-bottom:1rem;">
-        Listed by <a href="/profile/{{ listing.seller.username }}" class="username-link">{{ listing.seller.username }}</a>
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Listed by
+        <a href="/profile/{{ listing.seller.username }}" class="username-link">{{ listing.seller.username }}</a>
       </div>
+
       {% if listing.description %}
         <p style="color:#333; line-height:1.6; white-space:pre-wrap;">{{ listing.description }}</p>
       {% endif %}
     </div>
   </div>
+
   {% if current_user and not is_seller %}
     <div class="card" style="margin-top:1.25rem; padding:1.5rem;">
       <h3 class="section-heading" style="margin-top:0;">Message seller</h3>
       <div class="msg-thread" id="msg-thread">
         {% if thread %}
           {% for msg in thread %}
-            <div class="bubble {% if msg.sender_id == current_user.id %}sent{% else %}received{% endif %}">{{ msg.body }}</div>
+            <div class="bubble {% if msg.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+              {{ msg.body }}
+            </div>
           {% endfor %}
         {% else %}
-          <p class="muted" style="text-align:center; padding:1rem 0;">Ask a question — the seller will reply here.</p>
+          <p class="muted" style="text-align:center; padding:1rem 0;">
+            Ask a question — the seller will reply here.
+          </p>
         {% endif %}
       </div>
       <form method="POST" action="/marketplace/{{ listing.id }}/message"
             style="display:flex; gap:0.5rem; margin-top:0.75rem;">
-        <input type="text" name="body" placeholder="Is this still available?" required
-               style="flex:1; padding:0.6rem 1rem; border:1px solid #ccc; border-radius:24px; font-size:0.9rem; outline:none;">
+        <input
+          type="text"
+          name="body"
+          placeholder="Is this still available?"
+          required
+          style="flex:1; padding:0.6rem 1rem; border:1px solid #ccc; border-radius:24px; font-size:0.9rem; outline:none;"
+        >
         <button type="submit" class="btn" style="border-radius:24px; padding:0.6rem 1.2rem;">Send</button>
       </form>
     </div>
   {% elif is_seller and thread %}
     <div class="card" style="margin-top:1.25rem; padding:1.5rem;">
       <h3 class="section-heading" style="margin-top:0;">
-        Messages <a href="/marketplace/inbox" class="btn-secondary" style="font-size:0.8rem; margin-left:0.5rem;">View all</a>
+        Messages
+        <a href="/marketplace/inbox" class="btn-secondary" style="font-size:0.8rem; margin-left:0.5rem;">View all</a>
       </h3>
       <div class="msg-thread">
         {% for msg in thread %}
-          <div class="bubble {% if msg.sender_id == current_user.id %}sent{% else %}received{% endif %}">{{ msg.body }}</div>
+          <div class="bubble {% if msg.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+            {{ msg.body }}
+          </div>
         {% endfor %}
       </div>
     </div>
   {% elif not current_user %}
     <div class="card" style="margin-top:1.25rem; padding:1.5rem; text-align:center;">
-      <p class="muted"><a href="/login" class="username-link">Log in</a> to message the seller.</p>
+      <p class="muted">
+        <a href="/login" class="username-link">Log in</a> to message the seller.
+      </p>
     </div>
   {% endif %}
+
 </div>
-<script>const t=document.getElementById('msg-thread'); if(t) t.scrollTop=t.scrollHeight;</script>
+
+<script>
+  const thread = document.getElementById('msg-thread');
+  if (thread) thread.scrollTop = thread.scrollHeight;
+</script>
 </body>
 </html>
