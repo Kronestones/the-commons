@@ -131,7 +131,7 @@ def get_current_user_from_cookie(request: Request, db: Session):
     if not token:
         return None
     try:
-        return get_current_user_optional(db, token)
+        return get_current_user(db=db, token=token)
     except Exception:
         return None
 
