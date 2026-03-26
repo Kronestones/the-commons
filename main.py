@@ -48,7 +48,6 @@ from commons.auth       import (register_user, login_user, get_current_user,
 from commons.posts      import posts
 from commons.circle     import circle
 from commons.fingerprint    import fingerprint
-from commons.commerce       import commerce
 from commons.resilience     import heartbeat, revival
 from commons.preferences    import preference_engine, WatchEvent
 from commons.surplus        import surplus_manager
