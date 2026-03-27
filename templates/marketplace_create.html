@@ -1,67 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Post a Listing — The Commons</title>
-  <link rel="stylesheet" href="/static/css/main.css">
-</head>
-<body>
-
-{% include "nav.html" %}
-
-<div class="form-container">
-  <div class="card" style="padding:2rem;">
-    <h2 class="section-heading" style="margin-top:0;">Post a listing</h2>
-
-    {% if error %}
-      <div class="error-msg">{{ error }}</div>
-    {% endif %}
-
-    <form method="POST" action="/marketplace/create" enctype="multipart/form-data">
-
-      <label for="photo">Photo (optional)</label>
-      <input
-        type="file"
-        id="photo"
-        name="photo"
-        accept="image/*"
-        onchange="previewPhoto(this)"
-        style="display:block; margin-bottom:0.5rem;"
-      >
-      <img id="photo-preview" src="" alt="" style="display:none; width:120px; height:120px; object-fit:cover; border-radius:8px; margin-bottom:1rem; border:1px solid #ddd;">
-
-      <label for="title">Title *</label>
-      <input type="text" id="title" name="title" placeholder="What are you selling?" required>
-
-      <label for="price">Price ($)</label>
-      <input type="number" id="price" name="price" placeholder="0.00" min="0" step="0.01" value="0">
-      <small style="color:#888; display:block; margin-top:0.2rem; margin-bottom:0.8rem;">Enter 0 for free / donation.</small>
-
-      <label for="description">Description</label>
-      <textarea id="description" name="description" placeholder="Condition, size, pickup details…"></textarea>
-
-      <div style="margin-top:1.5rem; display:flex; gap:0.75rem; align-items:center;">
-        <button type="submit" class="btn">Post listing</button>
-        <a href="/marketplace" class="btn-secondary">Cancel</a>
-      </div>
-
-    </form>
-  </div>
+{% extends "base.html" %}
+{% block title %}Post a Listing — The Commons{% endblock %}
+{% block content %}
+<div class="form-layout">
+  <h2>Post a Listing</h2>
+  <p>Local creators and small businesses only. No corporations.</p>
+  {% if error %}
+    <p class="error">{{ error }}</p>
+  {% endif %}
+  <form method="POST" action="/marketplace/create" enctype="multipart/form-data">
+    <label>Title
+      <input type="text" name="title" maxlength="300" placeholder="What are you selling?" required>
+    </label>
+    <label>Description
+      <textarea name="description" rows="4" placeholder="Describe your item..."></textarea>
+    </label>
+    <label>Price ($) — enter 0 for free
+      <input type="number" name="price" min="0" max="10000" step="0.01" value="0.00">
+    </label>
+    <label>Photo
+      <input type="file" name="photo" accept="image/*">
+    </label>
+    <p class="fee-note">Buyers pay your price + $1 platform fee. The $1 covers operating costs only. No profit taken.</p>
+    <button type="submit" class="btn-primary">Post Listing</button>
+    <a href="/marketplace" class="btn-secondary">Cancel</a>
+  </form>
 </div>
-
-<script>
-function previewPhoto(input) {
-  const preview = document.getElementById('photo-preview');
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      preview.src = e.target.result;
-      preview.style.display = 'block';
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
-}
-</script>
-</body>
-</html>
+{% endblock %}

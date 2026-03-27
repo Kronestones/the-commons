@@ -1,42 +1,48 @@
 {% extends "base.html" %}
 {% block title %}Marketplace — The Commons{% endblock %}
 {% block content %}
-<div class="marketplace-header">
-  <h1>Marketplace</h1>
-  <p>Local creators and small businesses only. No corporations. Flat $1 platform fee per transaction.</p>
-  {% if current_user %}
-    <a href="/marketplace/create" class="btn-primary">+ List an Item</a>
-  {% endif %}
-</div>
-
-<form method="GET" action="/marketplace" class="search-form">
-  <input type="text" name="q" value="{{ q or '' }}" placeholder="Search listings...">
-  <button type="submit" class="btn-primary">Search</button>
-</form>
-
-<div class="products-grid">
+<div class="marketplace-container">
+  <div class="marketplace-hero">
+    <h1>Marketplace</h1>
+    <p>Local creators and small businesses only. No corporations. Flat $1 platform fee per transaction.</p>
+  </div>
+  <div class="marketplace-toolbar">
+    <form method="GET" action="/marketplace">
+      <input type="text" name="q" value="{{ q or '' }}" placeholder="Search listings...">
+      <button type="submit" class="btn-primary">Search</button>
+    </form>
+    {% if current_user %}
+      <a href="/marketplace/create" class="btn-primary">+ Post Listing</a>
+      <a href="/marketplace/inbox" class="btn-secondary">Inbox</a>
+    {% else %}
+      <a href="/login" class="btn-secondary">Sign in to sell</a>
+    {% endif %}
+  </div>
   {% if listings %}
-    {% for listing in listings %}
-    <a href="/marketplace/{{ listing.id }}" class="product-card">
-      {% if listing.media_path %}
-        <img src="/media/marketplace/{{ listing.media_path }}" class="product-image" alt="{{ listing.title }}">
-      {% else %}
-        <div class="product-no-image">📦</div>
-      {% endif %}
-      <div class="product-info">
-        <h3 class="product-name">{{ listing.title }}</h3>
-        <p class="product-seller">by @{{ listing.seller.username if listing.seller else 'unknown' }}</p>
-        <div class="product-footer">
-          <span class="product-price">${{ "%.2f"|format(listing.price) }}</span>
-          <span class="product-fee">+ $1.00 fee</span>
-        </div>
-      </div>
-    </a>
-    {% endfor %}
+    <div class="listing-grid">
+      {% for listing in listings %}
+        <a href="/marketplace/{{ listing.id }}" class="listing-card">
+          <div class="listing-img">
+            {% if listing.media_path %}
+              <img src="{{ listing.media_path }}" alt="{{ listing.title }}">
+            {% else %}
+              <span class="listing-img-placeholder">🛍️</span>
+            {% endif %}
+          </div>
+          <div class="listing-body">
+            <div class="listing-price">
+              {% if listing.price == 0 %}Free{% else %}${{ "%.2f"|format(listing.price) }}{% endif %}
+            </div>
+            <div class="listing-title">{{ listing.title }}</div>
+            <div class="listing-seller">@{{ listing.seller.username if listing.seller else 'unknown' }}</div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
   {% else %}
     <div class="empty-marketplace">
-      <h3>The marketplace is open.</h3>
-      <p>{% if q %}No listings match "{{ q }}"{% else %}Be the first to list a product.{% endif %}</p>
+      <div style="font-size:3rem;">🛍️</div>
+      <h3>{% if q %}No listings match "{{ q }}"{% else %}Be the first to list a product.{% endif %}</h3>
       {% if current_user %}
         <a href="/marketplace/create" class="btn-primary">Post a listing</a>
       {% endif %}

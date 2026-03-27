@@ -432,6 +432,113 @@ async def marketplace_create_post(
     description: str = Form(default=""),
     price: float = Form(default=0.0),
     photo: UploadFile = File(default=None),
+    db: Session = Depends(get_db)
+):
+    current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+    if not title.strip():
+        return templates.TemplateResponse("marketplace_create.html", {
+            "request": request, "current_user": current_user, "error": "Title is required.",
+        })
+    media_path = None
+    if photo and getattr(photo, "filename", None) and photo.filename:
+        ext = photo.filename.rsplit(".", 1)[-1].lower()
+        if ext in {"jpg", "jpeg", "png", "webp", "gif"}:
+            import uuid, shutil
+            fname = f"{uuid.uuid4().hex}.{ext}"
+            dest = f"static/media/marketplace/{fname}"
+            with open(dest, "wb") as f:
+                shutil.copyfileobj(photo.file, f)
+            media_path = f"/static/media/marketplace/{fname}"
+    db.add(Listing(title=title.strip(), description=description.strip(),
+                   price=price, media_path=media_path, seller_id=current_user.id))
+    db.commit()
+    return RedirectResponse("/marketplace", status_code=302)
+
+@app.get("/marketplace/inbox", response_class=HTMLResponse)
+async def marketplace_inbox(request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+    all_msgs = (db.query(ListingMessage)
+        .filter((ListingMessage.sender_id == current_user.id) |
+                (ListingMessage.recipient_id == current_user.id))
+        .order_by(ListingMessage.created_at.desc()).all())
+    seen = {}
+    threads = []
+    for m in all_msgs:
+        if m.listing_id not in seen:
+            seen[m.listing_id] = True
+            threads.append({"listing": m.listing, "last_message": m.body,
+                            "unread": (not m.is_read and m.recipient_id == current_user.id)})
+    return templates.TemplateResponse("marketplace_inbox.html", {
+        "request": request, "current_user": current_user, "threads": threads,
+    })
+
+@app.get("/marketplace/{listing_id}", response_class=HTMLResponse)
+async def marketplace_detail(listing_id: int, request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    listing = db.query(Listing).filter(Listing.id == listing_id).first()
+    if not listing:
+        return HTMLResponse("<h2>Listing not found.</h2>", status_code=404)
+    thread = []
+    if current_user:
+        thread = (db.query(ListingMessage)
+            .filter(ListingMessage.listing_id == listing_id,
+                    (ListingMessage.sender_id == current_user.id) |
+                    (ListingMessage.recipient_id == current_user.id))
+            .order_by(ListingMessage.created_at.asc()).all())
+        for m in thread:
+            if m.recipient_id == current_user.id and not m.is_read:
+                m.is_read = True
+        db.commit()
+    return templates.TemplateResponse("marketplace_detail.html", {
+        "request": request, "current_user": current_user,
+        "listing": listing, "thread": thread,
+        "is_seller": current_user and current_user.id == listing.seller_id,
+    })
+
+@app.post("/marketplace/{listing_id}/message")
+async def marketplace_send_message(listing_id: int, request: Request,
+    body: str = Form(...), db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+    listing = db.query(Listing).filter(Listing.id == listing_id).first()
+    if listing and listing.seller_id != current_user.id and body.strip():
+        db.add(ListingMessage(listing_id=listing_id, sender_id=current_user.id,
+                              recipient_id=listing.seller_id, body=body.strip()))
+        db.commit()
+    return RedirectResponse(f"/marketplace/{listing_id}", status_code=302)
+
+@app.post("/marketplace/{listing_id}/delete")
+async def marketplace_delete(listing_id: int, request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+    listing = db.query(Listing).filter(Listing.id == listing_id).first()
+    if listing and listing.seller_id == current_user.id:
+        db.delete(listing)
+        db.commit()
+    return RedirectResponse("/marketplace", status_code=302)
+
+@app.get("/marketplace/create", response_class=HTMLResponse)
+async def marketplace_create_get(request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+    return templates.TemplateResponse("marketplace_create.html", {
+        "request": request, "current_user": current_user, "error": None,
+    })
+
+@app.post("/marketplace/create", response_class=HTMLResponse)
+async def marketplace_create_post(
+    request: Request,
+    title: str = Form(...),
+    description: str = Form(default=""),
+    price: float = Form(default=0.0),
+    photo: UploadFile = File(default=None),
     db: Session = Depends(get_db),
 ):
     current_user = get_current_user_from_cookie(request, db)
