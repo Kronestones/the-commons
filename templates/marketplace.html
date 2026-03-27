@@ -1,81 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Marketplace — The Commons</title>
-  <link rel="stylesheet" href="/static/css/main.css">
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Marketplace — The Commons{% endblock %}
+{% block content %}
+<div class="marketplace-header">
+  <h1>Marketplace</h1>
+  <p>Local creators and small businesses only. No corporations. Flat $1 platform fee per transaction.</p>
+  {% if current_user %}
+    <a href="/marketplace/create" class="btn-primary">+ List an Item</a>
+  {% endif %}
+</div>
 
-{% include "nav.html" %}
+<form method="GET" action="/marketplace" class="search-form">
+  <input type="text" name="q" value="{{ q or '' }}" placeholder="Search listings...">
+  <button type="submit" class="btn-primary">Search</button>
+</form>
 
-<div class="marketplace-container">
-
-  <div class="marketplace-hero card">
-    <h1>Marketplace</h1>
-    <p class="giving-tagline">Local creators and small businesses only. No corporations. Flat $1 platform fee per transaction.</p>
-    <p><strong>The marketplace is open.</strong></p>
-  </div>
-
-  <div class="marketplace-toolbar">
-    <form method="GET" action="/marketplace" style="flex:1; display:flex; gap:0.5rem;">
-      <input
-        type="text"
-        name="q"
-        value="{{ q }}"
-        placeholder="Search listings…"
-        style="flex:1; padding:0.55rem 0.9rem; border:1px solid #ccc; border-radius:6px; font-size:0.95rem;"
-      >
-      <button type="submit" class="btn" style="padding:0.55rem 1rem;">Search</button>
-    </form>
-    {% if current_user %}
-      <a href="/marketplace/create" class="btn" style="white-space:nowrap;">+ Post listing</a>
-      <a href="/marketplace/inbox" class="btn-secondary" style="white-space:nowrap;">Inbox</a>
-    {% else %}
-      <a href="/login" class="btn-secondary">Log in to sell</a>
-    {% endif %}
-  </div>
-
+<div class="products-grid">
   {% if listings %}
-    <div class="listing-grid">
-      {% for listing in listings %}
-        <a href="/marketplace/{{ listing.id }}" class="listing-card">
-          <div class="listing-img">
-            {% if listing.media_path %}
-              <img src="{{ listing.media_path }}" alt="{{ listing.title }}">
-            {% else %}
-              <span class="listing-img-placeholder">🛍️</span>
-            {% endif %}
-          </div>
-          <div class="listing-body">
-            <div class="listing-price">
-              {% if listing.price == 0 %}Free{% else %}${{ "%.2f"|format(listing.price) }}{% endif %}
-            </div>
-            <div class="listing-title">{{ listing.title }}</div>
-            <div class="listing-seller">
-              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-              {{ listing.seller.username }}
-            </div>
-          </div>
-        </a>
-      {% endfor %}
-    </div>
+    {% for listing in listings %}
+    <a href="/marketplace/{{ listing.id }}" class="product-card">
+      {% if listing.media_path %}
+        <img src="/media/marketplace/{{ listing.media_path }}" class="product-image" alt="{{ listing.title }}">
+      {% else %}
+        <div class="product-no-image">📦</div>
+      {% endif %}
+      <div class="product-info">
+        <h3 class="product-name">{{ listing.title }}</h3>
+        <p class="product-seller">by @{{ listing.seller.username if listing.seller else 'unknown' }}</p>
+        <div class="product-footer">
+          <span class="product-price">${{ "%.2f"|format(listing.price) }}</span>
+          <span class="product-fee">+ $1.00 fee</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
   {% else %}
-    <div class="card" style="text-align:center; padding:3rem 2rem; color:#888;">
-      <div style="font-size:3rem; margin-bottom:1rem;">🛍️</div>
-      <h3 style="color:#1a4a2e; margin-bottom:0.5rem;">
-        {% if q %}No listings match "{{ q }}"{% else %}Be the first to list a product.{% endif %}
-      </h3>
+    <div class="empty-marketplace">
+      <h3>The marketplace is open.</h3>
+      <p>{% if q %}No listings match "{{ q }}"{% else %}Be the first to list a product.{% endif %}</p>
       {% if current_user %}
-        <a href="/marketplace/create" class="btn" style="margin-top:1rem; display:inline-block;">Post a listing</a>
+        <a href="/marketplace/create" class="btn-primary">Post a listing</a>
       {% endif %}
     </div>
   {% endif %}
-
 </div>
-</body>
-</html>
+{% endblock %}
