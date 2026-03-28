@@ -20,8 +20,6 @@ from fastapi import FastAPI, Request, Depends, Form, HTTPException, UploadFile, 
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import UniqueConstraint
-from sqlalchemy.orm import Session, relationship
 
 # ── Parse args ────────────────────────────────────────────────────────────────
 
@@ -59,7 +57,7 @@ from commons.security       import (
 
 # ── Vote model ────────────────────────────────────────────────────────────────
 
-from sqlalchemy import Column, Integer, ForeignKey, Float, Text, Boolean, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, Float, Text, Boolean, DateTime, UniqueConstraint
 
 class Vote(Base):
     __tablename__ = "votes"
@@ -151,9 +149,6 @@ def attach_vote_data(posts_list, current_user, db):
 # ── Pages ─────────────────────────────────────────────────────────────────────
 
 # ── Marketplace models ─────────────────────────────────────
-from datetime import datetime as _dt
-import os as _os
-_os.makedirs("static/media/marketplace", exist_ok=True)
 MEDIA_DIR = "static/media/marketplace"
 
 class Listing(Base):
