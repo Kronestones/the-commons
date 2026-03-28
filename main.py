@@ -658,16 +658,20 @@ async def api_set_algorithm_mode(
 
 @app.get("/marketplace", response_class=HTMLResponse)
 async def marketplace_page(request: Request, q: str = "", db: Session = Depends(get_db)):
-    current_user = get_current_user_from_cookie(request, db)
-    query = db.query(Listing).filter(Listing.is_active == True).order_by(Listing.created_at.desc())
-    if q:
-        like = f"%{q}%"
-        query = query.filter(Listing.title.ilike(like) | Listing.description.ilike(like))
-    listings = query.all()
-    return templates.TemplateResponse("marketplace.html", {
-        "request": request, "current_user": current_user,
-        "listings": listings, "q": q,
-    })
+    try:
+        current_user = get_current_user_from_cookie(request, db)
+        query = db.query(Listing).filter(Listing.is_active == True).order_by(Listing.created_at.desc())
+        if q:
+            like = f"%{q}%"
+            query = query.filter(Listing.title.ilike(like) | Listing.description.ilike(like))
+        listings = query.all()
+        return templates.TemplateResponse("marketplace.html", {
+            "request": request, "current_user": current_user,
+            "listings": listings, "q": q,
+        })
+    except Exception as e:
+        import traceback
+        return HTMLResponse(f"<pre>{traceback.format_exc()}</pre>", status_code=500)
 
 @app.get("/marketplace/create", response_class=HTMLResponse)
 async def marketplace_create_get(request: Request, db: Session = Depends(get_db)):
