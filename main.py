@@ -665,10 +665,11 @@ async def marketplace_page(request: Request, q: str = "", db: Session = Depends(
             like = f"%{q}%"
             query = query.filter(Listing.title.ilike(like) | Listing.description.ilike(like))
         listings = query.all()
-        return templates.TemplateResponse("marketplace.html", {
-            "request": request, "current_user": current_user,
-            "listings": listings, "q": q,
-        })
+        return templates.TemplateResponse(
+            request=request,
+            name="marketplace.html",
+            context={"current_user": current_user, "listings": listings, "q": q}
+        )
     except Exception as e:
         import traceback
         return HTMLResponse(f"<pre>{traceback.format_exc()}</pre>", status_code=500)
@@ -678,9 +679,7 @@ async def marketplace_create_get(request: Request, db: Session = Depends(get_db)
     current_user = get_current_user_from_cookie(request, db)
     if not current_user:
         return RedirectResponse("/login", status_code=302)
-    return templates.TemplateResponse("marketplace_create.html", {
-        "request": request, "current_user": current_user, "error": None,
-    })
+    return templates.TemplateResponse(request=request, name="marketplace_create.html", context={"current_user": current_user, "error": None})
 
 @app.post("/marketplace/create", response_class=HTMLResponse)
 async def marketplace_create_post(
@@ -695,9 +694,7 @@ async def marketplace_create_post(
     if not current_user:
         return RedirectResponse("/login", status_code=302)
     if not title.strip():
-        return templates.TemplateResponse("marketplace_create.html", {
-            "request": request, "current_user": current_user, "error": "Title is required.",
-        })
+        return templates.TemplateResponse(request=request, name="marketplace_create.html", context={"current_user": current_user, "error": "Title is required."})
     media_path = None
     if photo and getattr(photo, "filename", None) and photo.filename:
         ext = photo.filename.rsplit(".", 1)[-1].lower()
@@ -729,9 +726,7 @@ async def marketplace_inbox(request: Request, db: Session = Depends(get_db)):
             seen[m.listing_id] = True
             threads.append({"listing": m.listing, "last_message": m.body,
                             "unread": (not m.is_read and m.recipient_id == current_user.id)})
-    return templates.TemplateResponse("marketplace_inbox.html", {
-        "request": request, "current_user": current_user, "threads": threads,
-    })
+    return templates.TemplateResponse(request=request, name="marketplace_inbox.html", context={"current_user": current_user, "threads": threads})
 
 @app.get("/marketplace/{listing_id}", response_class=HTMLResponse)
 async def marketplace_detail(listing_id: int, request: Request, db: Session = Depends(get_db)):
@@ -750,11 +745,9 @@ async def marketplace_detail(listing_id: int, request: Request, db: Session = De
             if m.recipient_id == current_user.id and not m.is_read:
                 m.is_read = True
         db.commit()
-    return templates.TemplateResponse("marketplace_detail.html", {
-        "request": request, "current_user": current_user,
+    return templates.TemplateResponse(request=request, name="marketplace_detail.html", context={"current_user": current_user,
         "listing": listing, "thread": thread,
-        "is_seller": current_user and current_user.id == listing.seller_id,
-    })
+        "is_seller": current_user and current_user.id == listing.seller_id})
 
 @app.post("/marketplace/{listing_id}/message")
 async def marketplace_send_message(listing_id: int, request: Request,
