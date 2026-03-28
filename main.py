@@ -40,7 +40,7 @@ if args.version:
 
 from commons.email_auth import generate_magic_token, verify_magic_token, send_magic_link, MagicToken
 from commons.config     import config
-from commons.database   import init_db, get_db, User, Post, PostStatus, Base, engine
+from commons.database   import init_db, get_db, User, Post, PostStatus, Base, engine, Listing, ListingMessage
 from commons.codex      import TheCommonsCodex
 from commons.auth       import (register_user, login_user, get_current_user,
                                 get_current_user_optional, create_token)
@@ -153,31 +153,6 @@ def attach_vote_data(posts_list, current_user, db):
 # ── Marketplace models ─────────────────────────────────────
 MEDIA_DIR = "static/media/marketplace"
 
-class Listing(Base):
-    __tablename__ = "listings"
-    id          = Column(Integer, primary_key=True)
-    title       = Column(Text, nullable=False)
-    description = Column(Text, default="")
-    price       = Column(Float, nullable=False, default=0.0)
-    media_path  = Column(Text, default=None)
-    seller_id   = Column(Integer, ForeignKey("users.id"), nullable=False)
-    is_active   = Column(Boolean, default=True)
-    created_at  = Column(DateTime, default=datetime.utcnow)
-    seller      = relationship("User", backref="listings")
-    messages    = relationship("ListingMessage", back_populates="listing", cascade="all, delete-orphan")
-
-class ListingMessage(Base):
-    __tablename__ = "listing_messages"
-    id           = Column(Integer, primary_key=True)
-    listing_id   = Column(Integer, ForeignKey("listings.id"), nullable=False)
-    sender_id    = Column(Integer, ForeignKey("users.id"), nullable=False)
-    recipient_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    body         = Column(Text, nullable=False)
-    is_read      = Column(Boolean, default=False)
-    created_at   = Column(DateTime, default=datetime.utcnow)
-    listing      = relationship("Listing", back_populates="messages")
-    sender       = relationship("User", foreign_keys=[sender_id])
-    recipient    = relationship("User", foreign_keys=[recipient_id])
 
 
 @app.get("/", response_class=HTMLResponse)
