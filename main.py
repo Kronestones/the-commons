@@ -160,7 +160,7 @@ class Listing(Base):
     media_path  = Column(Text, default=None)
     seller_id   = Column(Integer, ForeignKey("users.id"), nullable=False)
     is_active   = Column(Boolean, default=True)
-    created_at  = Column(DateTime, default=_dt.utcnow)
+    created_at  = Column(DateTime, default=datetime.utcnow)
     seller      = relationship("User", backref="listings")
     messages    = relationship("ListingMessage", back_populates="listing", cascade="all, delete-orphan")
 
@@ -172,7 +172,7 @@ class ListingMessage(Base):
     recipient_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     body         = Column(Text, nullable=False)
     is_read      = Column(Boolean, default=False)
-    created_at   = Column(DateTime, default=_dt.utcnow)
+    created_at   = Column(DateTime, default=datetime.utcnow)
     listing      = relationship("Listing", back_populates="messages")
     sender       = relationship("User", foreign_keys=[sender_id])
     recipient    = relationship("User", foreign_keys=[recipient_id])
