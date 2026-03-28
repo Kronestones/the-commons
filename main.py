@@ -58,6 +58,7 @@ from commons.security       import (
 
 # ── Vote model ────────────────────────────────────────────────────────────────
 
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy import Column, Integer, ForeignKey, Float, Text, Boolean, DateTime, UniqueConstraint
 
 class Vote(Base):
