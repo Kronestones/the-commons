@@ -2,63 +2,101 @@
 {% block title %}@{{ profile_user.username }} — The Commons{% endblock %}
 {% block content %}
 <div class="profile-layout">
+
   <div class="profile-header">
-    {% if profile_user.avatar_url %}
-      <img src="{{ profile_user.avatar_url }}" alt="avatar" class="profile-avatar">
-    {% endif %}
-    <h2>@{{ profile_user.username }}</h2>
-    {% if profile_user.bio %}
-      <p class="profile-bio">{{ profile_user.bio }}</p>
-    {% endif %}
+    <div class="profile-avatar">
+      {% if profile_user.avatar_url %}
+        <img src="{{ profile_user.avatar_url }}" alt="avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+      {% else %}
+        {{ profile_user.username[0].upper() }}
+      {% endif %}
+    </div>
+    <div style="flex:1;">
+      <h2 class="profile-username">@{{ profile_user.username }}</h2>
+      {% if profile_user.display_name %}
+        <p class="profile-displayname">{{ profile_user.display_name }}</p>
+      {% endif %}
+      {% if profile_user.bio %}
+        <p class="profile-bio">{{ profile_user.bio }}</p>
+      {% endif %}
+    </div>
     {% if is_own %}
-      <a href="/profile/edit" class="btn-secondary">Edit Profile</a>
+      <a href="/profile/edit" class="btn-primary" style="white-space:nowrap;">Edit Profile</a>
     {% endif %}
   </div>
 
   {% if is_own %}
-  <div class="post-compose">
-    <form method="POST" action="/api/posts" id="post-form">
-      <textarea name="content" placeholder="Share something with The Commons..." maxlength="10000" required></textarea>
-      <div class="compose-actions">
-        <select name="post_type">
-          <option value="text">Text</option>
-          <option value="image">Image</option>
-          <option value="video">Video</option>
-        </select>
-        <button type="submit" class="btn-primary">Post</button>
-      </div>
-    </form>
+  <div class="post-composer">
+    <textarea name="content" id="profile-post-content" placeholder="Share something with The Commons..." maxlength="10000"></textarea>
+    <div class="composer-actions">
+      <select id="profile-post-type">
+        <option value="text">Text</option>
+        <option value="image">Image</option>
+        <option value="video">Video</option>
+      </select>
+      <button onclick="submitProfilePost()" class="btn-primary">Post</button>
+    </div>
+    <div id="profile-post-error" class="form-error" style="display:none;"></div>
   </div>
   {% endif %}
 
-  <div class="feed">
+  <div class="feed-layout">
     {% if posts %}
       {% for post in posts %}
       <div class="post-card">
         <div class="post-header">
+          <span class="post-author">@{{ profile_user.username }}</span>
           <span class="post-time">{{ post.published_at.strftime("%b %d") if post.published_at else "" }}</span>
         </div>
         <div class="post-content">{{ post.content }}</div>
         <div class="post-actions">
           <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline">
             <input type="hidden" name="value" value="1">
-            <button type="submit" class="vote-btn {% if post.user_voted == 1 %}voted-up{% endif %}">
-              ↑ Valuable {% if post.up_count %}({{ post.up_count }}){% endif %}
-            </button>
+            <button type="submit" class="vote-btn {% if post.user_voted == 1 %}voted-up{% endif %}">↑ Valuable</button>
           </form>
           <span class="community-score">{{ post.vote_score | int }}</span>
           <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline">
             <input type="hidden" name="value" value="-1">
-            <button type="submit" class="vote-btn {% if post.user_voted == -1 %}voted-down{% endif %}">
-              ↓ {% if post.down_count %}({{ post.down_count }}){% endif %}
-            </button>
+            <button type="submit" class="vote-btn {% if post.user_voted == -1 %}voted-down{% endif %}">↓</button>
           </form>
         </div>
       </div>
       {% endfor %}
     {% else %}
-      <p class="empty-feed">No posts yet. Say something! 👋</p>
+      <div class="empty-feed">
+        <p>No posts yet. Say something! 👋</p>
+      </div>
     {% endif %}
   </div>
 </div>
+
+<script>
+async function submitProfilePost() {
+  const content = document.getElementById("profile-post-content").value;
+  const post_type = document.getElementById("profile-post-type").value;
+  const errorEl = document.getElementById("profile-post-error");
+  if (!content.trim()) return;
+
+  const body = new FormData();
+  body.append("content", content);
+  body.append("post_type", post_type);
+
+  const token = document.cookie.split(";").find(c => c.trim().startsWith("token="));
+  const tok = token ? token.trim().split("=")[1] : "";
+
+  const res = await fetch("/api/posts", {
+    method: "POST",
+    headers: tok ? {"Authorization": "Bearer " + tok} : {},
+    body: body
+  });
+  const data = await res.json();
+
+  if (data.ok) {
+    window.location.reload();
+  } else {
+    errorEl.style.display = "block";
+    errorEl.innerText = data.error || "Post failed.";
+  }
+}
+</script>
 {% endblock %}
