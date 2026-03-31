@@ -14,7 +14,7 @@
       <button type="submit" class="btn-primary">Search</button>
     </form>
     {% if current_user %}
-      <a href="/marketplace/new" class="btn-primary">+ Post Listing</a>
+      <a href="/marketplace/create" class="btn-primary">+ Post Listing</a>
       <a href="/marketplace/inbox" class="btn-secondary">Inbox</a>
     {% endif %}
   </div>
@@ -43,7 +43,7 @@
       <div style="font-size:3rem;">🛍️🛒</div>
       <h3>Be the first to list a product.</h3>
       {% if current_user %}
-        <a href="/marketplace/new" class="btn-primary">Post a listing</a>
+        <a href="/marketplace/create" class="btn-primary">Post a listing</a>
       {% else %}
         <a href="/register" class="btn-primary">Join to sell</a>
       {% endif %}
