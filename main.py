@@ -779,6 +779,11 @@ async def health():
 
 # ── Run ───────────────────────────────────────────────────────────────────────
 
+
+@app.get('/kinto', response_class=HTMLResponse)
+async def kinto_page(request: Request):
+    return templates.TemplateResponse(request=request, name='kinto.html', context={})
+
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
