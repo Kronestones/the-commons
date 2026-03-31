@@ -160,11 +160,11 @@ async def home(request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user_from_cookie(request, db)
     if current_user:
         return RedirectResponse("/feed", status_code=302)
-    return templates.TemplateResponse(
-        request=request,
-        name="index.html",
-        context={"version": VERSION, "current_user": None}
-    )
+    return RedirectResponse("/register", status_code=302)
+
+
+
+
 
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request, db: Session = Depends(get_db)):
