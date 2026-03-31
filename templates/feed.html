@@ -57,7 +57,7 @@
           <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline">
             <input type="hidden" name="value" value="1">
             <button type="submit" class="vote-btn {% if post.user_voted == 1 %}voted-up{% endif %}">
-              ↑ Valuable {% if post.up_count %}({{ post.up_count }}){% endif %}
+              ❤️ {% if post.up_count %}{{ post.up_count }}{% endif %}
             </button>
           </form>
           <span class="community-score">{{ post.vote_score | int }}</span>

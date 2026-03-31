@@ -762,6 +762,18 @@ async def marketplace_send_message(listing_id: int, request: Request,
         db.commit()
     return RedirectResponse(f"/marketplace/{listing_id}", status_code=302)
 
+
+@app.post("/post/{post_id}/delete")
+async def delete_post(post_id: int, request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        return RedirectResponse("/login", status_code=302)
+    post = db.query(Post).filter(Post.id == post_id, Post.author_id == current_user.id).first()
+    if post:
+        db.delete(post)
+        db.commit()
+    return RedirectResponse("/feed", status_code=302)
+
 @app.post("/marketplace/{listing_id}/delete")
 async def marketplace_delete(listing_id: int, request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user_from_cookie(request, db)
