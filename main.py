@@ -796,6 +796,17 @@ async def health():
 async def kinto_page(request: Request):
     return templates.TemplateResponse(request=request, name='kinto.html', context={})
 
+
+@app.get("/download/kinto")
+async def download_kinto():
+    from fastapi.responses import FileResponse
+    return FileResponse("static/kinto_v1_1_0.zip", filename="kinto_v1_1_0.zip", media_type="application/zip")
+
+@app.get("/download/tah")
+async def download_tah():
+    from fastapi.responses import FileResponse
+    return FileResponse("static/tah_v1_0_0.zip", filename="tah_v1_0_0.zip", media_type="application/zip")
+
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
