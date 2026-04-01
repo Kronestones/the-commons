@@ -1,76 +1,65 @@
-{% extends "base.html" %}
-{% block title %}Join The Commons{% endblock %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join The Commons</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Join The Commons</h1>
+    <p class="auth-note">No phone number required. No biometrics. No password stored. Ever. Just your email.</p>
+    
 
-<div class="auth-container">
-  <h1>Join The Commons</h1>
-  <p class="auth-note">No phone number required. No biometrics. Ever. Just a username and password.</p>
-
-  <form id="register-form" class="auth-form">
-    <label>Username
-      <input type="text" id="username" placeholder="your_username" maxlength="50" required>
-    </label>
-    <label>Email
-      <input type="email" id="email" placeholder="you@example.com" required>
-    </label>
-    <label>Password
-      <div class="password-wrapper">
-        <input type="password" id="password" placeholder="At least 8 characters" required>
-        <button type="button" class="show-password-btn" onclick="togglePassword('password', this)">Show</button>
-      </div>
-    </label>
-    <label>Display name (optional)
-      <input type="text" id="display-name" placeholder="How you appear to others">
-    </label>
-    <div id="form-error" class="form-error" style="display:none;padding:12px;background:#fee;border:1px solid #c00;border-radius:6px;color:#c00;font-size:14px;margin-bottom:12px;"></div>
-    <button type="submit" class="btn-primary btn-full">Join The Commons</button>
-  </form>
-
-  <p class="auth-switch">Already have an account? <a href="/login">Sign in</a></p>
-
-  <div class="auth-promise">
-    <h3>Our promise to you</h3>
-    <ul>
-      <li>No advertising — ever</li>
-      <li>No data selling — ever</li>
-      <li>No biometrics — ever</li>
-      <li>Your data is yours — export or delete anytime</li>
-      <li>The platform exists for you, not shareholders</li>
-    </ul>
-    <a href="/codex">Read the full Codex →</a>
-  </div>
+  <a href="https://buymeacoffee.com/sentinel.commons" target="_blank" style="display:inline-block; padding:0.6rem 1.5rem; background:#2a4ec8; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;" class="download-btn" data-tah="true" data-member-url="https://buymeacoffee.com/sentinel.commons?amount=1" data-member-text="Download Tah — $1 (member)">Download Tah — $3</a>
 </div>
-
-{% endblock %}
-{% block scripts %}
+<div class="auth-form">
+        <div id="error-box" class="error-box" style="display:none;"></div>
+        <div id="success-box" class="success-box" style="display:none;"></div>
+        <label>Username</label>
+        <small>Letters, numbers, underscores and hyphens only. No spaces. (3-50 characters)</small>
+        <input type="text" id="username" placeholder="e.g. Krone or krone_1" required>
+        <label>Email</label>
+        <input type="email" id="email" placeholder="Email" required>
+        <label>Display name (optional)</label>
+        <input type="text" id="display_name" placeholder="How you want to appear to others">
+        <button onclick="register()">Join The Commons</button>
+        <p>Already have an account? <a href="/login">Sign in</a></p>
+    </div>
+    <script>
+    async function register() {
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const display_name = document.getElementById('display_name').value;
+        if (username.includes(' ')) {
+            document.getElementById('error-box').style.display = 'block';
+            document.getElementById('error-box').innerText = 'Username cannot contain spaces. Try using an underscore instead, e.g. krone_1';
+            return;
+        }
+        const body = new FormData();
+        body.append('username', username);
+        body.append('email', email);
+        body.append('display_name', display_name);
+        const res = await fetch('/auth/register', { method: 'POST', body });
+        const data = await res.json();
+        if (data.ok) {
+            document.getElementById('success-box').style.display = 'block';
+            document.getElementById('success-box').innerText = 'Welcome to The Commons! Your sign-in link is on its way. Gmail usually delivers in under a minute. Other providers may take 2-5 minutes. If you don\'t see it, check your spam folder — and mark us as safe so it never lands there again.';
+            document.getElementById('error-box').style.display = 'none';
+        } else {
+            document.getElementById('error-box').style.display = 'block';
+            document.getElementById('error-box').innerText = data.error || 'Registration failed.';
+            document.getElementById('success-box').style.display = 'none';
+        }
+    }
+    </script>
 <script>
-document.getElementById('register-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = new FormData();
-  form.append('username',     document.getElementById('username').value);
-  form.append('email',        document.getElementById('email').value);
-  form.append('password',     document.getElementById('password').value);
-  form.append('display_name', document.getElementById('display-name').value);
-  form.append('is_minor', false);
-  const res = await fetch('/auth/register', { method: 'POST', body: form });
-  let data;
-  try {
-    data = await res.json();
-  } catch(e) {
-    const err = document.getElementById('form-error');
-    err.textContent = 'Server error — please try again.';
-    err.style.display = 'block';
-    return;
-  }
-  if (data.ok) {
-    localStorage.setItem('token',    data.token);
-    localStorage.setItem('username', data.user.username);
-    window.location = '/';
-  } else {
-    const err = document.getElementById('form-error');
-    err.textContent = data.error || 'Registration failed — please check your details.';
-    err.style.display = 'block';
-  }
-});
+if (localStorage.getItem('token')) {
+  document.querySelectorAll('.download-btn').forEach(btn => {
+    btn.href = btn.dataset.memberUrl;
+    btn.textContent = btn.dataset.memberText;
+  });
+}
 </script>
-{% endblock %}
+</body>
+</html>
