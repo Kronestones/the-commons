@@ -798,12 +798,20 @@ async def kinto_page(request: Request):
 
 
 @app.get("/download/kinto")
-async def download_kinto():
+async def download_kinto(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user_from_cookie(request, db)
+    if not user:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse("/register")
     from fastapi.responses import FileResponse
     return FileResponse("static/kinto_v1_1_0.zip", filename="kinto_v1_1_0.zip", media_type="application/zip")
 
 @app.get("/download/tah")
-async def download_tah():
+async def download_tah(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user_from_cookie(request, db)
+    if not user:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse("/register")
     from fastapi.responses import FileResponse
     return FileResponse("static/tah_v1_0_0.zip", filename="tah_v1_0_0.zip", media_type="application/zip")
 
