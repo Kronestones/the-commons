@@ -10,5 +10,11 @@
     "reason": "Normal startup",
     "timestamp": "2026-04-02T21:50:17.042082",
     "pid": 24432
+  },
+  {
+    "event": "clean_start",
+    "reason": "Normal startup",
+    "timestamp": "2026-04-02T22:32:32.873922",
+    "pid": 29330
   }
 ]

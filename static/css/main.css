@@ -577,3 +577,7 @@ a:hover { text-decoration: underline; }
 .vote-active { background:#ffe0e6; border-color:#e07090; }
 .nav-logo { white-space:nowrap; cursor:pointer; }
 .coming-soon-badge { font-size:9px; background:var(--green-accent); color:white; border-radius:10px; padding:1px 5px; vertical-align:middle; margin-left:2px; white-space:nowrap; display:inline-block; }
+
+.nav { overflow-x: hidden; }
+.nav-links { overflow-x: auto; scrollbar-width: none; }
+.nav-links::-webkit-scrollbar { display: none; }

@@ -36,7 +36,7 @@
       <div class="post-card">
         <div class="post-header">
           <a href="/profile/{{ post.author.username }}" class="post-author">@{{ post.author.username | upper }}</a>
-          <span class="post-time">{% if post.published_at %}{{ post.published_at.strftime('%b %-d') }}{% endif %}</span>
+          <span class="post-time">{% if post.published_at %}{{ post.published_at.strftime('%b %d') }}{% endif %}</span>
         </div>
         <div class="post-content">{{ post.content }}</div>
         <div class="post-actions">
