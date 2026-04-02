@@ -80,11 +80,11 @@
     left.frequency.value = 528;
     right.frequency.value = 532; // 4Hz binaural beat - calm, present
     
-    gainNode.gain.value = 0.03; // nearly silent
+    gainNode.gain.value = 0.008; // nearly silent
     
     // Fade in gently over 8 seconds
     gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.03, ctx.currentTime + 8);
+    gainNode.gain.linearRampToValueAtTime(0.008, ctx.currentTime + 8);
     
     const merger = ctx.createChannelMerger(2);
     left.connect(merger, 0, 0);
