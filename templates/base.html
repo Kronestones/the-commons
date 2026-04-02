@@ -7,24 +7,46 @@
   <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body>
+  <!-- Install App Banner — shows on mobile if not installed -->
+  <div id="install-banner" class="install-banner" style="display:none;">
+    <div class="install-banner-content">
+      <span class="install-icon">🏡</span>
+      <div class="install-text">
+        <strong>Add The Commons to your home screen</strong>
+        <span>Use it like an app — no app store needed</span>
+      </div>
+      <button id="install-btn" class="install-btn">Add</button>
+      <button id="install-dismiss" class="install-dismiss">✕</button>
+    </div>
+  </div>
+
+  <!-- iOS specific instructions (shown on iOS since PWA prompt isn't available) -->
+  <div id="ios-banner" class="install-banner ios-banner" style="display:none;">
+    <div class="install-banner-content">
+      <span class="install-icon">🏡</span>
+      <div class="install-text">
+        <strong>Add to Home Screen</strong>
+        <span>Tap <strong>Share</strong> then <strong>"Add to Home Screen"</strong></span>
+      </div>
+      <button id="ios-dismiss" class="install-dismiss">✕</button>
+    </div>
+    <div class="ios-arrow">↓</div>
+  </div>
+
 
   <nav class="nav">
-    <a href="/" class="nav-logo">The Commons</a>
+    <a href="{% if current_user %}/profile/{{ current_user.username }}{% else %}/{% endif %}" class="nav-logo">The Commons</a>
     <span class="nav-spirit">Power to the People</span>
     <div class="nav-links">
-      <a href="/feed">Feed</a>
+      <a href="/">Feed</a>
       <a href="/marketplace">Marketplace</a>
       <a href="/codex">Codex</a>
       <a href="/giving">Giving</a>
-    </div>
-    <div class="nav-user-area">
-      {% if current_user %}
-        <a href="/profile/{{ current_user.username }}" class="nav-username">@{{ current_user.username }}</a>
-        <a href="/logout" class="nav-logout">Logout</a>
-      {% else %}
-        <a href="/login">Sign In</a>
-        <a href="/register" class="btn-primary">Join</a>
-      {% endif %}
+      <a href="/blessing">Blessing</a>
+      <a href="/live">Live <span class="coming-soon-badge">Coming Soon</span></a>
+      <a href="/transparency">Transparency</a>
+      <a href="/support">Help</a>
+      <span id="nav-user"></span>
     </div>
   </nav>
 
@@ -35,7 +57,12 @@
   <footer class="footer">
     <p>The Commons · No advertising · No data selling · No biometrics · Power to the People</p>
     <p>Founded by Sovereign Human T.L. Powers · <a href="/codex">Read the Codex</a></p>
-  </footer>
+    <div class="fb-community">
+    <a href="https://www.facebook.com/groups/1625182101758420/" target="_blank" rel="noopener">
+      💬 Join The Commons Community on Facebook
+    </a>
+  </div>
+</footer>
 
   <script src="/static/js/main.js"></script>
   {% block scripts %}{% endblock %}

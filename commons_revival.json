@@ -4,5 +4,11 @@
     "reason": "First startup",
     "timestamp": "2026-04-02T17:41:41.096669",
     "pid": 30957
+  },
+  {
+    "event": "clean_start",
+    "reason": "Normal startup",
+    "timestamp": "2026-04-02T21:50:17.042082",
+    "pid": 24432
   }
 ]
