@@ -191,6 +191,9 @@ async def codex_page(request: Request, db: Session = Depends(get_db)):
 @app.get("/feed", response_class=HTMLResponse)
 async def feed_page(request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse("/register")
     feed_posts = (
         db.query(Post)
         .filter(Post.status == PostStatus.PUBLISHED)
@@ -278,9 +281,6 @@ async def profile_page(username: str, request: Request, db: Session = Depends(ge
 @app.get("/giving", response_class=HTMLResponse)
 async def giving_page(request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user_from_cookie(request, db)
-    if not current_user:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse("/register")
     record = surplus_manager.get_public_record(db)
     return templates.TemplateResponse(
         request=request,
