@@ -199,7 +199,7 @@ class TheCommonsCodex:
             "immutable": False,
         },
         {
-            "number": 17,
+            "number": 16,
             "name": "Surplus to the World",
             "text": (
                 "Any money remaining after operating costs are covered "
@@ -212,7 +212,7 @@ class TheCommonsCodex:
             "immutable": True,
         },
         {
-            "number": 16,
+            "number": 17,
             "name": "Power to the People",
             "text": (
                 "This platform was built by the people, for the people. "
