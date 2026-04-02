@@ -807,6 +807,10 @@ async def health():
 # ── Run ───────────────────────────────────────────────────────────────────────
 
 
+@app.get('/tah', response_class=HTMLResponse)
+async def tah_page(request: Request):
+    return templates.TemplateResponse(request=request, name='tah.html', context={})
+
 @app.get('/kinto', response_class=HTMLResponse)
 async def kinto_page(request: Request):
     return templates.TemplateResponse(request=request, name='kinto.html', context={})

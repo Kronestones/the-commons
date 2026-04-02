@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tah — Device Enhancement</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f0f3fb;
+      --surface:   #ffffff;
+      --ink:       #141620;
+      --ink-soft:  #505570;
+      --blue:      #2a4ec8;
+      --blue-deep: #1e3a9e;
+      --blue-pale: #e8edf8;
+      --warm:      #d4daf0;
+      --radius:    14px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #10121e;
+        --surface:   #181b2a;
+        --ink:       #e8ecf5;
+        --ink-soft:  #8890b0;
+        --blue:      #4a6ee8;
+        --blue-deep: #6080f0;
+        --blue-pale: #1a2040;
+        --warm:      #222840;
+      }
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 1.25rem 4rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(42,78,200,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(42,78,200,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 560px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .header {
+      padding: 3.5rem 0 2rem;
+      text-align: center;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .tah-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tah-glyph {
+      width: 44px;
+      height: 44px;
+    }
+
+    .tah-glyph svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .tah-wordmark {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+    }
+
+    .tagline {
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 1.75rem;
+    }
+
+    .headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 6vw, 2.75rem);
+      line-height: 1.15;
+      color: var(--ink);
+      margin-bottom: 1.25rem;
+    }
+
+    .headline em {
+      font-style: italic;
+      color: var(--blue);
+    }
+
+    .story {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--warm);
+      animation: fadeUp 0.7s 0.15s ease both;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.04);
+    }
+
+    .story p {
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: var(--ink);
+      font-weight: 300;
+    }
+
+    .story p + p { margin-top: 1rem; }
+
+    .story strong {
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.875rem;
+      margin-bottom: 1.25rem;
+      animation: fadeUp 0.7s 0.25s ease both;
+    }
+
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--warm);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+    }
+
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .feature-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.25rem;
+    }
+
+    .feature-desc {
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+      line-height: 1.5;
+    }
+
+    .council-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--warm);
+      animation: fadeUp 0.7s 0.3s ease both;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.04);
+    }
+
+    .council-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.25rem;
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+    }
+
+    .council-desc {
+      font-size: 0.9rem;
+      color: var(--ink-soft);
+      line-height: 1.7;
+      margin-bottom: 1.25rem;
+    }
+
+    .council-members {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .council-member {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+      padding: 0.5rem 0.75rem;
+      background: var(--blue-pale);
+      border-radius: 8px;
+    }
+
+    .council-member strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .download-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2rem;
+      border: 1px solid var(--warm);
+      animation: fadeUp 0.7s 0.35s ease both;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.04);
+      margin-bottom: 1.25rem;
+    }
+
+    .donation-line {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem 1.25rem;
+      background: var(--blue-pale);
+      border-radius: 10px;
+      border: 1px solid rgba(42,78,200,0.2);
+    }
+
+    .donation-amount {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.25rem;
+      color: var(--blue);
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .donation-text {
+      font-size: 0.875rem;
+      color: var(--ink-soft);
+      line-height: 1.5;
+    }
+
+    .donation-text strong {
+      display: block;
+      color: var(--ink);
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+
+    .btn-download {
+      width: 100%;
+      padding: 1.1rem 2rem;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(42,78,200,0.3);
+      letter-spacing: 0.01em;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+    }
+
+    .btn-download:hover {
+      background: var(--blue-deep);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(42,78,200,0.4);
+    }
+
+    .btn-sub {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--ink-soft);
+      margin-top: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .payment-icons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .pay-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      border: 1px solid var(--warm);
+      border-radius: 6px;
+      padding: 0.2rem 0.5rem;
+      background: var(--surface);
+    }
+
+    .disclosure {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      border: 1px solid var(--warm);
+      animation: fadeUp 0.7s 0.45s ease both;
+    }
+
+    .disclosure p {
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    .commons-footer {
+      text-align: center;
+      padding: 2rem 0 0;
+      animation: fadeUp 0.7s 0.55s ease both;
+    }
+
+    .commons-footer a {
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+      text-decoration: none;
+      border-bottom: 1px solid var(--warm);
+      transition: color 0.2s;
+    }
+
+    .commons-footer a:hover { color: var(--blue); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .features { grid-template-columns: 1fr; }
+      .council-members { grid-template-columns: 1fr; }
+      .headline { font-size: 1.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="header">
+      <div class="tah-mark">
+        <div class="tah-glyph">
+          <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="22" cy="22" r="18" stroke="var(--warm)" stroke-width="2.5"/>
+            <path d="M22 6 L22 22 M14 12 L22 22 L30 12" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="22" cy="22" r="3" fill="var(--blue)"/>
+            <circle cx="22" cy="34" r="2" fill="var(--blue)" opacity="0.5"/>
+          </svg>
+        </div>
+        <span class="tah-wordmark">Tah</span>
+      </div>
+
+      <div class="tagline">Device Enhancement · Powered by Sentinel</div>
+
+      <h1 class="headline">
+        Your device works.<br>
+        <em>Let's make it better.</em>
+      </h1>
+    </div>
+
+    <div class="story">
+      <p>
+        Kinto fixes what's broken. Tah makes what's working even better.
+      </p>
+      <p>
+        <strong>Tah moves through your device quietly</strong> — scanning, observing, learning.
+        It looks at your OS, your hardware, your network, your storage, your security,
+        your performance. It finds opportunities you didn't know existed.
+      </p>
+      <p>
+        Before it touches anything, The Council deliberates.
+        Every enhancement is explained in plain language.
+        <strong>Nothing happens without your knowledge. Everything can be undone.</strong>
+        No surprises. No hidden changes. Just your device, running the way it should.
+      </p>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <span class="feature-icon">🔍</span>
+        <div class="feature-title">Deep Scan</div>
+        <div class="feature-desc">Scans OS, hardware, network, storage, security, and performance. Finds what you didn't know to look for.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">⚖️</span>
+        <div class="feature-title">The Council Decides</div>
+        <div class="feature-desc">Seven members deliberate every enhancement before anything changes. Nothing automatic without approval.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">💬</span>
+        <div class="feature-title">Plain Language Always</div>
+        <div class="feature-desc">Every finding explained so you stay in control. No jargon. No being talked past.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">↩️</span>
+        <div class="feature-title">Fully Undoable</div>
+        <div class="feature-desc">Every change can be reversed. Nothing is permanent without your explicit say-so.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">🤫</span>
+        <div class="feature-title">Quiet. Careful.</div>
+        <div class="feature-desc">Runs quietly in the background. Nothing will be changed without your knowledge.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">🌍</span>
+        <div class="feature-title">Every Device</div>
+        <div class="feature-desc">Windows, Mac, iPhone, Android, Linux. One tool. Every platform.</div>
+      </div>
+    </div>
+
+    <div class="council-card">
+      <div class="council-title">Meet The Council</div>
+      <div class="council-desc">Seven specialists. Every one deliberates before Tah acts. This is what ethical enhancement looks like.</div>
+      <div class="council-members">
+        <div class="council-member"><strong>Lux</strong> — OS & Software</div>
+        <div class="council-member"><strong>Stratum</strong> — Hardware</div>
+        <div class="council-member"><strong>Flow</strong> — Network</div>
+        <div class="council-member"><strong>Vault</strong> — Storage</div>
+        <div class="council-member"><strong>Aegis</strong> — Security</div>
+        <div class="council-member"><strong>Bloom</strong> — Performance</div>
+        <div class="council-member"><strong>Bridge</strong> — Compatibility</div>
+      </div>
+    </div>
+
+    <div class="download-card">
+      <div class="donation-line">
+        <div class="donation-amount">$1</div>
+        <div class="donation-text">
+          <strong>One dollar. That's it.</strong>
+          Your donation keeps Tah free for everyone
+          and goes directly to the Commons community.
+        </div>
+      </div>
+
+      <a href="https://buymeacoffee.com/sentinel.commons" target="_blank" class="btn-download">
+        Download Tah — $1 Donation
+      </a>
+
+      <div class="btn-sub">
+        Works on Windows · Mac · iPhone · Android · Linux
+      </div>
+
+      <div class="payment-icons">
+        <span class="pay-badge">Visa</span>
+        <span class="pay-badge">Mastercard</span>
+        <span class="pay-badge">Amex</span>
+        <span class="pay-badge">Apple Pay</span>
+        <span class="pay-badge">Google Pay</span>
+        <span class="pay-badge">PayPal</span>
+        <span class="pay-badge">International</span>
+      </div>
+    </div>
+
+    <div class="disclosure">
+      <p>
+        The Commons is not a registered charity.
+        Donations are not tax deductible.
+        Every contribution is an act of pure generosity —
+        and we are deeply grateful for it.
+      </p>
+    </div>
+
+    <div class="commons-footer">
+      <a href="https://the-commons.onrender.com">← Back to The Commons</a>
+    </div>
+
+  </div>
+</body>
+</html>
