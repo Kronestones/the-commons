@@ -1,101 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}The Commons{% endblock %}</title>
-  <link rel="stylesheet" href="/static/css/main.css">
-</head>
-<body>
-  <!-- Install App Banner — shows on mobile if not installed -->
-  <div id="install-banner" class="install-banner" style="display:none;">
-    <div class="install-banner-content">
-      <span class="install-icon">🏡</span>
-      <div class="install-text">
-        <strong>Add The Commons to your home screen</strong>
-        <span>Use it like an app — no app store needed</span>
+{% extends "base.html" %}
+{% block title %}Feed — The Commons{% endblock %}
+{% block content %}
+<div class="feed-layout">
+  <div class="post-composer">
+    <textarea id="compose-text" placeholder="What's on your mind? Share with The Commons..." rows="3"></textarea>
+    <div class="composer-actions">
+      <select id="compose-type">
+        <option value="text">Text</option>
+        <option value="image">Image</option>
+        <option value="audio">Audio</option>
+        <option value="video">Video</option>
+      </select>
+      <button class="btn-primary" onclick="submitPost()">Post</button>
+    </div>
+    <div id="compose-msg" class="composer-note" style="display:none;"></div>
+  </div>
+  {% if posts %}
+    {% for post in posts %}
+    <div class="post-card">
+      <div class="post-header">
+        <a href="/profile/{{ post.author.username }}" class="post-author">@{{ post.author.username | upper }}</a>
+        <span class="post-time">{% if post.published_at %}{{ post.published_at.strftime('%b %-d') }}{% endif %}</span>
       </div>
-      <button id="install-btn" class="install-btn">Add</button>
-      <button id="install-dismiss" class="install-dismiss">✕</button>
-    </div>
-  </div>
-
-  <!-- iOS specific instructions (shown on iOS since PWA prompt isn't available) -->
-  <div id="ios-banner" class="install-banner ios-banner" style="display:none;">
-    <div class="install-banner-content">
-      <span class="install-icon">🏡</span>
-      <div class="install-text">
-        <strong>Add to Home Screen</strong>
-        <span>Tap <strong>Share</strong> then <strong>"Add to Home Screen"</strong></span>
+      <div class="post-content">{{ post.content }}</div>
+      <div class="post-actions">
+        <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline;">
+          <input type="hidden" name="value" value="1">
+          <button type="submit" class="vote-btn {% if post.user_voted == 1 %}vote-active{% endif %}">❤️</button>
+        </form>
+        <span class="community-score">{{ post.up_count }}</span>
+        {% if current_user and current_user.id == post.author_id %}
+        <form method="POST" action="/post/{{ post.id }}/delete" style="display:inline;margin-left:auto;" onsubmit="return confirm('Delete this post?');">
+          <button type="submit" class="delete-btn">✕</button>
+        </form>
+        {% endif %}
       </div>
-      <button id="ios-dismiss" class="install-dismiss">✕</button>
     </div>
-    <div class="ios-arrow">↓</div>
-  </div>
-
-
-  <nav class="nav">
-    <a href="/" class="nav-logo" id="nav-logo-link" onclick="var u=localStorage.getItem('username'); if(u){event.preventDefault(); window.location='/profile/'+u;}">The Commons</a>
-    <span class="nav-spirit">Power to the People</span>
-    <div class="nav-links">
-      <a href="/">Feed</a>
-      <a href="/marketplace">Marketplace</a>
-      <a href="/codex">Codex</a>
-      <a href="/giving">Giving</a>
-      <a href="/blessing">Blessing</a>
-      <a href="/live">Live <span class="coming-soon-badge">Coming Soon</span></a>
-      <a href="/transparency">Transparency</a>
-      <a href="/support">Help</a>
-      <span id="nav-user"></span>
+    {% endfor %}
+  {% else %}
+    <div class="empty-feed">
+      <div style="font-size:3rem;margin-bottom:12px;">🌱</div>
+      <h2>The Commons is ready.</h2>
+      <p>Be the first to share something.</p>
     </div>
-  </nav>
-
-  <main class="main">
-    {% block content %}{% endblock %}
-  </main>
-
-  <footer class="footer">
-    <p>The Commons · No advertising · No data selling · No biometrics · Power to the People</p>
-    <p>Founded by Sovereign Human T.L. Powers · <a href="/codex">Read the Codex</a></p>
-    <div class="fb-community">
-    <a href="https://www.facebook.com/groups/1625182101758420/" target="_blank" rel="noopener">
-      💬 Join The Commons Community on Facebook
-    </a>
-  </div>
-</footer>
-
-  <script src="/static/js/main.js"></script>
-  {% block scripts %}{% endblock %}
-
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
 <script>
-(function() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // 528Hz - warm, welcoming tone, barely audible
-    const left = ctx.createOscillator();
-    const right = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    
-    left.frequency.value = 528;
-    right.frequency.value = 532; // 4Hz binaural beat - calm, present
-    
-    gainNode.gain.value = 0.008; // nearly silent
-    
-    // Fade in gently over 8 seconds
-    gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.008, ctx.currentTime + 8);
-    
-    const merger = ctx.createChannelMerger(2);
-    left.connect(merger, 0, 0);
-    right.connect(merger, 0, 1);
-    merger.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    
-    left.start();
-    right.start();
-  } catch(e) {}
-})();
+function submitPost() {
+  const content = document.getElementById('compose-text').value.trim();
+  const postType = document.getElementById('compose-type').value;
+  const msgEl = document.getElementById('compose-msg');
+  if (!content) { msgEl.style.display='block'; msgEl.style.color='#c0392b'; msgEl.textContent='Write something first.'; return; }
+  const form = new FormData();
+  form.append('content', content);
+  form.append('post_type', postType);
+  fetch('/api/posts', {method:'POST', body:form})
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.ok){ msgEl.style.display='block'; msgEl.style.color='#2e7d4f'; msgEl.textContent=data.message||'Posted!'; document.getElementById('compose-text').value=''; setTimeout(()=>location.reload(),800); }
+      else{ msgEl.style.display='block'; msgEl.style.color='#c0392b'; msgEl.textContent=data.error||'Something went wrong.'; }
+    });
+}
 </script>
-</body>
-</html>
+{% endblock %}

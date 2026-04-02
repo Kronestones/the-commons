@@ -2,83 +2,66 @@
 {% block title %}Feed — The Commons{% endblock %}
 {% block content %}
 <div class="feed-layout">
-
-  {% if current_user %}
   <div class="post-composer">
-    <textarea id="post-content" placeholder="What's on your mind? Share with The Commons..." maxlength="10000"></textarea>
+    <textarea id="compose-text" placeholder="What's on your mind? Share with The Commons..." rows="3"></textarea>
     <div class="composer-actions">
-      <select id="post-type" class="composer-actions">
+      <select id="compose-type">
         <option value="text">Text</option>
         <option value="image">Image</option>
+        <option value="audio">Audio</option>
         <option value="video">Video</option>
       </select>
-      <button onclick="submitPost()" class="btn-primary">Post</button>
+      <button class="btn-primary" onclick="submitPost()">Post</button>
     </div>
-    <div id="post-error" class="form-error" style="display:none;"></div>
+    <div id="compose-msg" class="composer-note" style="display:none;"></div>
   </div>
+  {% if posts %}
+    {% for post in posts %}
+    <div class="post-card">
+      <div class="post-header">
+        <a href="/profile/{{ post.author.username }}" class="post-author">@{{ post.author.username | upper }}</a>
+        <span class="post-time">{% if post.published_at %}{{ post.published_at.strftime('%b %-d') }}{% endif %}</span>
+      </div>
+      <div class="post-content">{{ post.content }}</div>
+      <div class="post-actions">
+        <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline;">
+          <input type="hidden" name="value" value="1">
+          <button type="submit" class="vote-btn {% if post.user_voted == 1 %}vote-active{% endif %}">❤️</button>
+        </form>
+        <span class="community-score">{{ post.up_count }}</span>
+        {% if current_user and current_user.id == post.author_id %}
+        <form method="POST" action="/post/{{ post.id }}/delete" style="display:inline;margin-left:auto;" onsubmit="return confirm('Delete this post?');">
+          <button type="submit" class="delete-btn">✕</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-feed">
+      <div style="font-size:3rem;margin-bottom:12px;">🌱</div>
+      <h2>The Commons is ready.</h2>
+      <p>Be the first to share something.</p>
+    </div>
   {% endif %}
-
-  <div class="feed" id="feed">
-    {% if posts %}
-      {% for post in posts %}
-      <div class="post-card">
-        <div class="post-header">
-          <a href="/profile/{{ post.author.username if post.author else '#' }}" class="post-author">
-            @{{ post.author.username if post.author else 'unknown' }}
-          </a>
-          <span class="post-time">{{ post.published_at.strftime("%b %d") if post.published_at else "" }}</span>
-        </div>
-        <div class="post-content">{{ post.content }}</div>
-        <div class="post-actions">
-          <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline">
-            <input type="hidden" name="value" value="1">
-            <button type="submit" class="vote-btn {% if post.user_voted == 1 %}voted-up{% endif %}">❤️</button>
-          </form>
-          <span class="community-score">{{ post.vote_score | int }}</span>
-          <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline">
-            <input type="hidden" name="value" value="-1">
-            <button type="submit" class="vote-btn {% if post.user_voted == -1 %}voted-down{% endif %}">↓</button>
-          </form>
-        </div>
-      </div>
-      {% endfor %}
-    {% else %}
-      <div class="empty-feed">
-        <h2>The Commons is open.</h2>
-        <p>Be the first to post.</p>
-        <a href="/register" class="btn-primary">Join</a>
-      </div>
-    {% endif %}
-  </div>
 </div>
-
+{% endblock %}
+{% block scripts %}
 <script>
-async function submitPost() {
-  const content = document.getElementById("post-content").value;
-  const post_type = document.getElementById("post-type").value;
-  const errorEl = document.getElementById("post-error");
-  if (!content.trim()) return;
-
-  const body = new FormData();
-  body.append("content", content);
-  body.append("post_type", post_type);
-
-  const token = document.cookie.split(";").find(c => c.trim().startsWith("token="));
-  const tok = token ? token.trim().split("=")[1] : "";
-
-  const res = await fetch("/api/posts", {
-    method: "POST",
-    headers: tok ? {"Authorization": "Bearer " + tok} : {},
-    body: body
-  });
-  const data = await res.json();
-
-  if (data.ok) {
-    window.location.reload();
-  } else {
-    errorEl.style.display = "block";
-    errorEl.innerText = data.error || "Post failed.";
-  }
+function submitPost() {
+  const content = document.getElementById('compose-text').value.trim();
+  const postType = document.getElementById('compose-type').value;
+  const msgEl = document.getElementById('compose-msg');
+  if (!content) { msgEl.style.display='block'; msgEl.style.color='#c0392b'; msgEl.textContent='Write something first.'; return; }
+  const form = new FormData();
+  form.append('content', content);
+  form.append('post_type', postType);
+  fetch('/api/posts', {method:'POST', body:form})
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.ok){ msgEl.style.display='block'; msgEl.style.color='#2e7d4f'; msgEl.textContent=data.message||'Posted!'; document.getElementById('compose-text').value=''; setTimeout(()=>location.reload(),800); }
+      else{ msgEl.style.display='block'; msgEl.style.color='#c0392b'; msgEl.textContent=data.error||'Something went wrong.'; }
+    });
 }
 </script>
 {% endblock %}

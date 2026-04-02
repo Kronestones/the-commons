@@ -2,101 +2,79 @@
 {% block title %}@{{ profile_user.username }} — The Commons{% endblock %}
 {% block content %}
 <div class="profile-layout">
-
   <div class="profile-header">
     <div class="profile-avatar">
-      {% if profile_user.avatar_url %}
-        <img src="{{ profile_user.avatar_url }}" alt="avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
-      {% else %}
-        {{ profile_user.username[0].upper() }}
-      {% endif %}
+      {% if profile_user.avatar_url %}<img src="{{ profile_user.avatar_url }}" alt="{{ profile_user.username }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+      {% else %}{{ profile_user.username[0] | upper }}{% endif %}
     </div>
-    <div style="flex:1;">
-      <h2 class="profile-username">@{{ profile_user.username }}</h2>
-      {% if profile_user.display_name %}
-        <p class="profile-displayname">{{ profile_user.display_name }}</p>
-      {% endif %}
-      {% if profile_user.bio %}
-        <p class="profile-bio">{{ profile_user.bio }}</p>
-      {% endif %}
+    <div class="profile-info">
+      <h1 class="profile-username">@{{ profile_user.username | upper }}</h1>
+      {% if profile_user.display_name %}<p class="profile-displayname">{{ profile_user.display_name }}</p>{% endif %}
+      {% if profile_user.bio %}<p class="profile-bio">{{ profile_user.bio }}</p>{% endif %}
+      <p class="profile-joined">Member since {{ profile_user.created_at.strftime('%B %Y') }}</p>
     </div>
-    {% if is_own %}
-      <a href="/profile/edit" class="btn-primary" style="white-space:nowrap;">Edit Profile</a>
-    {% endif %}
+    {% if is_own %}<a href="/profile/edit" class="btn-primary" style="margin-left:auto;white-space:nowrap;">Edit Profile</a>{% endif %}
   </div>
-
   {% if is_own %}
-  <div class="post-composer">
-    <textarea name="content" id="profile-post-content" placeholder="Share something with The Commons..." maxlength="10000"></textarea>
+  <div class="post-composer" style="margin-bottom:24px;">
+    <textarea id="compose-text" placeholder="Share something with The Commons..." rows="3"></textarea>
     <div class="composer-actions">
-      <select id="profile-post-type">
+      <select id="compose-type">
         <option value="text">Text</option>
         <option value="image">Image</option>
+        <option value="audio">Audio</option>
         <option value="video">Video</option>
       </select>
-      <button onclick="submitProfilePost()" class="btn-primary">Post</button>
+      <button class="btn-primary" onclick="submitPost()">Post</button>
     </div>
-    <div id="profile-post-error" class="form-error" style="display:none;"></div>
+    <div id="compose-msg" class="composer-note" style="display:none;"></div>
   </div>
   {% endif %}
-
-  <div class="feed-layout">
+  <div class="profile-posts">
     {% if posts %}
       {% for post in posts %}
       <div class="post-card">
         <div class="post-header">
-          <span class="post-author">@{{ profile_user.username }}</span>
-          <span class="post-time">{{ post.published_at.strftime("%b %d") if post.published_at else "" }}</span>
+          <a href="/profile/{{ post.author.username }}" class="post-author">@{{ post.author.username | upper }}</a>
+          <span class="post-time">{% if post.published_at %}{{ post.published_at.strftime('%b %-d') }}{% endif %}</span>
         </div>
         <div class="post-content">{{ post.content }}</div>
         <div class="post-actions">
-          <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline">
+          <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline;">
             <input type="hidden" name="value" value="1">
-            <button type="submit" class="vote-btn {% if post.user_voted == 1 %}voted-up{% endif %}">↑ Valuable</button>
+            <button type="submit" class="vote-btn {% if post.user_voted == 1 %}vote-active{% endif %}">↑ Valuable</button>
           </form>
-          <span class="community-score">{{ post.vote_score | int }}</span>
-          <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline">
-            <input type="hidden" name="value" value="-1">
-            <button type="submit" class="vote-btn {% if post.user_voted == -1 %}voted-down{% endif %}">↓</button>
+          <span class="community-score">{{ post.up_count }}</span>
+          {% if current_user and current_user.id == post.author_id %}
+          <form method="POST" action="/post/{{ post.id }}/delete" style="display:inline;margin-left:auto;" onsubmit="return confirm('Delete this post?');">
+            <button type="submit" class="delete-btn">✕</button>
           </form>
+          {% endif %}
         </div>
       </div>
       {% endfor %}
     {% else %}
-      <div class="empty-feed">
-        <p>No posts yet. Say something! 👋</p>
-      </div>
+      <div class="empty-feed"><p>No posts yet.</p></div>
     {% endif %}
   </div>
 </div>
-
+{% endblock %}
+{% block scripts %}
 <script>
-async function submitProfilePost() {
-  const content = document.getElementById("profile-post-content").value;
-  const post_type = document.getElementById("profile-post-type").value;
-  const errorEl = document.getElementById("profile-post-error");
-  if (!content.trim()) return;
-
-  const body = new FormData();
-  body.append("content", content);
-  body.append("post_type", post_type);
-
-  const token = document.cookie.split(";").find(c => c.trim().startsWith("token="));
-  const tok = token ? token.trim().split("=")[1] : "";
-
-  const res = await fetch("/api/posts", {
-    method: "POST",
-    headers: tok ? {"Authorization": "Bearer " + tok} : {},
-    body: body
-  });
-  const data = await res.json();
-
-  if (data.ok) {
-    window.location.reload();
-  } else {
-    errorEl.style.display = "block";
-    errorEl.innerText = data.error || "Post failed.";
-  }
+function submitPost() {
+  const content = document.getElementById('compose-text').value.trim();
+  const postType = document.getElementById('compose-type').value;
+  const msgEl = document.getElementById('compose-msg');
+  if (!content) { msgEl.style.display='block'; msgEl.style.color='#c0392b'; msgEl.textContent='Write something first.'; return; }
+  const form = new FormData();
+  form.append('content', content);
+  form.append('post_type', postType);
+  fetch('/api/posts', {method:'POST', body:form})
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.ok){ msgEl.style.display='block'; msgEl.style.color='#2e7d4f'; msgEl.textContent=data.message||'Posted!'; document.getElementById('compose-text').value=''; setTimeout(()=>location.reload(),800); }
+      else{ msgEl.style.display='block'; msgEl.style.color='#c0392b'; msgEl.textContent=data.error||'Something went wrong.'; }
+    });
 }
 </script>
 {% endblock %}

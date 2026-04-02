@@ -565,3 +565,9 @@ a:hover { text-decoration: underline; }
   flex-direction: column;
   gap: 16px;
 }
+
+.delete-btn { background:none; border:1px solid #e0b0b0; color:#c0392b; border-radius:20px; padding:4px 10px; font-size:12px; cursor:pointer; font-weight:500; }
+.delete-btn:hover { background:#fdf2f2; border-color:#c0392b; }
+.vote-active { background:#ffe0e6; border-color:#e07090; }
+.nav-logo { white-space:nowrap; cursor:pointer; }
+.coming-soon-badge { font-size:10px; background:var(--green-accent); color:white; border-radius:10px; padding:1px 6px; vertical-align:middle; margin-left:2px; }
