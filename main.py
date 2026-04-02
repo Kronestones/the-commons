@@ -672,6 +672,9 @@ async def api_set_algorithm_mode(
 async def marketplace_page(request: Request, q: str = "", db: Session = Depends(get_db)):
     try:
         current_user = get_current_user_from_cookie(request, db)
+        if not current_user:
+            from fastapi.responses import RedirectResponse
+            return RedirectResponse("/register")
         query = db.query(Listing).filter(Listing.is_active == True).order_by(Listing.created_at.desc())
         if q:
             like = f"%{q}%"
