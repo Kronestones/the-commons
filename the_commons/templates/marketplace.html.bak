@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Marketplace — The Commons{% endblock %}
+{% block content %}
+<div class="marketplace-container">
+
+  <div class="marketplace-hero">
+    <h1>Marketplace</h1>
+    <p>Local creators and small businesses only. No corporations. Flat $1 platform fee per transaction.</p>
+  </div>
+
+  <div class="marketplace-toolbar">
+    <form method="GET" action="/marketplace">
+      <input type="text" name="q" placeholder="Search listings..." value="{{ query or '' }}">
+      <button type="submit" class="btn-primary">Search</button>
+    </form>
+    {% if current_user %}
+      <a href="/marketplace/create" class="btn-primary">+ Post Listing</a>
+      <a href="/marketplace/inbox" class="btn-secondary">Inbox</a>
+    {% endif %}
+  </div>
+
+  {% if listings %}
+    <div class="listing-grid">
+      {% for listing in listings %}
+        <a href="/marketplace/{{ listing.id }}" class="listing-card">
+          <div class="listing-img">
+            {% if listing.image_url %}
+              <img src="{{ listing.image_url }}" alt="{{ listing.title }}">
+            {% else %}
+              <span class="listing-img-placeholder">🛍️</span>
+            {% endif %}
+          </div>
+          <div class="listing-body">
+            <div class="listing-price">${{ listing.price }}</div>
+            <div class="listing-title">{{ listing.title }}</div>
+            <div class="listing-seller">@{{ listing.seller.username if listing.seller else 'unknown' }}</div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-marketplace">
+      <div style="font-size:3rem;">🛍️🛒</div>
+      <h3>Be the first to list a product.</h3>
+      {% if current_user %}
+        <a href="/marketplace/create" class="btn-primary">Post a listing</a>
+      {% else %}
+        <a href="/register" class="btn-primary">Join to sell</a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
