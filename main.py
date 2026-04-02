@@ -61,15 +61,8 @@ from commons.security       import (
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy import Column, Integer, ForeignKey, Float, Text, Boolean, DateTime, UniqueConstraint
 
-class Vote(Base):
-    __tablename__ = "votes"
-    id      = Column(Integer, primary_key=True)
-    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    value   = Column(Integer, nullable=False)
-    __table_args__ = (
-        UniqueConstraint("post_id", "user_id", name="one_vote_per_post"),
-    )
+# Vote model lives in commons/database.py as CommunityVote
+from commons.database import CommunityVote as Vote
 
 # ── Check ─────────────────────────────────────────────────────────────────────
 
