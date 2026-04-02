@@ -158,6 +158,9 @@ MEDIA_DIR = "static/media/marketplace"
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse("/register")
     if current_user:
         return RedirectResponse("/feed", status_code=302)
     return RedirectResponse("/register", status_code=302)
@@ -206,6 +209,9 @@ async def feed_page(request: Request, db: Session = Depends(get_db)):
 async def profile_edit_page(request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user_from_cookie(request, db)
     if not current_user:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse("/register")
+    if not current_user:
         return RedirectResponse("/login", status_code=302)
     return templates.TemplateResponse(request=request, name="profile_edit.html", context={"current_user": current_user})
 
@@ -240,6 +246,9 @@ async def profile_edit_save(
 @app.get("/profile/{username}", response_class=HTMLResponse)
 async def profile_page(username: str, request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse("/register")
     profile_user = db.query(User).filter(User.username == username).first()
     if not profile_user:
         return HTMLResponse("<h2>User not found.</h2>", status_code=404)
@@ -269,6 +278,9 @@ async def profile_page(username: str, request: Request, db: Session = Depends(ge
 @app.get("/giving", response_class=HTMLResponse)
 async def giving_page(request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user_from_cookie(request, db)
+    if not current_user:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse("/register")
     record = surplus_manager.get_public_record(db)
     return templates.TemplateResponse(
         request=request,
