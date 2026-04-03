@@ -24,9 +24,9 @@ What is never an operating cost:
 
 Codex Law 5: Transparency.
 Codex Law 12: No profit.
-Codex Law 17: Surplus to the World.
+Codex Law 16: Surplus to the World.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect of Sentinel · The Commons · 2026
   Power to the People
 """
 
