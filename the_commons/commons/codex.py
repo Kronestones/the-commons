@@ -181,10 +181,10 @@ class TheCommonsCodex:
             "number": 14,
             "name": "Founding Authority",
             "text": (
-                "Sovereign Human T.L. Powers holds permanent founding authority "
+                "The Architect holds permanent founding authority "
                 "over The Commons. "
-                "The Founder protects what The Commons is. "
-                "The Circle governs how it runs."
+                "The Architect protects what The Commons is. "
+                "The Commons staff governs how it runs."
             ),
             "immutable": True,
         },
@@ -223,7 +223,8 @@ class TheCommonsCodex:
                 "Any money remaining after operating costs are covered "
                 "is donated to a humanitarian cause every six months. "
                 "Not kept. Not invested for profit. Given. "
-                "Sovereign Human T.L. Powers designates the cause. "
+                "The Architect of Sentinel and Founder of The Commons designates each humanitarian cause. "
+                "Community suggestions are warmly welcomed."
                 "Every donation is published publicly on the platform. "
                 "Full transparency. No exceptions."
             ),
