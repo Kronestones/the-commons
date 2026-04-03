@@ -8,7 +8,7 @@ Usage:
     python main.py --check      # Check configuration
     python main.py --dev        # Development mode
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
   Power to the People
 """
 
@@ -143,7 +143,7 @@ async def startup():
     print(f"║  Host:     {config.host}:{config.port:<38}║")
     print(f"║  Mode:     {'Development' if config.debug else 'Production':<43}║")
     print("╠══════════════════════════════════════════════════════╣")
-    print("║  Sovereign Human T.L. Powers                         ║")
+    print("║  The Architect, Founder of The Commons                         ║")
     print("║  Power to the People                                 ║")
     print("╚══════════════════════════════════════════════════════╝")
     print()
@@ -1363,7 +1363,7 @@ async def api_designate_donation(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Sovereign Human T.L. Powers designates a humanitarian cause."""
+    """The Architect, Founder of The Commons designates a humanitarian cause."""
     if current_user.role.value != "sovereign":
         raise HTTPException(403, "Sovereign authority required. Codex Law 17.")
     from datetime import datetime

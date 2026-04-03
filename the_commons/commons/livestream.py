@@ -31,7 +31,7 @@ Transparency to users:
 Codex Law 1: People First — be honest about what's ready.
 Codex Law 5: Transparency — no fake features.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
   Power to the People
 """
 

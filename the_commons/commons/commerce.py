@@ -11,7 +11,7 @@ of the people doing the actual work.
 Codex Law 11: Local Commerce
 Codex Law 12: No Profit
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
   Power to the People
 """
 

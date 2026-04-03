@@ -18,7 +18,7 @@ Minority opinion matters.
 Every decision comes with a reason.
 No black boxes.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
 """
 
 from datetime import datetime

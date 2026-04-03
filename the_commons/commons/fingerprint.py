@@ -17,7 +17,7 @@ Three outcomes:
 Nothing true is ever accidentally removed.
 Human review precedes all removals.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
 """
 
 import json

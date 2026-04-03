@@ -13,7 +13,7 @@ witnessed and logged.
 No advertising. No data selling. No biometrics. No profit.
 Power to the People.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
 """
 
 

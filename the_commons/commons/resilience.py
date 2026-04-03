@@ -22,7 +22,7 @@ Designed to run on Railway (cloud) or locally in Termux.
 On Railway — the platform restarts automatically on crash.
 In Termux  — use the watchdog script to keep it alive.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
   Power to the People
 """
 

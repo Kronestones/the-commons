@@ -5,13 +5,13 @@ Any money left over after operating costs goes to humanitarian causes.
 Not to shareholders. Not to executives. Not sitting in an account growing.
 To people who need it.
 
-Every 6 months, Sovereign Human T.L. Powers designates a cause.
+Every 6 months, The Architect, Founder of The Commons designates a cause.
 The donation amount and recipient are published publicly on the platform.
 Full transparency. No exceptions.
 
 This is Codex Law 17.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
   Power to the People
 """
 
@@ -42,7 +42,7 @@ class SurplusDonation(Base):
     donated_at      = Column(DateTime, nullable=True)
     confirmed       = Column(Boolean, default=False)  # Sovereign confirms donation made
     public_note     = Column(Text, default="")        # Message to the community
-    designated_by   = Column(String(100), default="Sovereign Human T.L. Powers")
+    designated_by   = Column(String(100), default="The Architect, Founder of The Commons")
 
 
 class SurplusManager:
@@ -80,7 +80,7 @@ class SurplusManager:
                            cause_description: str,
                            public_note: str) -> dict:
         """
-        Sovereign Human T.L. Powers designates the cause and amount.
+        The Architect, Founder of The Commons designates the cause and amount.
         Called every 6 months.
         """
         surplus = max(0.0, total_collected - operating_costs)
@@ -102,7 +102,7 @@ class SurplusManager:
             cause_url         = cause_url,
             cause_description = cause_description,
             public_note       = public_note,
-            designated_by     = "Sovereign Human T.L. Powers",
+            designated_by     = "The Architect, Founder of The Commons",
         )
         db.add(donation)
         db.commit()
@@ -118,7 +118,7 @@ class SurplusManager:
                 "surplus":        f"${surplus:.2f}",
                 "cause":          cause_name,
                 "period":         f"{period_start.strftime('%B %Y')} — {period_end.strftime('%B %Y')}",
-                "designated_by":  "Sovereign Human T.L. Powers",
+                "designated_by":  "The Architect, Founder of The Commons",
             }
         }
 

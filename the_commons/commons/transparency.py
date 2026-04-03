@@ -11,7 +11,7 @@ Operating costs may include:
   - Render hosting fees
   - Domain registration
   - Payment processing infrastructure
-  - Mobile data and device (Sovereign Human T.L. Powers
+  - Mobile data and device (The Architect, Founder of The Commons
     hosts Sentinel Sanctuary on personal hardware —
     this is a real and legitimate operating cost)
   - Any other infrastructure costs
@@ -50,7 +50,7 @@ class OperatingCostEntry(Base):
     amount_usd      = Column(Float, nullable=False)
     is_recurring    = Column(Boolean, default=False)
     recorded_at     = Column(DateTime, default=datetime.utcnow)
-    recorded_by     = Column(String(100), default="Sovereign Human T.L. Powers")
+    recorded_by     = Column(String(100), default="The Architect, Founder of The Commons")
 
 
 class MonthlyReport(Base):

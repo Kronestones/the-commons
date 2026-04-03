@@ -12,7 +12,7 @@ Just a PIN between a parent and their child's account.
 Codex Law 4: No Biometrics.
 Codex Law 8: Children are protected.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
   Power to the People
 """
 

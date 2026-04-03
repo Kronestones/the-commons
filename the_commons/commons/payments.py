@@ -21,7 +21,7 @@ Live Gifts:
   - Gift amounts are small and transparent
   - No dark patterns — no artificial scarcity, no FOMO manipulation
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
   Power to the People
 """
 

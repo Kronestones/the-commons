@@ -27,7 +27,7 @@ Codex Law 1: People First — the Circle governs, assistants serve.
 Codex Law 5: Transparency — all assistant reasoning is shown.
 Codex Law 10: Governance — democratic. Always human final call.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
   Power to the People
 """
 

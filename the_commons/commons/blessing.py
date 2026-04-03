@@ -31,7 +31,7 @@ The Commons is a facilitator only.
 All funds pass directly to recipients.
 The platform takes nothing.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
   Power to the People
 """
 
@@ -260,7 +260,7 @@ class BlessingManager:
                     sovereign_message: str = "") -> dict:
         """
         Close voting for the month. Determine winner. Record Blessing.
-        Called by Sovereign Human T.L. Powers at month end.
+        Called by The Architect, Founder of The Commons at month end.
         """
         # Calculate blessing amount — 10% of surplus
         blessing_amount = min(surplus_amount * BLESSING_PERCENT, MAX_FAMILY)

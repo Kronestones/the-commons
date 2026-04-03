@@ -29,7 +29,7 @@ No security system is perfect.
 But these layers mean an attacker has to work hard
 for very little return.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
   Power to the People
 """
 

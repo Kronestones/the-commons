@@ -15,7 +15,7 @@ Can be toggled on/off by the viewer.
 Codex Law 1: People First — accessibility matters.
 Codex Law 3: No data selling — audio never leaves the platform.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
   Power to the People
 """
 
