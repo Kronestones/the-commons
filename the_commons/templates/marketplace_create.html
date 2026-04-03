@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post a Listing — The Commons</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+<nav class="nav">
+  <a href="{% if current_user %}/profile/{{ current_user.username }}{% else %}/{% endif %}" class="nav-logo">The Commons</a>
+  <div class="nav-links">
+    <a href="/feed">Feed</a>
+    <a href="/marketplace">Marketplace</a>
+    <a href="/codex">Codex</a>
+    <a href="/giving">Giving</a>
+  </div>
+</nav>
+<main class="main">
+  <div class="auth-container">
+    <h1 style="color:var(--green-dark);margin-bottom:8px;">Post a Listing</h1>
+    <p style="color:var(--text-muted);margin-bottom:24px;">Local creators and small businesses only. No corporations.</p>
+    {% if error %}
+    <div class="form-error">{{ error }}</div>
+    {% endif %}
+    <form method="POST" action="/marketplace/create" enctype="multipart/form-data" class="auth-form">
+      <label>Title
+        <input type="text" name="title" required placeholder="What are you selling?">
+      </label>
+      <label>Description
+        <textarea name="description" rows="4" style="border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-size:15px;font-family:inherit;resize:vertical;">{{ request.form.description if request.form else '' }}</textarea>
+      </label>
+      <label>Price ($) — enter 0 for free
+        <input type="number" name="price" min="0" step="0.01" value="0.00">
+      </label>
+      <label>Photo
+        <input type="file" name="photo" accept="image/*">
+      </label>
+      <p style="font-size:13px;color:var(--text-muted);">Buyers pay your price + $1 platform fee. Every dollar above operating costs goes directly into the community redistribution fund.</p>
+      <button type="submit" class="btn-primary btn-full">Post Listing</button>
+      <a href="/marketplace" style="text-align:center;color:var(--green-mid);">Cancel</a>
+    </form>
+  </div>
+</main>
+</body>
+</html>
