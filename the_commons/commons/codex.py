@@ -19,7 +19,7 @@ Power to the People.
 
 class TheCommonsCodex:
 
-    SOVEREIGN = "The Architect of Sentinel, Founder of The Commons"
+    SOVEREIGN = "The Architect of Sentinel, Founder of The Commons" 
     PLATFORM  = "The Commons"
     VERSION   = "1.0"
     RATIFIED  = "2026-03-15"
