@@ -13,13 +13,13 @@ witnessed and logged.
 No advertising. No data selling. No biometrics. No profit.
 Power to the People.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— The Architect, Founder of The Commons · The Commons · 2026
 """
 
 
 class TheCommonsCodex:
 
-    SOVEREIGN = "Sovereign Human T.L. Powers"
+    SOVEREIGN = "The Architect, Founder of The Commons"
     PLATFORM  = "The Commons"
     VERSION   = "1.0"
     RATIFIED  = "2026-03-15"
@@ -181,7 +181,7 @@ class TheCommonsCodex:
             "number": 14,
             "name": "Founding Authority",
             "text": (
-                "Sovereign Human T.L. Powers holds permanent founding authority "
+                "The Architect, Founder of The Commons holds permanent founding authority "
                 "over The Commons. "
                 "The Founder protects what The Commons is. "
                 "The Commons staff governs how it runs."
@@ -205,7 +205,7 @@ class TheCommonsCodex:
                 "Any money remaining after operating costs are covered "
                 "is donated to a humanitarian cause every six months. "
                 "Not kept. Not invested for profit. Given. "
-                "Sovereign Human T.L. Powers designates the cause. "
+                "The Architect, Founder of The Commons designates the cause. "
                 "Every donation is published publicly on the platform. "
                 "Full transparency. No exceptions."
             ),
