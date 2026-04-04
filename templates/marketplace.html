@@ -43,7 +43,7 @@
     <div class="empty-marketplace">
       <div style="font-size:3rem;margin-bottom:12px;">🛍️</div>
       <h3>Be the first to list something.</h3>
-      {% if current_user %}<a href="/marketplace/create" class="btn-primary" style="display:inline-block;margin-top:16px;">Post a listing</a>
+      {% if current_user %}
       {% else %}<a href="/register" class="btn-primary" style="display:inline-block;margin-top:16px;">Join to sell</a>{% endif %}
     </div>
   {% endif %}
