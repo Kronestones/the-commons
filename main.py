@@ -707,7 +707,8 @@ async def marketplace_create_post(
     if photo and getattr(photo, "filename", None) and photo.filename:
         ext = photo.filename.rsplit(".", 1)[-1].lower()
         if ext in {"jpg", "jpeg", "png", "webp", "gif"}:
-            import uuid, shutil
+            import uuid, shutil, os
+            os.makedirs("static/media/marketplace", exist_ok=True)
             fname = f"{uuid.uuid4().hex}.{ext}"
             dest = f"static/media/marketplace/{fname}"
             with open(dest, "wb") as f:
