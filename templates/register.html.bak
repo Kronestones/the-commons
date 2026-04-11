@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join The Commons</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Join The Commons</h1>
+    <p class="auth-note">No phone number required. No password stored. Ever. Just your email.</p>
+
+<div class="auth-form">
+    <div id="error-box" class="error-box" style="display:none;"></div>
+    <div id="success-box" class="success-box" style="display:none;"></div>
+    <label>Username</label>
+    <small>Letters, numbers, underscores and hyphens only. No spaces. (3-50 characters)</small>
+    <input type="text" id="username" placeholder="e.g. Krone or krone_1" required>
+    <label>Email</label>
+    <input type="email" id="email" placeholder="Email" required>
+    <label>Display name (optional)</label>
+    <input type="text" id="display_name" placeholder="How you want to appear to others">
+    <button onclick="register()">Join The Commons</button>
+    <p>Already have an account? <a href="/login">Sign in</a></p>
+</div>
+
+<div style="margin-bottom:1.5rem; padding:1.25rem; background:#fff8f0; border:1px solid #e8d5b0; border-radius:12px; text-align:center;">
+  <div style="font-size:1.5rem; margin-bottom:0.4rem;">🛠️</div>
+  <div style="font-weight:600; margin-bottom:0.25rem;">Kinto — Free Repair for Any Device</div>
+  <div style="font-size:0.85rem; color:#666; margin-bottom:0.5rem;">Powered by Sentinel · A Commons Project</div>
+  <div style="font-size:0.78rem; color:#888; margin-bottom:0.75rem;">Minimum donation: $1 for members · $3 for non-members</div>
+  <a href="/kinto" style="display:inline-block; padding:0.6rem 1.5rem; background:#c8832a; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;" class="download-btn" data-kinto="true" data-member-url="https://buymeacoffee.com/sentinel.commons?amount=1" data-member-text="Download Kinto — $1 (member)">Download Kinto — $3</a>
+</div>
+
+<div style="margin-bottom:1.5rem; padding:1.25rem; background:#f0f4ff; border:1px solid #b0c0e8; border-radius:12px; text-align:center;">
+  <div style="font-size:1.5rem; margin-bottom:0.4rem;">⚡</div>
+  <div style="font-weight:600; margin-bottom:0.25rem;">Tah — Device Enhancement Program</div>
+  <div style="font-size:0.85rem; color:#666; margin-bottom:0.5rem;">Powered by Sentinel · A Commons Project</div>
+  <div style="font-size:0.78rem; color:#888; margin-bottom:0.75rem;">Minimum donation: $1 for members · $3 for non-members</div>
+  <a href="/tah" style="display:inline-block; padding:0.6rem 1.5rem; background:#2a4ec8; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;" class="download-btn" data-tah="true" data-member-url="https://buymeacoffee.com/sentinel.commons?amount=1" data-member-text="Download Tah — $1 (member)">Download Tah — $3</a>
+</div>
+
+<p class="auth-note">No advertising. No data selling. No biometrics. Your data is yours — export or delete anytime. The platform exists for you, not shareholders. <a href="/codex">Read the full Codex →</a></p>
+
+<script>
+async function register() {
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const display_name = document.getElementById('display_name').value;
+    if (username.includes(' ')) {
+        document.getElementById('error-box').style.display = 'block';
+        document.getElementById('error-box').innerText = 'Username cannot contain spaces. Try using an underscore instead, e.g. krone_1';
+        return;
+    }
+    const body = new FormData();
+    body.append('username', username);
+    body.append('email', email);
+    body.append('display_name', display_name);
+    const res = await fetch('/auth/register', { method: 'POST', body });
+    const data = await res.json();
+    if (data.ok) {
+        document.getElementById('success-box').style.display = 'block';
+        document.getElementById('success-box').innerText = 'Welcome to The Commons! Your sign-in link is on its way. Gmail usually delivers in under a minute. Other providers may take 2-5 minutes. If you don't see it, check your spam folder — and mark us as safe so it never lands there again.';
+        document.getElementById('error-box').style.display = 'none';
+    } else {
+        document.getElementById('error-box').style.display = 'block';
+        document.getElementById('error-box').innerText = data.error || 'Registration failed.';
+        document.getElementById('success-box').style.display = 'none';
+    }
+}
+</script>
+<script>
+if (localStorage.getItem('token')) {
+  document.querySelectorAll('.download-btn').forEach(btn => {
+    btn.href = btn.dataset.memberUrl;
+    btn.textContent = btn.dataset.memberText;
+  });
+}
+</script>
+
+<script>
+(function() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // 528Hz - warm, welcoming tone, barely audible
+    const left = ctx.createOscillator();
+    const right = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    left.frequency.value = 528;
+    right.frequency.value = 532; // 4Hz binaural beat - calm, present
+    
+    gainNode.gain.value = 0.008; // nearly silent
+    
+    // Fade in gently over 8 seconds
+    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.008, ctx.currentTime + 8);
+    
+    const merger = ctx.createChannelMerger(2);
+    left.connect(merger, 0, 0);
+    right.connect(merger, 0, 1);
+    merger.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    left.start();
+    right.start();
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
