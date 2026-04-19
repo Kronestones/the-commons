@@ -17,7 +17,11 @@ from .config import config
 
 engine = create_engine(
     config.database_url,
-    connect_args={"check_same_thread": False} if "sqlite" in config.database_url else {}
+    connect_args={"check_same_thread": False} if "sqlite" in config.database_url else {},
+    pool_pre_ping=True,
+    pool_recycle=300,
+    pool_size=5,
+    max_overflow=10
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
