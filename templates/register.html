@@ -1,204 +1,122 @@
-{% extends "base.html" %}
-{% block title %}Join The Commons{% endblock %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join The Commons</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Join The Commons</h1>
+    <p class="auth-note">No phone number required. No password stored. Ever. Just your email.</p>
 
-<style>
-/* ── Gleaning hero banner ── */
-.gleaning-hero {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #1a3a2a;
-  border-radius: 12px;
-  padding: 22px 24px;
-  margin-bottom: 28px;
-  text-decoration: none;
-  transition: background 0.15s, transform 0.1s;
-  gap: 16px;
-  border-left: 5px solid #7cb87c;
-}
-.gleaning-hero:hover {
-  background: #0f2417;
-  transform: translateY(-1px);
-  text-decoration: none;
-}
-.gleaning-hero-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.gleaning-hero-icon { font-size: 32px; flex-shrink: 0; }
-.gleaning-hero-text { display: flex; flex-direction: column; }
-.gleaning-hero-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #7cb87c;
-  line-height: 1.2;
-  margin-bottom: 4px;
-}
-.gleaning-hero-sub {
-  font-size: 13px;
-  color: rgba(255,255,255,0.75);
-  line-height: 1.5;
-}
-.gleaning-hero-arrow {
-  color: #7cb87c;
-  font-size: 22px;
-  flex-shrink: 0;
-}
-
-/* ── Kinto / Tah small cards ── */
-.companion-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 24px;
-}
-.companion-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #f0f7f3;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  flex-wrap: wrap;
-}
-.companion-card-icon { font-size: 1.5rem; flex-shrink: 0; }
-.companion-card-body { flex: 1; min-width: 0; }
-.companion-card-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--green-dark);
-  margin-bottom: 2px;
-}
-.companion-card-sub { font-size: 12px; color: var(--text-muted); }
-.companion-card-btn {
-  background: var(--green-mid);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background 0.15s;
-  flex-shrink: 0;
-}
-.companion-card-btn:hover {
-  background: var(--green-dark);
-  text-decoration: none;
-  color: white;
-}
-</style>
-
-<div class="auth-container">
-
-  <!-- Gleaning — top, prominent -->
-  <a href="https://gleaning.onrender.com" target="_blank" rel="noopener" class="gleaning-hero">
-    <div class="gleaning-hero-left">
-      <span class="gleaning-hero-icon">🌾</span>
-      <div class="gleaning-hero-text">
-        <span class="gleaning-hero-title">Gleaning — See what's being wasted near you</span>
-        <span class="gleaning-hero-sub">
-          Document food waste · Connect surplus directly to people who need it<br>
-          No account required · The harvest was never only theirs.
-        </span>
-      </div>
-    </div>
-    <span class="gleaning-hero-arrow">↗</span>
-  </a>
-
-  <h1>Join The Commons</h1>
-  <p class="auth-note">No phone number required. No biometrics. No password stored. Ever. Just your email.</p>
-
-  <form id="register-form" class="auth-form">
-    <label>Username
-      <small>Letters, numbers, underscores and hyphens only. No spaces. (3-50 characters)</small>
-      <input type="text" id="username" placeholder="e.g. Krone or krone_1" maxlength="50" required>
-    </label>
-    <label>Email
-      <input type="email" id="email" placeholder="Email" required>
-    </label>
-    <label>Display name (optional)
-      <input type="text" id="display-name" placeholder="How you want to appear to others">
-    </label>
-    <div id="form-error" class="form-error" style="display:none;padding:12px;background:#fee;border:1px solid #f00;border-radius:6px;color:#c00;font-size:14px;margin-bottom:12px;"></div>
-    <button type="submit" class="btn-primary btn-full">Join The Commons</button>
-  </form>
-
-  <p class="auth-switch">Already have an account? <a href="/login"><strong>Sign in</strong></a></p>
-
-  <div class="auth-promise">
-    <h3>Our promise to you</h3>
-    <ul>
-      <li>No advertising — ever</li>
-      <li>No data selling — ever</li>
-      <li>No biometrics — ever</li>
-      <li>Your data is yours — export or delete anytime</li>
-      <li>The platform exists for you, not shareholders</li>
-    </ul>
-    <a href="/codex">Read the full Codex →</a>
-  </div>
-
-  <!-- Kinto and Tah — below the form -->
-  <div class="companion-cards">
-    <div class="companion-card">
-      <span class="companion-card-icon">🔧</span>
-      <div class="companion-card-body">
-        <div class="companion-card-title">Kinto — Free Repair for Any Device</div>
-        <div class="companion-card-sub">Don't want to join? That's okay. Kinto is for everyone.</div>
-      </div>
-      <a href="/kinto" class="companion-card-btn">Download — $1</a>
-    </div>
-    <div class="companion-card">
-      <span class="companion-card-icon">✨</span>
-      <div class="companion-card-body">
-        <div class="companion-card-title">Tah — Enhance Any Device</div>
-        <div class="companion-card-sub">Free performance and accessibility improvements.</div>
-      </div>
-      <a href="/tah" class="companion-card-btn">Download — $1</a>
-    </div>
-  </div>
-
-  <p class="auth-disclosure">
-    The Commons is not a registered charity. Donations are not tax deductible.
-    Every contribution is an act of pure generosity — and we are deeply grateful for it.
-  </p>
-
+<div class="auth-form">
+    <div id="error-box" class="error-box" style="display:none;"></div>
+    <div id="success-box" class="success-box" style="display:none;"></div>
+    <label>Username</label>
+    <small>Letters, numbers, underscores and hyphens only. No spaces. (3-50 characters)</small>
+    <input type="text" id="username" placeholder="e.g. Krone or krone_1" required>
+    <label>Email</label>
+    <input type="email" id="email" placeholder="Email" required>
+    <label>Display name (optional)</label>
+    <input type="text" id="display_name" placeholder="How you want to appear to others">
+    <button onclick="register()">Join The Commons</button>
+    <p>Already have an account? <a href="/login">Sign in</a></p>
 </div>
 
-{% endblock %}
-{% block scripts %}
+<div style="margin-bottom:1.5rem; padding:1.25rem; background:#fff8f0; border:1px solid #e8d5b0; border-radius:12px; text-align:center;">
+  <div style="font-size:1.5rem; margin-bottom:0.4rem;">🛠️</div>
+  <div style="font-weight:600; margin-bottom:0.25rem;">Kinto — Free Repair for Any Device</div>
+  <div style="font-size:0.85rem; color:#666; margin-bottom:0.5rem;">Powered by Sentinel · A Commons Project</div>
+  <div style="font-size:0.78rem; color:#888; margin-bottom:0.75rem;">Minimum donation: $1 for members · $3 for non-members</div>
+  <a href="/kinto" style="display:inline-block; padding:0.6rem 1.5rem; background:#c8832a; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;" class="download-btn" data-kinto="true" data-member-url="https://buymeacoffee.com/sentinel.commons?amount=1" data-member-text="Download Kinto — $1 (member)">Download Kinto — $3</a>
+</div>
+
+<div style="margin-bottom:1.5rem; padding:1.25rem; background:#f0f4ff; border:1px solid #b0c0e8; border-radius:12px; text-align:center;">
+  <div style="font-size:1.5rem; margin-bottom:0.4rem;">⚡</div>
+  <div style="font-weight:600; margin-bottom:0.25rem;">Tah — Device Enhancement Program</div>
+  <div style="font-size:0.85rem; color:#666; margin-bottom:0.5rem;">Powered by Sentinel · A Commons Project</div>
+  <div style="font-size:0.78rem; color:#888; margin-bottom:0.75rem;">Minimum donation: $1 for members · $3 for non-members</div>
+  <a href="/tah" style="display:inline-block; padding:0.6rem 1.5rem; background:#2a4ec8; color:#fff; border-radius:8px; text-decoration:none; font-weight:600; font-size:0.9rem;" class="download-btn" data-tah="true" data-member-url="https://buymeacoffee.com/sentinel.commons?amount=1" data-member-text="Download Tah — $1 (member)">Download Tah — $3</a>
+</div>
+
+<p class="auth-note">No advertising. No data selling. No biometrics. Your data is yours — export or delete anytime. The platform exists for you, not shareholders. <a href="/codex">Read the full Codex →</a></p>
+
 <script>
-document.getElementById('register-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = new FormData();
-  form.append('username',     document.getElementById('username').value);
-  form.append('email',        document.getElementById('email').value);
-  form.append('password',     document.getElementById('password') ? document.getElementById('password').value : 'magic_link');
-  form.append('display_name', document.getElementById('display-name').value);
-  form.append('is_minor', false);
-  const res  = await fetch('/auth/register', { method: 'POST', body: form });
-  let data;
-  try { data = await res.json(); }
-  catch(e) {
-    const err = document.getElementById('form-error');
-    err.textContent = 'Server error — please try again.';
-    err.style.display = 'block';
-    return;
+async function register() {
+  try {
+    const username = document.getElementById('username').value;
+    const email = document.getElementById('email').value;
+    const display_name = document.getElementById('display_name').value;
+    if (!username || !email) {
+        document.getElementById('error-box').style.display = 'block';
+        document.getElementById('error-box').innerText = 'Username and email are required.';
+        return;
+    }
+    if (username.includes(' ')) {
+        document.getElementById('error-box').style.display = 'block';
+        document.getElementById('error-box').innerText = 'Username cannot contain spaces. Try using an underscore instead, e.g. krone_1';
+        return;
+    }
+    const body = new FormData();
+    body.append('username', username);
+    body.append('email', email);
+    body.append('display_name', display_name);
+    const res = await fetch('/auth/register', { method: 'POST', body });
+    const data = await res.json();
+    if (data.ok) {
+        document.getElementById('success-box').style.display = 'block';
+        document.getElementById('success-box').innerText = 'Welcome to The Commons! Your sign-in link is on its way. Gmail usually delivers in under a minute. Other providers may take 2-5 minutes. If you don't see it, check your spam folder — and mark us as safe so it never lands there again.';
+        document.getElementById('error-box').style.display = 'none';
+    } else {
+        document.getElementById('error-box').style.display = 'block';
+        document.getElementById('error-box').innerText = data.error || 'Registration failed.';
+        document.getElementById('success-box').style.display = 'none';
+    }
+  } catch(err) {
+    document.getElementById('error-box').style.display = 'block';
+    document.getElementById('error-box').innerText = 'Something went wrong: ' + err.message;
   }
-  if (data.ok) {
-    localStorage.setItem('token',    data.token);
-    localStorage.setItem('username', data.user.username);
-    window.location = '/';
-  } else {
-    const err = document.getElementById('form-error');
-    err.textContent = data.error || 'Registration failed — please try again.';
-    err.style.display = 'block';
-  }
-});
+}
 </script>
-{% endblock %}
+<script>
+if (localStorage.getItem('token')) {
+  document.querySelectorAll('.download-btn').forEach(btn => {
+    btn.href = btn.dataset.memberUrl;
+    btn.textContent = btn.dataset.memberText;
+  });
+}
+</script>
+
+<script>
+(function() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // 528Hz - warm, welcoming tone, barely audible
+    const left = ctx.createOscillator();
+    const right = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    left.frequency.value = 528;
+    right.frequency.value = 532; // 4Hz binaural beat - calm, present
+    
+    gainNode.gain.value = 0.008; // nearly silent
+    
+    // Fade in gently over 8 seconds
+    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.008, ctx.currentTime + 8);
+    
+    const merger = ctx.createChannelMerger(2);
+    left.connect(merger, 0, 0);
+    right.connect(merger, 0, 1);
+    merger.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    left.start();
+    right.start();
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
