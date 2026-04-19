@@ -7,7 +7,19 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>Join The Commons</h1>
+    <a href="https://gleaning.onrender.com" target="_blank" style="display:block; margin-bottom:1.5rem; padding:1.25rem; background:#0d1f14; border:1px solid #2a4a2a; border-radius:12px; text-decoration:none; color:inherit;">
+  <div style="display:flex; align-items:flex-start; gap:12px;">
+    <span style="font-size:1.8rem;">🌾</span>
+    <div>
+      <div style="font-weight:700; color:#7cb87c; margin-bottom:0.25rem;">Gleaning — See what's being wasted near you</div>
+      <div style="font-size:0.85rem; color:#aaa; line-height:1.5;">Document food waste · Connect surplus directly to people who need it · No account required · The harvest was never only theirs.</div>
+    </div>
+    <span style="color:#7cb87c; font-size:1.2rem; margin-left:auto;">↗</span>
+  </div>
+</a>
+
+<h1>Join The Commons</h1>
+
     <p class="auth-note">No phone number required. No password stored. Ever. Just your email.</p>
 
 <div class="auth-form">
@@ -44,9 +56,15 @@
 
 <script>
 async function register() {
+  try {
     const username = document.getElementById('username').value;
     const email = document.getElementById('email').value;
     const display_name = document.getElementById('display_name').value;
+    if (!username || !email) {
+        document.getElementById('error-box').style.display = 'block';
+        document.getElementById('error-box').innerText = 'Username and email are required.';
+        return;
+    }
     if (username.includes(' ')) {
         document.getElementById('error-box').style.display = 'block';
         document.getElementById('error-box').innerText = 'Username cannot contain spaces. Try using an underscore instead, e.g. krone_1';
@@ -67,6 +85,10 @@ async function register() {
         document.getElementById('error-box').innerText = data.error || 'Registration failed.';
         document.getElementById('success-box').style.display = 'none';
     }
+  } catch(err) {
+    document.getElementById('error-box').style.display = 'block';
+    document.getElementById('error-box').innerText = 'Something went wrong: ' + err.message;
+  }
 }
 </script>
 <script>
