@@ -1,84 +1,128 @@
-{% extends "base.html" %}
-{% block title %}Feed — The Commons{% endblock %}
-{% block content %}
-<div class="feed-layout">
-
-  {% if current_user %}
-  <div class="post-composer">
-    <textarea id="post-content" placeholder="What's on your mind? Share with The Commons..." maxlength="10000"></textarea>
-    <div class="composer-actions">
-      <select id="post-type" class="composer-actions">
-        <option value="text">Text</option>
-        <option value="image">Image</option>
-        <option value="video">Video</option>
-      </select>
-      <button onclick="submitPost()" class="btn-primary">Post</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}The Commons{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+  <!-- Install App Banner — shows on mobile if not installed -->
+  <div id="install-banner" class="install-banner" style="display:none;">
+    <div class="install-banner-content">
+      <span class="install-icon">🏡</span>
+      <div class="install-text">
+        <strong>Add The Commons to your home screen</strong>
+        <span>Use it like an app — no app store needed</span>
+      </div>
+      <button id="install-btn" class="install-btn">Add</button>
+      <button id="install-dismiss" class="install-dismiss">✕</button>
     </div>
-    <div id="post-error" class="form-error" style="display:none;"></div>
   </div>
-  {% endif %}
 
-  <div class="feed" id="feed">
-    {% if posts %}
-      {% for post in posts %}
-      <div class="post-card">
-        <div class="post-header">
-          <a href="/profile/{{ post.author.username if post.author else '#' }}" class="post-author">
-            @{{ post.author.username if post.author else 'unknown' }}
-          </a>
-          <span class="post-time">{{ post.published_at.strftime("%b %d") if post.published_at else "" }}</span>
-        </div>
-        <div class="post-content">{{ post.content }}</div>
-        <div class="post-actions">
-          <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline">
-            <input type="hidden" name="value" value="1">
-            <button type="submit" class="vote-btn {% if post.user_voted == 1 %}voted-up{% endif %}">❤️</button>
-          </form>
-          <span class="community-score">{{ post.vote_score | int }}</span>
-          <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline">
-            <input type="hidden" name="value" value="-1">
-            <button type="submit" class="vote-btn {% if post.user_voted == -1 %}voted-down{% endif %}">↓</button>
-          </form>
-        </div>
+  <!-- iOS specific instructions (shown on iOS since PWA prompt isn't available) -->
+  <div id="ios-banner" class="install-banner ios-banner" style="display:none;">
+    <div class="install-banner-content">
+      <span class="install-icon">🏡</span>
+      <div class="install-text">
+        <strong>Add to Home Screen</strong>
+        <span>Tap <strong>Share</strong> then <strong>"Add to Home Screen"</strong></span>
       </div>
-      {% endfor %}
-    {% else %}
-      <div class="empty-feed">
-        <h2>The Commons is open.</h2>
-        <p>Be the first to post.</p>
-        <a href="/register" class="btn-primary">Join</a>
-      </div>
-    {% endif %}
+      <button id="ios-dismiss" class="install-dismiss">✕</button>
+    </div>
+    <div class="ios-arrow">↓</div>
   </div>
-</div>
+
+
+  <!-- Slideout Menu Overlay -->
+  <div id="menu-overlay" onclick="closeMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;"></div>
+
+  <!-- Slideout Panel -->
+  <div id="slide-menu" style="position:fixed;top:0;right:-280px;width:280px;height:100%;background:#1a3a2a;z-index:201;transition:right 0.3s ease;padding:24px 0;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,0.1);">
+      <span style="color:white;font-weight:700;font-size:18px;">The Commons</span>
+      <button onclick="closeMenu()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;">✕</button>
+    </div>
+    <nav style="display:flex;flex-direction:column;padding:16px 0;">
+      <a href="/" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">🏠 Feed</a>
+      <a href="/marketplace" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">🛍️ Marketplace</a>
+      <a href="/codex" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">📖 Codex</a>
+      <a href="/giving" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">🤝 Giving</a>
+      <a href="/blessing" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">✨ Blessing</a>
+      <a href="/live" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">🎥 Live <span style="font-size:9px;background:#7cb87c;color:white;border-radius:10px;padding:1px 6px;margin-left:4px;vertical-align:middle;">Soon</span></a>
+      <a href="/transparency" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">🔍 Transparency</a>
+      <a href="/support" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;">❓ Help</a>
+    </nav>
+    <div style="margin-top:auto;padding:24px;border-top:1px solid rgba(255,255,255,0.1);">
+      <span id="menu-user" style="color:rgba(255,255,255,0.6);font-size:13px;"></span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a href="/" class="nav-logo" id="nav-logo-link" onclick="var u=localStorage.getItem('username'); if(u){event.preventDefault(); window.location='/profile/'+u;}">The Commons</a>
+    <span class="nav-spirit">Power to the People</span>
+    <button onclick="openMenu()" style="margin-left:auto;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;line-height:1;">☰</button>
+  </nav>
+
+  <script>
+  function openMenu() {
+    document.getElementById('slide-menu').style.right = '0';
+    document.getElementById('menu-overlay').style.display = 'block';
+    const u = localStorage.getItem('username');
+    if (u) document.getElementById('menu-user').textContent = '@' + u;
+  }
+  function closeMenu() {
+    document.getElementById('slide-menu').style.right = '-280px';
+    document.getElementById('menu-overlay').style.display = 'none';
+  }
+  </script>
+
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>The Commons · No advertising · No data selling · No biometrics · Power to the People</p>
+    <p>Founded by The Architect, Founder of The Commons · <a href="/codex">Read the Codex</a></p>
+    <div class="fb-community">
+    <a href="https://www.facebook.com/groups/1625182101758420/" target="_blank" rel="noopener">
+      💬 Join The Commons Community on Facebook
+    </a>
+  </div>
+</footer>
+
+  <script src="/static/js/main.js"></script>
+  {% block scripts %}{% endblock %}
 
 <script>
-async function submitPost() {
-  const content = document.getElementById("post-content").value;
-  const post_type = document.getElementById("post-type").value;
-  const errorEl = document.getElementById("post-error");
-  if (!content.trim()) return;
-
-  const body = new FormData();
-  body.append("content", content);
-  body.append("post_type", post_type);
-
-  const token = document.cookie.split(";").find(c => c.trim().startsWith("token="));
-  const tok = token ? token.trim().split("=")[1] : "";
-
-  const res = await fetch("/api/posts", {
-    method: "POST",
-    headers: tok ? {"Authorization": "Bearer " + tok} : {},
-    body: body
-  });
-  const data = await res.json();
-
-  if (data.ok) {
-    window.location.reload();
-  } else {
-    errorEl.style.display = "block";
-    errorEl.innerText = data.error || "Post failed.";
-  }
-}
+(function() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // 528Hz - warm, welcoming tone, barely audible
+    const left = ctx.createOscillator();
+    const right = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    left.frequency.value = 528;
+    right.frequency.value = 532; // 4Hz binaural beat - calm, present
+    
+    gainNode.gain.value = 0.008; // nearly silent
+    
+    // Fade in gently over 8 seconds
+    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.008, ctx.currentTime + 8);
+    
+    const merger = ctx.createChannelMerger(2);
+    left.connect(merger, 0, 0);
+    right.connect(merger, 0, 1);
+    merger.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    left.start();
+    right.start();
+  } catch(e) {}
+})();
 </script>
-{% endblock %}
+</body>
+</html>
