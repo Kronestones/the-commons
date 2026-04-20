@@ -146,9 +146,8 @@ async function loadMorePosts() {
         ${post.reason ? `<p class="post-reason">${post.reason}</p>` : ''}
         <div class="post-content">${escapeHtml(post.content)}</div>
         <div class="post-actions">
-          <button onclick="vote(${post.id}, 1)" class="vote-btn">↑ Valuable</button>
+          <button onclick="vote(${post.id}, 1)" class="vote-btn">❤️</button>
           <span class="community-score">${Math.round(post.community_score)}</span>
-          <button onclick="vote(${post.id}, -1)" class="vote-btn">↓</button>
         </div>
       `;
       feed.appendChild(card);

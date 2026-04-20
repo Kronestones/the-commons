@@ -42,7 +42,7 @@
         <div class="post-actions">
           <form method="POST" action="/post/{{ post.id }}/vote" style="display:inline;">
             <input type="hidden" name="value" value="1">
-            <button type="submit" class="vote-btn {% if post.user_voted == 1 %}vote-active{% endif %}">↑ Valuable</button>
+            <button type="submit" class="vote-btn {% if post.user_voted == 1 %}vote-active{% endif %}">❤️</button>
           </form>
           <span class="community-score">{{ post.up_count }}</span>
           {% if current_user and current_user.id == post.author_id %}
