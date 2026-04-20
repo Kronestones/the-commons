@@ -12,9 +12,12 @@ function syncCookiesToStorage() {
   }
   if (!localStorage.getItem('token')) {
     document.cookie.split(';').forEach(c => {
-      const parts = c.trim().split('=');
-      if (parts[0] === 'token') localStorage.setItem('token', parts[1]);
-      if (parts[0] === 'username') localStorage.setItem('username', parts[1]);
+      const eqIdx = c.indexOf('=');
+      if (eqIdx === -1) return;
+      const key = c.slice(0, eqIdx).trim();
+      const val = c.slice(eqIdx + 1).trim();
+      if (key === 'token') localStorage.setItem('token', val);
+      if (key === 'username') localStorage.setItem('username', val);
     });
   }
 }
