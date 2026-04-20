@@ -181,6 +181,11 @@ async def codex_page(request: Request, db: Session = Depends(get_db)):
         context={"codex": TheCommonsCodex, "sources": fingerprint.get_verified_sources(), "current_user": current_user}
     )
 
+@app.get("/live", response_class=HTMLResponse)
+async def live_page(request: Request, db: Session = Depends(get_db)):
+    current_user = get_current_user_from_cookie(request, db)
+    return templates.TemplateResponse(request=request, name="live.html", context={"current_user": current_user})
+
 @app.get("/feed", response_class=HTMLResponse)
 async def feed_page(request: Request, db: Session = Depends(get_db)):
     current_user = get_current_user_from_cookie(request, db)
