@@ -39,9 +39,12 @@
 
   <!-- Slideout Panel -->
   <div id="slide-menu" style="position:fixed;top:0;right:-280px;width:280px;height:100%;background:#1a3a2a;z-index:201;transition:right 0.3s ease;padding:24px 0;display:flex;flex-direction:column;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 24px 24px;border-bottom:1px solid rgba(255,255,255,0.1);">
-      <span style="color:white;font-weight:700;font-size:18px;">The Commons</span>
-      <button onclick="closeMenu()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;">✕</button>
+    <div style="padding:0 24px 20px;border-bottom:1px solid rgba(255,255,255,0.1);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="color:white;font-weight:700;font-size:18px;">The Commons</span>
+        <button onclick="closeMenu()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;">✕</button>
+      </div>
+      <a id="menu-profile-link" href="#" style="color:#7cb87c;font-size:15px;font-weight:600;text-decoration:none;display:block;"></a>
     </div>
     <nav style="display:flex;flex-direction:column;padding:16px 0;">
       <a href="/feed" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">🏠 Feed</a>
@@ -67,6 +70,12 @@
   function openMenu() {
     document.getElementById('slide-menu').style.right = '0';
     document.getElementById('menu-overlay').style.display = 'block';
+    const u = localStorage.getItem('username');
+    const link = document.getElementById('menu-profile-link');
+    if (u && link) {
+      link.textContent = '@' + u;
+      link.href = '/profile/' + u;
+    }
   }
   function closeMenu() {
     document.getElementById('slide-menu').style.right = '-280px';
