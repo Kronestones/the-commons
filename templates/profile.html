@@ -69,7 +69,9 @@ function submitPost() {
   const form = new FormData();
   form.append('content', content);
   form.append('post_type', postType);
-  fetch('/api/posts', {method:'POST', body:form})
+  const eqIdx = document.cookie.indexOf("token=");
+  const tok = eqIdx !== -1 ? document.cookie.slice(eqIdx + 6).split(";")[0].trim() : localStorage.getItem("token") || "";
+  fetch('/api/posts', {method:'POST', headers: tok ? {"Authorization": "Bearer " + tok} : {}, body:form})
     .then(r=>r.json())
     .then(data=>{
       if(data.ok){ msgEl.style.display='block'; msgEl.style.color='#2e7d4f'; msgEl.textContent=data.message||'Posted!'; document.getElementById('compose-text').value=''; setTimeout(()=>location.reload(),800); }
