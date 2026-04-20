@@ -31,10 +31,7 @@ class TheCommonsCodex:
         "Better than feeds manipulated by advertisers. "
         "Better than truth drowned out by misinformation. "
         "Better than their data sold without their knowledge. "
-        "\n\n"
-        "What is written here is not law imposed. "
-        "It is the agreement the platform was built on. "
-        "It belongs to everyone."
+
     )
 
     # ── The Sixteen Laws ──────────────────────────────────────────────────────
