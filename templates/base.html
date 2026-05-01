@@ -36,8 +36,8 @@
 
   <nav class="nav">
     <a href="/" class="nav-logo">The Commons</a>
-    <span class="nav-spirit">Power to the People</span>
-    <div class="nav-links">
+    <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">&#9776;</button>
+    <div class="nav-links" id="nav-links">
       {% block nav_links %}
       <a href="/">Feed</a>
       <a href="/marketplace">Marketplace</a>
