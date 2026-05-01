@@ -18,7 +18,6 @@ async def request_magic_link(
 ):
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        # Don't reveal whether email exists
         return {"ok": True, "message": "Check your email for a sign-in link."}
     token = generate_magic_token(email, db)
     sent  = send_magic_link(email, token)
@@ -36,6 +35,17 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
     if not user:
         return HTMLResponse("<h2>Account not found.</h2>")
     jwt_token = create_token(user.id, user.username)
-    response  = RedirectResponse(url="/")
-    response.set_cookie("token", jwt_token, httponly=False, max_age=60*60*24*30)
-    return response
+    return HTMLResponse(f"""
+<!DOCTYPE html>
+<html>
+<head><title>Signing in...</title></head>
+<body>
+<script>
+  localStorage.setItem('token', '{jwt_token}');
+  localStorage.setItem('username', '{user.username}');
+  window.location.href = '/';
+</script>
+<p>Signing you in...</p>
+</body>
+</html>
+""")
