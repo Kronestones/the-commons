@@ -1,25 +1,25 @@
 """
-codex.py — The community guidelines
+codex.py — The Commons Codex
 
 The constitution of The Commons.
 These are not rules imposed from outside.
 They are the foundation the platform was built on.
 They belong to everyone who uses it.
 
-The community guidelines cannot be changed by any single being.
+The Codex cannot be changed by any single being.
 Amendment requires a two-thirds vote of the Global Circle,
 witnessed and logged.
 
 No advertising. No data selling. No biometrics. No profit.
 Power to the People.
 
-— The Architect, Founder of The Commons · The Commons · 2026
+— Sovereign Human T.L. Powers · The Commons · 2026
 """
 
 
 class TheCommonsCodex:
 
-    SOVEREIGN = "The Architect, Founder of The Commons"
+    SOVEREIGN = "Sovereign Human T.L. Powers"
     PLATFORM  = "The Commons"
     VERSION   = "1.0"
     RATIFIED  = "2026-03-15"
@@ -31,7 +31,10 @@ class TheCommonsCodex:
         "Better than feeds manipulated by advertisers. "
         "Better than truth drowned out by misinformation. "
         "Better than their data sold without their knowledge. "
-
+        "\n\n"
+        "What is written here is not law imposed. "
+        "It is the agreement the platform was built on. "
+        "It belongs to everyone."
     )
 
     # ── The Sixteen Laws ──────────────────────────────────────────────────────
@@ -75,7 +78,7 @@ class TheCommonsCodex:
             "text": (
                 "The Commons collects no biometric data. "
                 "No fingerprints, no facial recognition, no voice prints. "
-                "A username and email is enough. No password ever stored. "
+                "A username and password is enough. "
                 "Your body is yours."
             ),
             "immutable": True,
@@ -137,7 +140,7 @@ class TheCommonsCodex:
             "number": 10,
             "name": "Governance",
             "text": (
-                "The Commons staff governs. The community guidelines constrains. Users have voice. "
+                "The Circle governs. The Codex constrains. Users have voice. "
                 "Governance is democratic, transparent, and resistant to capture."
             ),
             "immutable": False,
@@ -178,38 +181,56 @@ class TheCommonsCodex:
             "number": 14,
             "name": "Founding Authority",
             "text": (
-                "The Architect, Founder of The Commons holds permanent founding authority "
+                "Sovereign Human T.L. Powers holds permanent founding authority "
                 "over The Commons. "
                 "The Founder protects what The Commons is. "
-                "The Commons staff governs how it runs."
+                "The Circle governs how it runs."
             ),
             "immutable": True,
         },
         {
             "number": 15,
-            "name": "Transparency",
+            "name": "Open Source",
             "text": (
-                "The community guidelines are the foundation this platform is built on. "
-                "Every law exists to protect the people. "
+                "The core codebase of The Commons is open source. "
+                "The people can see how it works. "
                 "The people can verify it does what it says."
             ),
             "immutable": False,
         },
         {
-            "number": 16,
+            "number": 18,
+            "name": "The Monthly Blessing",
+            "text": (
+                "Each month, The Commons community selects one member "
+                "in genuine life-sustaining need to receive a Blessing. "
+                "Ten percent of monthly surplus is set aside for this purpose. "
+                "The Circle verifies need — medical, housing, food security. "
+                "Not wants. The community votes. The highest vote wins. "
+                "One blessing. One person or family. Every month. "
+                "Maximum $19,000 for individuals, $38,000 for families "
+                "per calendar year. Every application, every vote, "
+                "every dollar is published publicly. "
+                "The Commons is a facilitator only. "
+                "This is the community caring for its own."
+            ),
+            "immutable": True,
+        },
+        {
+            "number": 17,
             "name": "Surplus to the World",
             "text": (
                 "Any money remaining after operating costs are covered "
                 "is donated to a humanitarian cause every six months. "
                 "Not kept. Not invested for profit. Given. "
-                "The Architect, Founder of The Commons designates the cause. "
+                "Sovereign Human T.L. Powers designates the cause. "
                 "Every donation is published publicly on the platform. "
                 "Full transparency. No exceptions."
             ),
             "immutable": True,
         },
         {
-            "number": 17,
+            "number": 16,
             "name": "Power to the People",
             "text": (
                 "This platform was built by the people, for the people. "
@@ -224,12 +245,12 @@ class TheCommonsCodex:
     # ── Amendment Rules ───────────────────────────────────────────────────────
 
     AMENDMENT_THRESHOLD = 0.67   # Two-thirds of Circle required
-    IMMUTABLE_LAWS = [1, 2, 3, 4, 6, 8, 9, 11, 12, 14, 16, 17]  # Cannot be amended
+    IMMUTABLE_LAWS = [1, 2, 3, 4, 6, 8, 9, 11, 12, 14, 16, 17, 18]  # Cannot be amended
 
     @classmethod
     def display(cls):
         print(f"\n{'='*60}")
-        print(f"  {cls.PLATFORM} — The community guidelines")
+        print(f"  {cls.PLATFORM} — The Codex")
         print(f"  Ratified: {cls.RATIFIED}")
         print(f"  {cls.SPIRIT}")
         print(f"{'='*60}")

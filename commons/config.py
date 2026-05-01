@@ -16,10 +16,9 @@ class Config:
     def __init__(self):
         self.secret_key       = os.getenv("SECRET_KEY", secrets.token_hex(32))
         self.environment      = os.getenv("ENVIRONMENT", "development")
-        self.debug            = os.getenv("DEBUG", "true").lower() == "true"
+        self.debug            = os.getenv("DEBUG", "false").lower() == "true"
         self.host             = os.getenv("HOST", "0.0.0.0")
         self.port             = int(os.getenv("PORT", 8000))
-        self.base_url = os.getenv("BASE_URL", "https://the-commons.onrender.com")
         self.database_url     = os.getenv("DATABASE_URL", "sqlite:///./the_commons.db")
         self.media_dir        = Path(os.getenv("MEDIA_DIR", "./media"))
         self.max_upload_mb    = int(os.getenv("MAX_UPLOAD_MB", 100))
@@ -28,16 +27,6 @@ class Config:
         self.fingerprint_on   = os.getenv("FINGERPRINT_ENABLED", "true").lower() == "true"
         self.transaction_fee  = float(os.getenv("TRANSACTION_FEE", 1.00))
         self.min_circle_size  = int(os.getenv("MIN_CIRCLE_SIZE", 3))
-
-        # Email
-        self.resend_api_key = os.getenv("RESEND_API_KEY", "")
-        self.cloudinary_cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME", "")
-        self.cloudinary_api_key    = os.getenv("CLOUDINARY_API_KEY", "")
-        self.cloudinary_api_secret = os.getenv("CLOUDINARY_API_SECRET", "")
-        self.email_host     = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-        self.email_port     = int(os.getenv("EMAIL_PORT", "587"))
-        self.email_user     = os.getenv("EMAIL_USER", "")
-        self.email_password = os.getenv("EMAIL_PASSWORD", "")
 
         # JWT
         self.jwt_algorithm    = "HS256"

@@ -50,6 +50,65 @@ VERIFIED_SOURCES = [
 # Basic heuristic signals that suggest manipulation.
 # More sophisticated detection added as platform grows.
 
+# ── Content Safety — Zero Tolerance ──────────────────────────────────────────
+# Nudity and sexual content: instant removal, no appeal, no exceptions.
+# Codex Law 8: Children are protected. Codex Law 1: People First.
+
+# The following word is blocked in all forms and variations.
+# Zero tolerance. No exceptions. No context makes it acceptable.
+# Codex Law 1: People First. Codex Law 8: Protection.
+
+ZERO_TOLERANCE_SLURS = [
+    # Anti-Black slurs
+    "nigger", "niggers", "nigga", "nigg3r", "n1gger", "n!gger",
+    # Anti-Jewish slurs
+    "kike", "k1ke", "k!ke",
+    # Anti-Latino slurs
+    "spic", "sp!c", "sp1c",
+    # Anti-Asian slurs
+    "chink", "ch1nk", "gook", "g00k", "zipperhead",
+    # Anti-Arab / South Asian slurs
+    "raghead", "towelhead", "sandnigger",
+    # Anti-Native slurs
+    "redskin", "squaw",
+    # Anti-Roma slurs
+    "gyp", "gypsy",
+    # Anti-Irish / Eastern European slurs
+    "mick", "polack",
+    # Homophobic slurs
+    "faggot", "fag", "f4ggot", "dyke", "d!ke",
+    # Transphobic slurs
+    "tranny", "tr4nny",
+    # Ableist slurs
+    "retard", "r3tard",
+]
+
+def check_slurs(text: str) -> bool:
+    """Zero tolerance for racial slurs. Instant block."""
+    if not text:
+        return False
+    text_lower = text.lower().replace(" ", "").replace("*", "")
+    return any(slur in text_lower for slur in ZERO_TOLERANCE_SLURS)
+
+ZERO_TOLERANCE_PATTERNS = [
+    r"\b(nude|nudity|naked|explicit|nsfw|pornograph|sexual content|adult content)\b",
+    r"\b(genitalia|genital|breast|nipple)\b",
+]
+
+def check_zero_tolerance(text: str) -> bool:
+    """Returns True if content triggers zero tolerance removal."""
+    import re
+    if not text:
+        return False
+    # Check racial slurs first
+    if check_slurs(text):
+        return True
+    text_lower = text.lower()
+    for pattern in ZERO_TOLERANCE_PATTERNS:
+        if re.search(pattern, text_lower, re.IGNORECASE):
+            return True
+    return False
+
 MANIPULATION_SIGNALS = [
     r"\b(deepfake|synthetic|ai.generated|fake.video|manipulated)\b",
     r"\b(voice.clone|cloned.voice|generated.audio)\b",

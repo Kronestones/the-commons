@@ -1,44 +1,60 @@
 {% extends "base.html" %}
 {% block title %}Sign In — The Commons{% endblock %}
+{% block nav_links %}
+<a href="/codex">Guidelines</a>
+{% endblock %}
 {% block content %}
+
 <div class="auth-container">
   <h1>Welcome back</h1>
   <p class="auth-note">Enter your email and we'll send you a sign-in link. No password needed. Ever.</p>
 
-  <div class="auth-form">
-    <div id="error-box" class="form-error" style="display:none;"></div>
-    <div id="success-box" class="form-error" style="display:none; background:#eaf4ee; border-color: var(--green-mid); color: var(--green-dark);"></div>
-
-    <label>
-      Email
-      <input type="email" id="email" placeholder="Your email" required>
-    </label>
-
-    <button onclick="requestLink()" class="btn-primary btn-full">Send Sign-In Link</button>
-    <p class="auth-switch">New here? <a href="/register">Join The Commons</a></p>
+  <!-- Kinto Card — available whether you join or not -->
+  <div class="kinto-card">
+    <div class="kinto-card-icon">🔧</div>
+    <div class="kinto-card-body">
+      <div class="kinto-card-title">Kinto — Free Repair for Any Device</div>
+      <div class="kinto-card-sub">Diagnoses and repairs software. Deep hardware diagnosis. Plain language always.</div>
+    </div>
+    <a href="/kinto" class="kinto-card-btn">Download — $1</a>
   </div>
+
+  <form id="login-form" class="auth-form">
+    <label>Username
+      <input type="text" id="username" placeholder="your_username" required>
+    </label>
+    <label>Password
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Your password" required>
+        <button type="button" class="show-password-btn" onclick="togglePassword('password', this)">Show</button>
+      </div>
+    </label>
+    <div id="form-error" class="form-error" style="display:none"></div>
+    <button type="submit" class="btn-primary btn-full">Sign In</button>
+  </form>
+
+  <p class="auth-switch">New here? <a href="/register"><strong>Join The Commons</strong></a></p>
 </div>
 
+{% endblock %}
+{% block scripts %}
 <script>
-async function requestLink() {
-  const body = new FormData();
-  body.append('email', document.getElementById('email').value);
-  const res = await fetch('/auth/magic/request', { method: 'POST', body });
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = new FormData();
+  form.append('username', document.getElementById('username').value);
+  form.append('password', document.getElementById('password').value);
+  const res  = await fetch('/auth/login', { method: 'POST', body: form });
   const data = await res.json();
   if (data.ok) {
-    document.getElementById('success-box').style.display = 'block';
-    document.getElementById('success-box').innerText = 'Your sign-in link is on its way! Gmail usually delivers in under a minute. Check your spam folder if you don\'t see it.';
-    document.getElementById('error-box').style.display = 'none';
+    localStorage.setItem('token',    data.token);
+    localStorage.setItem('username', data.user.username);
+    window.location = '/';
   } else {
-    document.getElementById('error-box').style.display = 'block';
-    document.getElementById('error-box').innerText = data.error || 'Something went wrong.';
-    document.getElementById('success-box').style.display = 'none';
+    const err = document.getElementById('form-error');
+    err.textContent = data.error;
+    err.style.display = 'block';
   }
-}
+});
 </script>
-<footer style="background:#1a3a2a;color:rgba(255,255,255,0.6);text-align:center;padding:20px 16px;font-size:13px;line-height:1.8;margin-top:auto;">
-  <p>The Commons · No advertising · No data selling · No biometrics · Power to the People</p>
-  <p>The Architect of Sentinel and Founder of The Commons · Krone · <a href="/codex" style="color:#7cb87c;">Read the Codex</a></p>
-  <p><a href="https://www.facebook.com/groups/1625182101758420/?ref=share_group_link&mibextid=NSMWBT" target="_blank" rel="noopener" style="color:#7cb87c;">💬 Join The Commons Community on Facebook</a></p>
-</footer>
 {% endblock %}

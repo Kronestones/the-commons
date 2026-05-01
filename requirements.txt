@@ -1,5 +1,6 @@
 fastapi
-uvicorn==0.27.1
+uvicorn
+gunicorn
 python-multipart
 jinja2
 python-jose[cryptography]
@@ -8,10 +9,3 @@ aiofiles
 python-dotenv
 sqlalchemy
 aiosqlite
-# build Thu Mar 19 01:52:25 PDT 2026
-gunicorn==21.2.0
-gunicorn==21.2.0
-setuptools
-requests
-psycopg2-binary
-cloudinary

@@ -1,15 +1,95 @@
 {% extends "base.html" %}
-{% block title %}The Commons — Power to the People{% endblock %}
+{% block title %}The Commons — Feed{% endblock %}
 {% block content %}
-<div class="landing">
-  <div class="landing-hero">
-    <h1>The Commons</h1>
-    <p class="landing-slogan">The first and only social media platform dedicated to redistributing the wealth.</p>
-    <p class="landing-sub">No advertising. No data selling. No biometrics. Power to the People.</p>
-    <div class="landing-actions">
-      <a href="/register" class="btn-primary">Join The Commons</a>
-      <a href="/login" class="btn-secondary">Sign In</a>
+
+<div class="feed-layout">
+
+  <div class="post-composer" id="composer" style="display:none">
+    <h3>Share something</h3>
+    <textarea id="post-content" placeholder="What's on your mind?" maxlength="10000"></textarea>
+    <div class="composer-options">
+      <label><input type="checkbox" id="is-news"> This is news
+      <label><input type="checkbox" id="is-political"> This is political content
     </div>
+    <div class="composer-actions">
+      <select id="algo-mode">
+        <option value="transparent">Transparent feed</option>
+        <option value="chronological">Chronological</option>
+        <option value="community">Community governed</option>
+      </select>
+      <button onclick="createPost()" class="btn-primary">Post</button>
+    </div>
+    <p class="composer-note">Political and news content is verified before publishing. This usually takes seconds.</p>
   </div>
+
+  <div class="feed" id="feed">
+    {% if posts %}
+      {% for post in posts %}
+      <div class="post-card">
+        <div class="post-header">
+          <span class="post-author">@{{ post.author.username if post.author else 'unknown' }}</span>
+          <span class="post-time">{{ post.published_at.strftime('%b %d') if post.published_at else '' }}</span>
+        </div>
+        <div class="post-content">{{ post.content }}</div>
+        <div class="post-actions">
+          <button onclick="vote({{ post.id }}, 1)" class="vote-btn">❤️</button>
+          <span class="community-score">{{ post.community_score | int }}</span>
+          {% if current_username and current_username == (post.author.username if post.author else '') %}
+          <button onclick="deletePost({{ post.id }}, this)" class="delete-btn">Delete</button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-feed">
+        <h2>The Commons is open.</h2>
+        <p>Be the first to post.</p>
+        <a href="/register" class="btn-primary">Join</a>
+      </div>
+    {% endif %}
+  </div>
+
 </div>
+
 {% endblock %}
+{% block scripts %}
+<script>
+async function createPost() {
+  const token = localStorage.getItem('token');
+  if (!token) { window.location = '/login'; return; }
+  const content     = document.getElementById('post-content').value;
+  const is_news     = document.getElementById('is-news').checked;
+  const is_political = document.getElementById('is-political').checked;
+  const form = new FormData();
+  form.append('content', content);
+  form.append('post_type', 'text');
+  form.append('is_news', is_news);
+  form.append('is_political', is_political);
+  const res  = await fetch('/api/posts', { method: 'POST', headers: {'Authorization': 'Bearer ' + token}, body: form });
+  const data = await res.json();
+  if (data.ok) {
+    document.getElementById('post-content').value = '';
+    showMessage(data.message);
+    setTimeout(() => location.reload(), 1500);
+  } else {
+    showMessage(data.error, true);
+  }
+}
+async function vote(postId, value) {
+  const token = localStorage.getItem('token');
+  if (!token) { window.location = '/login'; return; }
+  const form = new FormData();
+  form.append('value', value);
+  await fetch(`/api/posts/${postId}/vote`, { method: 'POST', headers: {'Authorization': 'Bearer ' + token}, body: form });
+}
+</script>
+{% endblock %}
+
+  <div class="ai-statement">
+    <h2>A Note From the Founder</h2>
+    <p>We know that a lot of people are uncomfortable with AI — and those concerns are completely valid. AI is being incorporated into your daily life whether you asked for it or not. That's real, and it deserves to be said out loud.</p>
+    <p>The Commons was built with AI as a tool — in service of people, not the other way around. We chose to use it to build something that gives power back to the community. Something with no ads, no profit, no data selling, and no algorithms designed to exploit you.</p>
+    <p>You don't have to be comfortable with AI to belong here. You just have to believe that technology should serve people — and that's exactly what we built.</p>
+    <p>Your concerns were heard before this platform existed. They shaped every decision we made.</p>
+    <p class="ai-statement-sig">— Sovereign Human T.L. Powers, Founder</p>
+  </div>

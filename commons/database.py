@@ -6,10 +6,13 @@ All state written to disk. Nothing held only in memory.
 """
 
 from sqlalchemy import (
-    UniqueConstraint, create_engine, Column, Integer, String,
-    Text, Boolean, DateTime, Float, ForeignKey, Enum
+    create_engine, Column, Integer, String, Text, Boolean,
+    DateTime, Float, ForeignKey, Enum
 )
-from sqlalchemy.ext.declarative import declarative_base
+try:
+    from sqlalchemy.orm import declarative_base
+except ImportError:
+    from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 import enum
@@ -17,11 +20,7 @@ from .config import config
 
 engine = create_engine(
     config.database_url,
-    connect_args={"check_same_thread": False} if "sqlite" in config.database_url else {},
-    pool_pre_ping=True,
-    pool_recycle=300,
-    pool_size=5,
-    max_overflow=10
+    connect_args={"check_same_thread": False} if "sqlite" in config.database_url else {}
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -68,15 +67,16 @@ class User(Base):
     __tablename__ = "users"
 
     id              = Column(Integer, primary_key=True, index=True)
-    username        = Column(String(50), unique=True, index=True, nullable=True)
+    username        = Column(String(50), unique=True, index=True, nullable=False)
     email           = Column(String(255), unique=True, index=True, nullable=False)
-    password_hash   = Column(String(255), nullable=True)
+    password_hash   = Column(String(255), nullable=False)
     display_name    = Column(String(100))
     bio             = Column(Text, default="")
     role            = Column(Enum(UserRole), default=UserRole.USER)
     algorithm_mode  = Column(Enum(AlgorithmMode), default=AlgorithmMode.TRANSPARENT)
     is_active       = Column(Boolean, default=True)
     is_minor        = Column(Boolean, default=False)
+    is_verified     = Column(Boolean, default=False)  # Blue checkmark at 10k followers
     created_at      = Column(DateTime, default=datetime.utcnow)
     last_seen       = Column(DateTime, default=datetime.utcnow)
 
@@ -106,7 +106,6 @@ class Post(Base):
 
     author          = relationship("User", back_populates="posts")
     fingerprint     = relationship("FingerprintRecord", back_populates="post", uselist=False)
-    community_votes = relationship
     community_votes = relationship("CommunityVote", back_populates="post")
     product_tags    = relationship("ProductTag", back_populates="post")
 
@@ -278,31 +277,3 @@ def get_db():
 def init_db():
     Base.metadata.create_all(bind=engine)
     print("[DATABASE] Tables created.")
-
-
-class Listing(Base):
-    __tablename__ = "listings"
-    id          = Column(Integer, primary_key=True)
-    title       = Column(String, nullable=False)
-    description = Column(Text, default="")
-    price       = Column(Float, nullable=False, default=0.0)
-    media_path  = Column(String, default=None)
-    seller_id   = Column(Integer, ForeignKey("users.id"), nullable=False)
-    is_active   = Column(Boolean, default=True)
-    created_at  = Column(DateTime, default=datetime.utcnow)
-    seller      = relationship("User", backref="listings")
-    messages    = relationship("ListingMessage", back_populates="listing", cascade="all, delete-orphan")
-
-
-class ListingMessage(Base):
-    __tablename__ = "listing_messages"
-    id           = Column(Integer, primary_key=True)
-    listing_id   = Column(Integer, ForeignKey("listings.id"), nullable=False)
-    sender_id    = Column(Integer, ForeignKey("users.id"), nullable=False)
-    recipient_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    body         = Column(Text, nullable=False)
-    is_read      = Column(Boolean, default=False)
-    created_at   = Column(DateTime, default=datetime.utcnow)
-    listing      = relationship("Listing", back_populates="messages")
-    sender       = relationship("User", foreign_keys=[sender_id])
-    recipient    = relationship("User", foreign_keys=[recipient_id])

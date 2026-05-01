@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}The Monthly Blessing — The Commons{% endblock %}
+{% block content %}
+
+<div class="blessing-container">
+
+  <div class="page-header">
+    <h1>The Monthly Blessing 💛</h1>
+    <p>Codex Law 18 — One person. One month. Community chosen.</p>
+  </div>
+
+  <div class="blessing-statement">
+    <p>Each month, The Commons community selects one member in genuine life-sustaining need to receive a Blessing. The Circle verifies need. The community votes. One person or family receives the Blessing.</p>
+    <p>Medical. Housing. Food security. Genuine life-sustaining need only. Not wants.</p>
+    <p>Maximum $19,000 for individuals. $38,000 for families. Every dollar transparent. The Commons is a facilitator only.</p>
+  </div>
+
+  {% if current %}
+  <div class="blessing-voting">
+    <h2>{{ month }} — Vote for This Month's Blessing</h2>
+    <p class="vote-note">You have one vote. Choose wisely. Choose with your heart.</p>
+
+    {% for app in current %}
+    <div class="blessing-card">
+      <div class="blessing-category">{{ app.need_category }}</div>
+      <p class="blessing-description">{{ app.need_description }}</p>
+      {% if app.is_family %}<span class="family-badge">Family application</span>{% endif %}
+      <div class="blessing-footer">
+        <span class="blessing-amount">Needs: {{ app.amount_needed }}</span>
+        <span class="blessing-votes">❤️ {{ app.vote_count }} votes</span>
+        <button class="vote-btn" onclick="voteBlessing({{ app.id }})">Vote for this Blessing</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="blessing-apply">
+    <h2>Apply for a Blessing</h2>
+    <p>If you or your family are facing a genuine life-sustaining need, you may apply. The Circle will verify your application privately before it goes to community vote.</p>
+    <a href="/blessing/apply" class="apply-btn">Apply for This Month's Blessing</a>
+  </div>
+
+  {% else %}
+  <div class="blessing-empty">
+    <h3>No verified applications yet this month.</h3>
+    <p>Applications are verified by the Circle before going to community vote.</p>
+    <p>If you are in genuine need, please apply.</p>
+    <a href="/blessing/apply" class="apply-btn">Apply for This Month's Blessing</a>
+  </div>
+  {% endif %}
+
+  {% if history %}
+  <div class="blessing-history">
+    <h2>Blessing History</h2>
+    <p>Every Blessing ever given. Every dollar. Full transparency.</p>
+
+    {% for b in history %}
+    <div class="history-card">
+      <div class="history-header">
+        <span class="history-month">{{ b.month }}</span>
+        <span class="history-amount">{{ b.amount_blessed }}</span>
+        <span class="history-status">{{ '✓ Paid' if b.paid else 'Pending' }}</span>
+      </div>
+      <p class="history-category">{{ b.need_category }}</p>
+      <p class="history-votes">{{ b.vote_count }} community votes · {{ b.total_applicants }} applicants</p>
+      {% if b.public_message %}
+      <p class="history-message">{{ b.public_message }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+async function voteBlessing(applicationId) {
+  const token = getToken();
+  if (!token) { alert('Please log in to vote.'); return; }
+  const res = await fetch(`/api/blessing/vote/${applicationId}`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  alert(data.message || data.error);
+  if (data.ok) location.reload();
+}
+</script>
+
+{% endblock %}

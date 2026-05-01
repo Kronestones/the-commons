@@ -1,72 +1,68 @@
 {% extends "base.html" %}
 {% block title %}Giving — The Commons{% endblock %}
 {% block content %}
+
 <div class="giving-container">
 
-  <h1>Giving</h1>
-  <p class="giving-spirit">Power to the People</p>
-  <p class="giving-statement">
-    The Commons runs on no advertising, no data selling, and no biometrics.
-    It runs on people who believe wealth should flow toward those who need it most.
-  </p>
-
-  <div class="donation-card">
-    <h2>Guideline 16 — Surplus to the World</h2>
-    <p>Any money remaining after operating costs are covered is donated to a humanitarian cause every six months. Not kept. Not invested for profit. Given freely.</p>
-    <p style="margin-top:10px;">The Architect of Sentinel and Founder of The Commons will designate each humanitarian cause. Community suggestions are warmly welcomed.</p>
+  <div class="page-header">
+    <h1>Giving</h1>
+    <p>Codex Law 17 — Surplus to the World</p>
   </div>
 
-  <div class="donation-card" style="margin-top:16px;">
-    <h2>The Monthly Blessing</h2>
-    <p>Each month, community members come together to vote and Bless a fellow member in need. Ten percent of proceeds from sales goes toward this fund — up to $19,000 for an individual, and up to $38,000 for a family.</p>
-    <p style="margin-top:10px;">This is community care in its truest form — people lifting people.</p>
+  <div class="giving-statement">
+    <p>Any money remaining after operating costs are covered is donated to a humanitarian cause every six months. Not kept. Not invested for profit. Given.</p>
+    <p>Sovereign Human T.L. Powers designates the cause. Every donation is published here. Full transparency. No exceptions.</p>
   </div>
 
-  <div class="donation-card" style="margin-top:16px;">
-    <h2>Full Transparency</h2>
-    <p>All financials are available 24/7. Every donation is published here. Full transparency, always. No exceptions.</p>
-
-    <h3 style="margin-top:20px; margin-bottom:12px; color: var(--green-dark);">Community Giving Record</h3>
-    {% if donations %}
-      <div class="donations-list">
-        {% for d in donations %}
-          <div class="donation-card confirmed">
-            <div class="donation-header">
-              <span class="donation-period">{{ d.date }}</span>
-              <span class="donation-status">Confirmed</span>
-            </div>
-            <div class="donation-cause">
-              <h3>{{ d.cause }}</h3>
-              <p>${{ d.amount }}</p>
-            </div>
+  {% if donations %}
+    <h2>Donation History</h2>
+    <div class="donations-list">
+      {% for d in donations %}
+      <div class="donation-card {% if d.confirmed %}confirmed{% else %}pending{% endif %}">
+        <div class="donation-header">
+          <span class="donation-period">{{ d.period }}</span>
+          <span class="donation-status">{{ 'Confirmed ✓' if d.confirmed else 'Pending' }}</span>
+        </div>
+        <div class="donation-cause">
+          <h3>{{ d.cause }}</h3>
+          {% if d.cause_url %}<a href="{{ d.cause_url }}" target="_blank" rel="noopener">{{ d.cause_url }}</a>{% endif %}
+          {% if d.cause_description %}<p>{{ d.cause_description }}</p>{% endif %}
+        </div>
+        <div class="donation-numbers">
+          <div class="number-row">
+            <span>Total collected</span>
+            <span>{{ d.total_collected }}</span>
           </div>
-        {% endfor %}
+          <div class="number-row">
+            <span>Operating costs</span>
+            <span>{{ d.operating_costs }}</span>
+          </div>
+          <div class="number-row donated">
+            <span>Donated</span>
+            <span>{{ d.amount }}</span>
+          </div>
+        </div>
+        {% if d.public_note %}
+        <div class="donation-note">
+          <p>{{ d.public_note }}</p>
+          <span class="designated-by">— {{ d.designated_by }}</span>
+        </div>
+        {% endif %}
+        {% if d.donated_at and d.donated_at != 'Pending' %}
+        <p class="donation-date">Donated: {{ d.donated_at[:10] }}</p>
+        {% endif %}
       </div>
-    {% else %}
-      <div class="giving-empty">
-        <p><strong>No donations yet.</strong></p>
-        <p>The first donation will be made 6 months after The Commons launches.<br>Every dollar above operating costs goes here.</p>
-      </div>
-    {% endif %}
-  </div>
-
-  <div class="donation-card" style="margin-top:16px;">
-    <h2>How It Works</h2>
-    <p>Every contribution to The Commons goes directly toward keeping the platform free, private, and independent. No investors. No algorithms optimised for engagement. No hidden agenda.</p>
-    <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px; font-size:14px;">
-      <span>🏡 &nbsp;Hosting &amp; infrastructure costs covered by the community</span>
-      <span>🔒 &nbsp;Zero advertising — ever</span>
-      <span>📜 &nbsp;Open governance — decisions made with the people, not above them</span>
-      <span>🌍 &nbsp;Future: multilingual support so everyone can participate</span>
+      {% endfor %}
     </div>
-  </div>
 
-  <div class="donation-card" style="margin-top:16px; text-align:center;">
-    <h2>Support The Commons</h2>
-    <p style="margin-bottom:16px;">Donations are currently accepted via the link below. Every amount — large or small — keeps the platform alive and the mission moving forward.</p>
-    <a href="https://buymeacoffee.com/sentinel.commons" target="_blank" rel="noopener" class="btn-primary btn-full" style="display:block;text-align:center;text-decoration:none;">☕ Support The Commons</a>
-    <p style="margin-top:12px; font-size:13px; color:var(--text-muted);">The Commons is not a registered charity, donations are not tax deductible. That makes every contribution an act of pure generosity — and we are deeply grateful for it.</p>
-  </div>
+  {% else %}
+    <div class="giving-empty">
+      <h3>No donations yet.</h3>
+      <p>The first donation will be made 6 months after The Commons launches.</p>
+      <p>Every dollar above operating costs goes here.</p>
+    </div>
+  {% endif %}
 
 </div>
+
 {% endblock %}

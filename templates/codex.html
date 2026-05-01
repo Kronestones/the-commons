@@ -1,40 +1,87 @@
 {% extends "base.html" %}
-{% block title %}The community guidelines — The Commons{% endblock %}
+{% block title %}The Codex — The Commons{% endblock %}
 {% block content %}
 
-<div class="codex-container">
-  <h1>The community guidelines</h1>
-  <p class="codex-spirit">{{ codex.SPIRIT }}</p>
-  <p class="codex-sovereign">Founded by The Architect, Founder of The Commons · Ratified {{ codex.RATIFIED }}</p>
+<div class="codex-doc">
 
-  <div class="codex-preamble">
-    <p>{{ codex.PREAMBLE }}</p>
+  <!-- Cover -->
+  <div class="codex-cover">
+    <div class="codex-cover-inner">
+      <p class="codex-platform">THE COMMONS</p>
+      <h1 class="codex-title">The Codex</h1>
+      <p class="codex-subtitle">Our Constitution. Our Promise. Our Foundation.</p>
+      <p class="codex-meta">Founded by {{ codex.SOVEREIGN }}</p>
+      <p class="codex-meta">Ratified {{ codex.RATIFIED }}</p>
+      <p class="codex-spirit-doc">{{ codex.SPIRIT }}</p>
+    </div>
   </div>
 
-  <h2>The {{ codex.LAWS|length }} Laws</h2>
-  <div class="codex-laws">
+  <!-- What We Are -->
+  <div class="codex-section">
+    <h2>What The Commons Is</h2>
+    <p>The Commons is a social platform — video, text, images, live streaming, everything — but built on a completely different foundation. No advertising. No data selling. No algorithm designed to keep you scrolling at the cost of your wellbeing. No corporations extracting wealth from local communities. No foreign ownership of the infrastructure your democracy runs on.</p>
+    <p>The feed is transparent — you can always see why you're shown what you're shown. You choose how it works. Truth is verified before it reaches you — political content and news goes through a built-in fact-checking system before it publishes. Deepfakes are detected and blocked. Misinformation simply doesn't exist on the platform because it never gets published in the first place.</p>
+    <p>Local small businesses and individual creators can sell their products through it. The platform takes a flat $1 per sale — not a percentage, not advertising revenue, just enough to keep the lights on. Any surplus goes back into the platform. No profit. Ever.</p>
+    <p>Any surplus from the $1 we charge for purchases is donated to a different humanitarian cause every 6 months. Every donation is transparent and publicly available on the platform. The community also votes each month to give a Blessing — up to 10% of surplus — to one member in genuine life-sustaining need.</p>
+  </div>
+
+  <div class="codex-divider"></div>
+
+  <!-- The Laws -->
+  <div class="codex-section">
+    <h2>The {{ codex.LAWS|length }} Laws</h2>
+    <p class="codex-laws-intro">These laws govern The Commons. Immutable laws cannot be changed by anyone. Mutable laws require a two-thirds supermajority vote of the Circle. No law can be quietly changed. Every amendment is logged publicly.</p>
+
     {% for law in codex.LAWS %}
-    <div class="codex-law {% if law.immutable %}immutable{% endif %}">
-      <div class="law-header">
-        <span class="law-number">Law {{ law.number }}</span>
-        <span class="law-name">{{ law.name }}</span>
-        {% if law.immutable %}<span class="law-lock">Immutable</span>{% endif %}
+    <div class="codex-law-doc {% if law.immutable %}law-immutable{% endif %}">
+      <div class="law-doc-header">
+        <span class="law-doc-num">§{{ law.number }}</span>
+        <span class="law-doc-name">{{ law.name }}</span>
+        {% if law.immutable %}<span class="law-doc-lock">⚑ Immutable</span>{% endif %}
       </div>
-      <p class="law-text">{{ law.text }}</p>
+      <p class="law-doc-text">{{ law.text }}</p>
     </div>
     {% endfor %}
   </div>
 
-  <h2>Verified Sources</h2>
-  <p>The Fingerprint checks content against these sources. This list is public. The Commons staff reviews it quarterly.</p>
-  <div class="sources-list">
-    {% for source in sources %}
-    <div class="source-item">
-      <span class="source-name">{{ source.name }}</span>
-      <span class="source-category">{{ source.category.replace('_', ' ') }}</span>
-    </div>
-    {% endfor %}
+  <div class="codex-divider"></div>
+
+  <!-- AI Disclaimer -->
+  <div class="codex-section codex-disclaimer">
+    <h2>AI Disclaimer</h2>
+    <p>The Commons uses AI to help power certain features including truth verification, content moderation, support chat, and Circle assistance. While we've built these systems carefully and with genuine ethical intent, <strong>AI can make mistakes.</strong></p>
+    <p>Please double-check important information independently. AI-generated responses in our support chat are a starting point — not a final authority. If something doesn't seem right, trust your instincts and reach out through a support ticket for human Circle review.</p>
+    <p>We believe AI should serve people honestly — and that means being honest about its limitations.</p>
   </div>
+
+  <div class="codex-divider"></div>
+
+  <!-- Verified Sources -->
+  <div class="codex-section">
+    <h2>Verified Sources</h2>
+    <p>The Fingerprint truth verification system checks political and news content against these verified sources before publishing. This list is public. The Circle reviews it quarterly.</p>
+    <div class="sources-doc">
+      {% for source in sources %}
+      <div class="source-doc-item">
+        <span class="source-doc-name">{{ source.name }}</span>
+        <span class="source-doc-cat">{{ source.category.replace('_', ' ') }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="codex-divider"></div>
+
+  <!-- Footer -->
+  <div class="codex-footer-doc">
+    <p>This Codex is the governing document of The Commons.</p>
+    <p>It is not a terms of service that can be quietly updated.</p>
+    <p>It is not a policy document that can be overridden by business interests.</p>
+    <p>It is the architecture. It is the promise. It is permanent.</p>
+    <p class="codex-footer-sig">— {{ codex.SOVEREIGN }}</p>
+    <p class="codex-footer-spirit">Power to the People. 🏡</p>
+  </div>
+
 </div>
 
 {% endblock %}

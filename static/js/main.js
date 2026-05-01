@@ -1,28 +1,3 @@
-function syncCookiesToStorage() {
-  const params = new URLSearchParams(window.location.search);
-  const tk = params.get('tk');
-  const un = params.get('un');
-  if (tk) {
-    localStorage.setItem('token', tk);
-    document.cookie = "token=" + tk + ";path=/;max-age=" + (60*60*24*30);
-  }
-  if (un) {
-    localStorage.setItem('username', un);
-    document.cookie = "username=" + un + ";path=/;max-age=" + (60*60*24*30);
-  }
-  if (!localStorage.getItem('token')) {
-    document.cookie.split(';').forEach(c => {
-      const eqIdx = c.indexOf('=');
-      if (eqIdx === -1) return;
-      const key = c.slice(0, eqIdx).trim();
-      const val = c.slice(eqIdx + 1).trim();
-      if (key === 'token') localStorage.setItem('token', val);
-      if (key === 'username') localStorage.setItem('username', val);
-    });
-  }
-}
-syncCookiesToStorage();
-
 /**
  * main.js — The Commons
  *
@@ -42,7 +17,7 @@ function isLoggedIn()  { return !!getToken(); }
 function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('username');
-  window.location = '/';
+  window.location.href = '/';
 }
 
 // ── Nav ───────────────────────────────────────────────────────────────────────
@@ -56,6 +31,7 @@ function updateNav() {
       <a href="/profile/${getUsername()}" class="nav-username">@${getUsername()}</a>
       <button onclick="logout()" class="nav-logout">Sign out</button>
     `;
+    // Show composer if on home page
     const composer = document.getElementById('composer');
     if (composer) composer.style.display = 'block';
   } else {
@@ -151,6 +127,7 @@ async function loadMorePosts() {
         <div class="post-actions">
           <button onclick="vote(${post.id}, 1)" class="vote-btn">❤️</button>
           <span class="community-score">${Math.round(post.community_score)}</span>
+          ${post.author === getUsername() ? `<button onclick="deletePost(${post.id}, this)" class="delete-btn">Delete</button>` : ''}
         </div>
       `;
       feed.appendChild(card);
@@ -189,6 +166,36 @@ function formatTime(isoString) {
 
 // ── Post Actions ──────────────────────────────────────────────────────────────
 
+async function deletePost(postId, btn) {
+  if (!confirm('Delete this post?')) return;
+  const token = getToken();
+  const res   = await fetch(`/api/posts/${postId}`, {
+    method:  'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  if (data.ok) {
+    btn.closest('.post-card').remove();
+  } else {
+    showMessage(data.error || 'Could not delete post.', true);
+  }
+}
+
+async function deleteProduct(productId, btn) {
+  if (!confirm('Remove this listing?')) return;
+  const token = getToken();
+  const res   = await fetch(`/api/marketplace/products/${productId}`, {
+    method:  'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  if (data.ok) {
+    btn.closest('.product-card').remove();
+  } else {
+    showMessage(data.error || 'Could not remove listing.', true);
+  }
+}
+
 async function vote(postId, value) {
   const token = getToken();
   if (!token) { window.location = '/login'; return; }
@@ -225,11 +232,7 @@ setInterval(() => {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-document.addEventListener("DOMContentLoaded", () => {
-  const c = document.cookie.split(";").find(x => x.trim().startsWith("token="));
-  if (c) localStorage.setItem("token", c.split("=")[1].trim());
-  const u = document.cookie.split(";").find(x => x.trim().startsWith("username="));
-  if (u) localStorage.setItem("username", u.split("=")[1].trim());
+document.addEventListener('DOMContentLoaded', () => {
   updateNav();
   addFeedReasons();
 });
@@ -277,6 +280,72 @@ window.vote = async function(postId, value) {
   // Voting is already handled — preference engine picks it up server-side
 };
 
+// ── Install App Banner ────────────────────────────────────────────────────────
+// Shows a prompt to add The Commons to home screen on mobile
+// Works on Android (PWA install) and iOS (manual instructions)
+
+let deferredInstallPrompt = null;
+
+// Capture the install prompt on Android
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+
+  // Show banner if not dismissed before
+  if (!localStorage.getItem('installDismissed')) {
+    document.getElementById('install-banner').style.display = 'block';
+  }
+});
+
+// Android — tap Add button
+const installBtn = document.getElementById('install-btn');
+if (installBtn) {
+  installBtn.addEventListener('click', async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const result = await deferredInstallPrompt.userChoice;
+      if (result.outcome === 'accepted') {
+        document.getElementById('install-banner').style.display = 'none';
+      }
+      deferredInstallPrompt = null;
+    }
+  });
+}
+
+// Dismiss buttons
+const dismissBtn = document.getElementById('install-dismiss');
+if (dismissBtn) {
+  dismissBtn.addEventListener('click', () => {
+    document.getElementById('install-banner').style.display = 'none';
+    localStorage.setItem('installDismissed', 'true');
+  });
+}
+
+const iosDismiss = document.getElementById('ios-dismiss');
+if (iosDismiss) {
+  iosDismiss.addEventListener('click', () => {
+    document.getElementById('ios-banner').style.display = 'none';
+    localStorage.setItem('installDismissed', 'true');
+  });
+}
+
+// iOS detection — show manual instructions
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
+
+if (isIOS && !isInStandaloneMode && !localStorage.getItem('installDismissed')) {
+  document.getElementById('ios-banner').style.display = 'block';
+}
+
+// Hide banner if already installed
+if (isInStandaloneMode) {
+  const banner = document.getElementById('install-banner');
+  const iosBanner = document.getElementById('ios-banner');
+  if (banner) banner.style.display = 'none';
+  if (iosBanner) iosBanner.style.display = 'none';
+}
+
+// ── Show/Hide Password ────────────────────────────────────────────────────────
 function togglePassword(inputId, btn) {
   const input = document.getElementById(inputId);
   if (input.type === 'password') {
@@ -288,26 +357,14 @@ function togglePassword(inputId, btn) {
   }
 }
 
-// -- Create Post
-async function createPost() {
-  const token = getToken();
-  if (!token) { alert('No token!'); return; }
-  const content = document.getElementById('post-content').value.trim();
-  if (!content) { alert('No content!'); return; }
-  alert('Sending post...');
-  try {
-    const form = new FormData();
-    form.append('content', content);
-    form.append('post_type', 'text');
-    const res = await fetch('/api/posts', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token },
-      body: form
-    });
-    alert('Response status: ' + res.status);
-    const data = await res.json();
-    alert('Response: ' + JSON.stringify(data));
-  } catch(e) {
-    alert('Error: ' + e.message);
+// ── Auth Guard ────────────────────────────────────────────────────────────────
+// Pages that don't require a token
+const PUBLIC_PATHS = ['/login', '/register', '/codex', '/kinto'];
+
+(function authGuard() {
+  const path = window.location.pathname;
+  const isPublic = PUBLIC_PATHS.some(p => path === p || path.startsWith(p + '/'));
+  if (!isPublic && !getToken()) {
+    window.location.href = '/register';
   }
-}
+})();

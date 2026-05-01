@@ -1,1 +1,1 @@
-web: python -c "import uvicorn; uvicorn.run('main:app', host='0.0.0.0', port=10000)"
+web: gunicorn main:app -w 1 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:10000

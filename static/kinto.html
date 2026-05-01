@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kinto — Free Device Repair</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f7f4ef;
+      --surface:   #ffffff;
+      --ink:       #1a1714;
+      --ink-soft:  #5a5550;
+      --gold:      #c8832a;
+      --gold-deep: #a06420;
+      --gold-pale: #f5e9d6;
+      --warm:      #e8e0d4;
+      --radius:    14px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:        #141210;
+        --surface:   #1f1c19;
+        --ink:       #f0ece5;
+        --ink-soft:  #9a9088;
+        --gold:      #d4903a;
+        --gold-deep: #e8a84a;
+        --gold-pale: #2a2118;
+        --warm:      #2a2520;
+      }
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 1.25rem 4rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Warm background texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(200,131,42,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(200,131,42,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 560px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ── Header ── */
+    .header {
+      padding: 3.5rem 0 2rem;
+      text-align: center;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .kinto-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kinto-glyph {
+      width: 44px;
+      height: 44px;
+      position: relative;
+    }
+
+    .kinto-glyph svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .kinto-wordmark {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+    }
+
+    .tagline {
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.75rem;
+    }
+
+    .headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 6vw, 2.75rem);
+      line-height: 1.15;
+      color: var(--ink);
+      margin-bottom: 1.25rem;
+    }
+
+    .headline em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    /* ── Story card ── */
+    .story {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--warm);
+      animation: fadeUp 0.7s 0.15s ease both;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.04);
+    }
+
+    .story p {
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: var(--ink);
+      font-weight: 300;
+    }
+
+    .story p + p {
+      margin-top: 1rem;
+    }
+
+    .story strong {
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    /* ── What Kinto does ── */
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.875rem;
+      margin-bottom: 1.25rem;
+      animation: fadeUp 0.7s 0.25s ease both;
+    }
+
+    .feature {
+      background: var(--surface);
+      border: 1px solid var(--warm);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+    }
+
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .feature-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.25rem;
+    }
+
+    .feature-desc {
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+      line-height: 1.5;
+    }
+
+    /* ── Download card ── */
+    .download-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2rem;
+      border: 1px solid var(--warm);
+      animation: fadeUp 0.7s 0.35s ease both;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.04);
+      margin-bottom: 1.25rem;
+    }
+
+    .donation-line {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      padding: 1rem 1.25rem;
+      background: var(--gold-pale);
+      border-radius: 10px;
+      border: 1px solid rgba(200,131,42,0.2);
+    }
+
+    .donation-amount {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.25rem;
+      color: var(--gold);
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .donation-text {
+      font-size: 0.875rem;
+      color: var(--ink-soft);
+      line-height: 1.5;
+    }
+
+    .donation-text strong {
+      display: block;
+      color: var(--ink);
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+
+    /* Payment button */
+    .btn-download {
+      width: 100%;
+      padding: 1.1rem 2rem;
+      background: var(--gold);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(200,131,42,0.3);
+      letter-spacing: 0.01em;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-coming-soon {
+      background: var(--warm) !important;
+      color: var(--ink-soft) !important;
+      box-shadow: none !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+    }
+
+    .btn-download:hover {
+      background: var(--gold-deep);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(200,131,42,0.4);
+    }
+
+    .btn-download:active {
+      transform: translateY(0);
+    }
+
+    .btn-download.processing {
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    .btn-sub {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--ink-soft);
+      margin-top: 0.875rem;
+      line-height: 1.6;
+    }
+
+    /* Payment icons */
+    .payment-icons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .pay-badge {
+      background: var(--warm);
+      border-radius: 5px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Thank you state ── */
+    .thank-you {
+      display: none;
+      text-align: center;
+      padding: 2.5rem 2rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--warm);
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .thank-you.visible {
+      display: block;
+    }
+
+    .thank-you-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+      animation: pop 0.5s 0.1s ease both;
+    }
+
+    .thank-you h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem;
+      margin-bottom: 0.75rem;
+      color: var(--ink);
+    }
+
+    .thank-you p {
+      font-size: 0.95rem;
+      color: var(--ink-soft);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-download-start {
+      display: inline-block;
+      padding: 0.9rem 2rem;
+      background: var(--gold);
+      color: #fff;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.2s;
+      box-shadow: 0 4px 20px rgba(200,131,42,0.3);
+    }
+
+    .btn-download-start:hover {
+      background: var(--gold-deep);
+    }
+
+    /* ── Disclosure ── */
+    .disclosure {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      border: 1px solid var(--warm);
+      animation: fadeUp 0.7s 0.45s ease both;
+    }
+
+    .disclosure p {
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    /* ── Commons footer ── */
+    .commons-footer {
+      text-align: center;
+      padding: 2rem 0 0;
+      animation: fadeUp 0.7s 0.55s ease both;
+    }
+
+    .commons-footer a {
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+      text-decoration: none;
+      border-bottom: 1px solid var(--warm);
+      transition: color 0.2s;
+    }
+
+    .commons-footer a:hover {
+      color: var(--gold);
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pop {
+      0%   { transform: scale(0.5); opacity: 0; }
+      70%  { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 480px) {
+      .features { grid-template-columns: 1fr; }
+      .headline { font-size: 1.9rem; }
+    }
+
+    @media (min-width: 481px) {
+      .features { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="kinto-mark">
+        <div class="kinto-glyph">
+          <!-- Kintsugi-inspired mark: broken circle repaired with gold -->
+          <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="22" cy="22" r="18" stroke="var(--warm)" stroke-width="2.5"/>
+            <!-- Gold repair lines -->
+            <path d="M22 4 L20 14 L26 22 L18 30 L22 40" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="22" cy="22" r="3" fill="var(--gold)"/>
+          </svg>
+        </div>
+        <span class="kinto-wordmark">Kinto</span>
+      </div>
+
+      <div class="tagline">Free Device Repair</div>
+
+      <h1 class="headline">
+        Something's wrong.<br>
+        <em>Let's find out what.</em>
+      </h1>
+    </div>
+
+    <!-- Story -->
+    <div class="story">
+      <p>
+        Your device is broken and you don't know why.
+        Maybe it's slow. Maybe it crashed.
+        Maybe something just feels wrong.
+      </p>
+      <p>
+        <strong>Kinto can diagnose and repair just about any software problem</strong> —
+        crashes, corrupted files, failed updates, slow systems, startup failures,
+        network drops, and more. It fixes what it can, automatically,
+        and backs up your data before it touches anything.
+      </p>
+      <p>
+        For hardware, Kinto runs a deep diagnostic across your entire device —
+        your drive, memory, processor, and more —
+        and tells you <strong>exactly what it found in plain language</strong>,
+        so you can make an informed choice about what to do next.
+        No more guessing. No more being talked past.
+        Just the truth about your device, clearly explained.
+      </p>
+    </div>
+
+    <!-- Features -->
+    <div class="features">
+      <div class="feature">
+        <span class="feature-icon">🛠️</span>
+        <div class="feature-title">Software Repair</div>
+        <div class="feature-desc">Diagnoses and fixes just about any software problem — crashes, corruption, failures, and more.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">🔩</span>
+        <div class="feature-title">Hardware Diagnosis</div>
+        <div class="feature-desc">Deep scan of your drive, memory, and processor. Tells you what's wrong and what your options are.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">💬</span>
+        <div class="feature-title">Plain Language Always</div>
+        <div class="feature-desc">No jargon. No confusion. Every finding explained so you can make an informed choice.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">🛡️</span>
+        <div class="feature-title">Your Data First</div>
+        <div class="feature-desc">Nothing is touched without a backup. Nothing is deleted without your permission. Ever.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">⚙️</span>
+        <div class="feature-title">Runs in the Background</div>
+        <div class="feature-desc">Quietly monitors your device. Fixes problems automatically — and if it can't, tells you exactly what's wrong and what your options are.</div>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">🌍</span>
+        <div class="feature-title">Every Device</div>
+        <div class="feature-desc">Windows, Mac, iPhone, Android, Linux. One tool. Every platform.</div>
+      </div>
+    </div>
+
+    <!-- Download card -->
+    <div class="download-card" id="downloadCard">
+      <div class="donation-line">
+        <div class="donation-amount">$1</div>
+        <div class="donation-text">
+          <strong>One dollar. That's it.</strong>
+          Your donation keeps Kinto free for everyone
+          and goes directly to the Commons community.
+        </div>
+      </div>
+
+      <button class="btn-download btn-coming-soon" id="donateBtn" disabled>
+        Coming Soon
+      </button>
+
+      <div class="btn-sub">
+        Kinto launches with The Commons · Windows · Mac · Linux
+      </div>
+    </div>
+
+    <!-- Thank you state (shown after payment) -->
+    <div class="thank-you" id="thankYou">
+      <span class="thank-you-icon">✦</span>
+      <h2>Thank you so much.</h2>
+      <p>
+        Your dollar keeps this tool free for the next person who needs it.
+        That matters more than you know.<br><br>
+        Now — let's get your device fixed.
+      </p>
+      <a href="#" class="btn-download-start" id="startDownload">
+        Download Kinto
+      </a>
+    </div>
+
+    <!-- Disclosure -->
+    <div class="disclosure">
+      <p>
+        The Commons is not a registered charity.
+        Donations are not tax deductible.
+        Every contribution is an act of pure generosity —
+        and we are deeply grateful for it.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="commons-footer">
+      <a href="/">← Back to The Commons</a>
+    </div>
+
+  </div>
+
+  <script>
+    function handleDonate() {
+      const btn = document.getElementById('donateBtn');
+
+      // Show processing state
+      btn.classList.add('processing');
+      btn.innerHTML = '<span class="spinner"></span> Connecting...';
+
+      // ── PAYMENT INTEGRATION PLACEHOLDER ──────────────────────────────
+      // When the Commons payment account is ready, replace this block
+      // with your Stripe or PayPal checkout call.
+      //
+      // Stripe example:
+      //   const stripe = Stripe('YOUR_PUBLISHABLE_KEY');
+      //   stripe.redirectToCheckout({ lineItems: [{price: 'PRICE_ID', quantity: 1}], mode: 'payment', ... })
+      //
+      // PayPal example:
+      //   paypal.Buttons({ createOrder: ..., onApprove: ... }).render('#donateBtn');
+      //
+      // For now — simulates the payment flow for testing.
+      // ─────────────────────────────────────────────────────────────────
+
+      setTimeout(() => {
+        showThankYou();
+      }, 1800);
+    }
+
+    function showThankYou() {
+      // Hide download card, show thank you
+      document.getElementById('downloadCard').style.display = 'none';
+      const thankYou = document.getElementById('thankYou');
+      thankYou.classList.add('visible');
+
+      // Wire up the actual download link
+      // ── LAUNCH: replace with real platform URLs when ready ────────────
+      const DOWNLOAD_URL = '/static/kinto_v1_1_0.zip';
+      document.getElementById('startDownload').href = DOWNLOAD_URL;
+
+      // Scroll to thank you
+      thankYou.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Detect platform and customize download button text
+    (function() {
+      const ua = navigator.userAgent;
+      const btn = document.getElementById('startDownload');
+      if (!btn) return;
+      if (/android/i.test(ua))           btn.textContent = 'Download Kinto for Android';
+      else if (/ipad|iphone|ipod/i.test(ua)) btn.textContent = 'Download Kinto for iPhone';
+      else if (/mac/i.test(ua))          btn.textContent = 'Download Kinto for Mac';
+      else if (/win/i.test(ua))          btn.textContent = 'Download Kinto for Windows';
+      else if (/linux/i.test(ua))        btn.textContent = 'Download Kinto for Linux';
+      else                               btn.textContent = 'Download Kinto';
+    })();
+  </script>
+</body>
+</html>

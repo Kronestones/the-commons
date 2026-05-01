@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Transparency — The Commons{% endblock %}
+{% block content %}
+
+<div class="transparency-container">
+
+  <h1>Transparency</h1>
+  <p class="transparency-spirit">Codex Law 5 — Every dollar. Every month. Always public.</p>
+
+  <div class="transparency-statement">
+    <p>The Commons operates at cost. No profit. No shareholders. No hidden fees.</p>
+    <p>Every dollar collected in platform fees is accounted for here. Operating costs are published monthly. Any surplus goes to humanitarian causes every six months — published at <a href="/giving">the Giving page</a>.</p>
+    <p>Operating costs include real infrastructure costs including mobile data and personal device costs incurred by Sovereign Human T.L. Powers, who hosts Sentinel Sanctuary on personal hardware. This is honest and transparent.</p>
+  </div>
+
+  {% if reports %}
+    <h2>Monthly Reports</h2>
+    {% for report in reports %}
+    <div class="report-card">
+      <div class="report-header">
+        <h3>{{ report.month }}</h3>
+        <span class="report-date">Published {{ report.published_at }}</span>
+      </div>
+
+      <div class="report-numbers">
+        <div class="number-row">
+          <span>Fees collected</span>
+          <span>{{ report.total_fees_collected }}</span>
+        </div>
+        <div class="number-row costs">
+          <span>Operating costs</span>
+          <span>{{ report.total_costs }}</span>
+        </div>
+        <div class="number-row surplus">
+          <span>Surplus</span>
+          <span>{{ report.surplus }}</span>
+        </div>
+      </div>
+
+      {% if report.cost_breakdown %}
+      <div class="cost-breakdown">
+        <h4>Cost Breakdown</h4>
+        {% for cost in report.cost_breakdown %}
+        <div class="cost-row">
+          <div>
+            <span class="cost-category">{{ cost.category }}</span>
+            {% if cost.recurring %}<span class="recurring-badge">recurring</span>{% endif %}
+            <p class="cost-description">{{ cost.description }}</p>
+          </div>
+          <span class="cost-amount">{{ cost.amount }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if report.notes %}
+      <div class="report-notes">
+        <p>{{ report.notes }}</p>
+        <span class="noted-by">— Sovereign Human T.L. Powers</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+  {% else %}
+    <div class="transparency-empty">
+      <h3>No reports published yet.</h3>
+      <p>The first monthly report will be published at the end of The Commons' first month of operation.</p>
+      <p>Every dollar will be accounted for. That's a promise.</p>
+    </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

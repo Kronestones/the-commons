@@ -32,7 +32,7 @@ RESERVED_USERNAMES = {
 # ── Password ──────────────────────────────────────────────────────────────────
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password[:12])
+    return pwd_context.hash(password)
 
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
@@ -68,7 +68,7 @@ def validate_username(username: str) -> dict:
 def validate_password(password: str) -> dict:
     if len(password) < 8:
         return {"ok": False, "error": "Password must be at least 8 characters."}
-    if len(password) > 12:
+    if len(password) > 128:
         return {"ok": False, "error": "Password is too long."}
     return {"ok": True}
 
@@ -81,6 +81,10 @@ def register_user(db: Session, username: str, email: str,
     if not v["ok"]:
         return {"ok": False, "error": v["error"]}
 
+    # Validate password
+    v = validate_password(password)
+    if not v["ok"]:
+        return {"ok": False, "error": v["error"]}
 
     # Check uniqueness
     if db.query(User).filter(User.username == username).first():
@@ -91,7 +95,7 @@ def register_user(db: Session, username: str, email: str,
     user = User(
         username      = username,
         email         = email,
-        password_hash    = None,
+        password_hash = hash_password(password),
         display_name  = display_name or username,
         is_minor      = is_minor,
     )
