@@ -7,17 +7,7 @@
 
 <div class="auth-container">
   <h1>Welcome back</h1>
-  <p class="auth-note">Enter your email and we'll send you a sign-in link. No password needed. Ever.</p>
-
-  <!-- Kinto Card — available whether you join or not -->
-  <div class="kinto-card">
-    <div class="kinto-card-icon">🔧</div>
-    <div class="kinto-card-body">
-      <div class="kinto-card-title">Kinto — Free Repair for Any Device</div>
-      <div class="kinto-card-sub">Diagnoses and repairs software. Deep hardware diagnosis. Plain language always.</div>
-    </div>
-    <a href="/kinto" class="kinto-card-btn">Download — $1</a>
-  </div>
+  <p class="auth-note">Enter your username and password to sign in.</p>
 
   <form id="login-form" class="auth-form">
     <label>Username
@@ -52,7 +42,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     window.location = '/';
   } else {
     const err = document.getElementById('form-error');
-    err.textContent = data.error;
+    err.textContent   = data.error;
     err.style.display = 'block';
   }
 });

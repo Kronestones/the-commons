@@ -155,3 +155,38 @@ def require_sovereign(user: User = Depends(get_current_user)) -> User:
     if user.role != UserRole.SOVEREIGN:
         raise HTTPException(status_code=403, detail="Sovereign authority required.")
     return user
+
+
+def send_magic_link(db, user) -> dict:
+    """
+    Send a magic sign-in link to the user's email.
+    TODO: wire up Gmail SMTP via GMAIL_APP_PASSWORD env var.
+    """
+    import os, secrets
+    from datetime import datetime, timedelta
+
+    # Generate a secure token
+    token = secrets.token_urlsafe(32)
+
+    # For now return ok=False with a friendly message until SMTP is configured
+    gmail_pw = os.getenv("GMAIL_APP_PASSWORD", "")
+    if not gmail_pw:
+        return {"ok": False, "error": "Email sign-in is not yet configured. Please contact support."}
+
+    # SMTP sending — fill in when Gmail app password is set
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        gmail_from = os.getenv("GMAIL_FROM", "sentinel.commons@gmail.com")
+        base_url   = os.getenv("BASE_URL", "https://the-commons.onrender.com")
+        link       = f"{base_url}/auth/verify?token={token}&uid={user.id}"
+        msg        = MIMEText(f"Your Commons sign-in link:\n\n{link}\n\nExpires in 15 minutes.")
+        msg["Subject"] = "Your Commons Sign-In Link"
+        msg["From"]    = gmail_from
+        msg["To"]      = user.email
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(gmail_from, gmail_pw)
+            smtp.send_message(msg)
+        return {"ok": True}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}

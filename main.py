@@ -59,6 +59,8 @@ from commons.support         import support_manager, SupportTicket, SupportMessa
 from commons.blessing        import blessing_manager, BlessingApplication, BlessingVote, MonthlyBlessingRecord
 from commons.livestream      import livestream_manager, LiveStream, LiveChatMessage, StreamViewer, StreamGiftEvent, COMING_SOON
 from commons.transparency    import transparency_manager, OperatingCostEntry, MonthlyReport
+from commons.magic_routes    import router as magic_router
+from commons.email_auth      import generate_magic_token, verify_magic_token, send_magic_link, MagicToken
 from commons.uploads         import upload_manager
 from commons.translation import translation_manager
 from commons.captions    import caption_manager, Caption
@@ -95,6 +97,8 @@ app = FastAPI(
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware)
 app.add_middleware(RateLimitMiddleware)
+
+app.include_router(magic_router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/media",  StaticFiles(directory=str(config.media_dir)), name="media")

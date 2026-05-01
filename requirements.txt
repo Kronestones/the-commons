@@ -9,3 +9,5 @@ aiofiles
 python-dotenv
 sqlalchemy
 aiosqlite
+psycopg2-binary
+requests

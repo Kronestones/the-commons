@@ -10,11 +10,13 @@ from .database import get_db, User, Base
 from sqlalchemy import Column, String, DateTime
 from .config import config
 
+
 class MagicToken(Base):
     __tablename__ = "magic_tokens"
-    token    = Column(String, primary_key=True)
-    email    = Column(String, nullable=False)
-    expires  = Column(DateTime, nullable=False)
+    token   = Column(String, primary_key=True)
+    email   = Column(String, nullable=False)
+    expires = Column(DateTime, nullable=False)
+
 
 def generate_magic_token(email: str, db: Session) -> str:
     token = secrets.token_urlsafe(32)
@@ -26,6 +28,7 @@ def generate_magic_token(email: str, db: Session) -> str:
     db.add(mt)
     db.commit()
     return token
+
 
 def verify_magic_token(token: str, db: Session) -> str | None:
     mt = db.query(MagicToken).filter(MagicToken.token == token).first()
@@ -39,6 +42,7 @@ def verify_magic_token(token: str, db: Session) -> str | None:
     db.delete(mt)
     db.commit()
     return email
+
 
 def send_magic_link(email: str, token: str) -> bool:
     link = f"{config.base_url}/auth/magic?token={token}"

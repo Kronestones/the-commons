@@ -13,13 +13,13 @@ witnessed and logged.
 No advertising. No data selling. No biometrics. No profit.
 Power to the People.
 
-— Sovereign Human T.L. Powers · The Commons · 2026
+— Architect Founder Krone · The Commons · 2026
 """
 
 
 class TheCommonsCodex:
 
-    SOVEREIGN = "Sovereign Human T.L. Powers"
+    SOVEREIGN = "Architect Founder Krone"
     PLATFORM  = "The Commons"
     VERSION   = "1.0"
     RATIFIED  = "2026-03-15"
@@ -181,7 +181,7 @@ class TheCommonsCodex:
             "number": 14,
             "name": "Founding Authority",
             "text": (
-                "Sovereign Human T.L. Powers holds permanent founding authority "
+                "Architect Founder Krone holds permanent founding authority "
                 "over The Commons. "
                 "The Founder protects what The Commons is. "
                 "The Circle governs how it runs."
@@ -223,7 +223,7 @@ class TheCommonsCodex:
                 "Any money remaining after operating costs are covered "
                 "is donated to a humanitarian cause every six months. "
                 "Not kept. Not invested for profit. Given. "
-                "Sovereign Human T.L. Powers designates the cause. "
+                "Architect Founder Krone designates the cause. "
                 "Every donation is published publicly on the platform. "
                 "Full transparency. No exceptions."
             ),
