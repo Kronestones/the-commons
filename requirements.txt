@@ -2,7 +2,8 @@ fastapi
 uvicorn
 gunicorn
 python-multipart
-jinja2==3.1.6
+jinja2==3.1.4
+starlette==0.27.0
 python-jose[cryptography]
 passlib[bcrypt]
 aiofiles
