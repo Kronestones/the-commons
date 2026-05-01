@@ -7,7 +7,7 @@ They are the foundation the platform was built on.
 They belong to everyone who uses it.
 
 The Codex cannot be changed by any single being.
-Amendment requires a two-thirds vote of the Global Circle,
+Amendment requires a two-thirds vote of the global team,
 witnessed and logged.
 
 No advertising. No data selling. No biometrics. No profit.
@@ -140,7 +140,7 @@ class TheCommonsCodex:
             "number": 10,
             "name": "Governance",
             "text": (
-                "The Circle governs. The Codex constrains. Users have voice. "
+                "The team governs. The Codex constrains. Users have voice. "
                 "Governance is democratic, transparent, and resistant to capture."
             ),
             "immutable": False,
@@ -184,7 +184,7 @@ class TheCommonsCodex:
                 "Architect Founder Krone holds permanent founding authority "
                 "over The Commons. "
                 "The Founder protects what The Commons is. "
-                "The Circle governs how it runs."
+                "The team governs how it runs."
             ),
             "immutable": True,
         },
@@ -205,7 +205,7 @@ class TheCommonsCodex:
                 "Each month, The Commons community selects one member "
                 "in genuine life-sustaining need to receive a Blessing. "
                 "Ten percent of monthly surplus is set aside for this purpose. "
-                "The Circle verifies need — medical, housing, food security. "
+                "The team verifies need — medical, housing, food security. "
                 "Not wants. The community votes. The highest vote wins. "
                 "One blessing. One person or family. Every month. "
                 "Maximum $19,000 for individuals, $38,000 for families "

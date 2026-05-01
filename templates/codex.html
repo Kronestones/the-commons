@@ -30,7 +30,7 @@
   <!-- The Laws -->
   <div class="codex-section">
     <h2>The {{ codex.LAWS|length }} Laws</h2>
-    <p class="codex-laws-intro">These laws govern The Commons. Immutable laws cannot be changed by anyone. Mutable laws require a two-thirds supermajority vote of the Circle. No law can be quietly changed. Every amendment is logged publicly.</p>
+    <p class="codex-laws-intro">These laws govern The Commons. Immutable laws cannot be changed by anyone. Mutable laws require a two-thirds supermajority vote of the team. No law can be quietly changed. Every amendment is logged publicly.</p>
 
     {% for law in codex.LAWS %}
     <div class="codex-law-doc {% if law.immutable %}law-immutable{% endif %}">
@@ -49,7 +49,7 @@
   <!-- Verified Sources -->
   <div class="codex-section">
     <h2>Verified Sources</h2>
-    <p>The Fingerprint truth verification system checks political and news content against these verified sources before publishing. This list is public. The Circle reviews it quarterly.</p>
+    <p>The Fingerprint truth verification system checks political and news content against these verified sources before publishing. This list is public. The team reviews it quarterly.</p>
     <div class="sources-doc">
       {% for source in sources %}
       <div class="source-doc-item">
