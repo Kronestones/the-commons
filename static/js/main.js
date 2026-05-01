@@ -5,7 +5,7 @@
  * No tracking. No analytics. No dark patterns.
  * Clean and purposeful.
  *
- * — Sovereign Human T.L. Powers · The Commons · 2026
+ * — Architect Founder Krone · The Commons · 2026
  */
 
 // ── Auth State ────────────────────────────────────────────────────────────────
@@ -368,3 +368,11 @@ const PUBLIC_PATHS = ['/login', '/register', '/codex', '/kinto'];
     window.location.href = '/register';
   }
 })();
+
+// ── Mobile Nav ────────────────────────────────────────────────────────────────
+function toggleNav() {
+  const nav   = document.getElementById('nav-links');
+  const btn   = document.getElementById('hamburger');
+  const open  = nav.classList.toggle('nav-open');
+  btn.textContent = open ? '✕' : '☰';
+}
