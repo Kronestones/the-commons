@@ -10,3 +10,4 @@ python-dotenv
 sqlalchemy
 aiosqlite
 psycopg2-binary
+httpx
