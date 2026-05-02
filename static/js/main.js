@@ -201,13 +201,21 @@ async function vote(postId, value) {
   if (!token) { window.location = '/login'; return; }
   const form = new FormData();
   form.append('value', value);
-  const res  = await fetch(`/api/posts/${postId}/vote`, {
-    method:  'POST',
-    headers: { 'Authorization': 'Bearer ' + token },
-    body: form
-  });
-  const data = await res.json();
-  if (data.ok) showMessage(value === 1 ? 'Marked as valuable' : 'Noted');
+  try {
+    const res  = await fetch(`/api/posts/${postId}/vote`, {
+      method:  'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: form
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showMessage('❤️');
+    } else {
+      showMessage(data.error || 'Could not vote', true);
+    }
+  } catch(e) {
+    showMessage('Network error', true);
+  }
 }
 
 // ── Session Wellbeing Nudge ───────────────────────────────────────────────────
