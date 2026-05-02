@@ -1265,3 +1265,29 @@ a:hover { text-decoration: underline; }
     border-bottom: 1px solid rgba(255,255,255,0.08);
   }
 }
+
+/* ── Marketplace ─────────────────────────────────────────────────────────── */
+.marketplace-container { display: flex; flex-direction: column; gap: 20px; }
+.marketplace-hero h1 { font-size: 32px; color: var(--green-dark); margin-bottom: 4px; }
+.marketplace-hero p  { font-size: 15px; color: var(--text-muted); }
+.marketplace-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.marketplace-toolbar input[type="text"] { flex: 1; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; font-size: 15px; font-family: inherit; min-width: 160px; }
+.marketplace-toolbar input[type="text"]:focus { outline: none; border-color: var(--green-mid); box-shadow: 0 0 0 3px rgba(46,125,79,0.1); }
+.listing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+.listing-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; text-decoration: none; color: var(--text); box-shadow: var(--shadow); transition: box-shadow 0.15s; display: flex; flex-direction: column; cursor: pointer; }
+.listing-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+.listing-img { width: 100%; aspect-ratio: 1; background: var(--green-light); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.listing-img img { width: 100%; height: 100%; object-fit: cover; }
+.listing-img-placeholder { font-size: 2.5rem; }
+.listing-body { padding: 12px; }
+.listing-price { font-size: 18px; font-weight: 700; color: var(--green-dark); margin-bottom: 4px; }
+.listing-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.listing-seller { font-size: 12px; color: var(--text-muted); }
+.empty-marketplace { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-marketplace h3 { color: var(--green-dark); margin: 16px 0 20px; font-size: 20px; }
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+.modal-content { background: var(--white); border-radius: var(--radius); max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
+.modal-close { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); z-index: 1; }
+.product-form label { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; font-weight: 500; font-size: 14px; }
+.product-form input, .product-form textarea { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; font-size: 15px; font-family: inherit; }
+.fee-note { font-size: 13px; color: var(--text-muted); margin: 0; }
