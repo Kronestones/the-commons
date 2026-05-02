@@ -7,7 +7,7 @@
   <div class="post-composer" id="composer" style="display:none">
     <h3>Share something</h3>
     <textarea id="post-content" placeholder="What's on your mind?" maxlength="10000"></textarea>
-    <div class="composer-options">
+    <div class="composer-options" style="display:none">
       <label><input type="checkbox" id="is-news"> This is news
       <label><input type="checkbox" id="is-political"> This is political content
     </div>
@@ -19,7 +19,7 @@
       </select>
       <button onclick="createPost()" class="btn-primary">Post</button>
     </div>
-    <p class="composer-note">Political and news content is verified before publishing. This usually takes seconds.</p>
+    <p class="composer-note" style="display:none">Political and news content is verified before publishing. This usually takes seconds.</p>
   </div>
 
   <div class="feed" id="feed">
