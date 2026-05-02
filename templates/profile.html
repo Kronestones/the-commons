@@ -21,14 +21,13 @@
   <div class="profile-composer post-composer" id="profile-composer" style="display:none;">
     <textarea id="compose-text" placeholder="Share something with The Commons..." rows="3" maxlength="10000"></textarea>
     <div class="composer-actions">
-      <select id="compose-type">
-        <option value="text">Text</option>
-        <option value="image">Image</option>
-        <option value="audio">Audio</option>
-        <option value="video">Video</option>
-      </select>
+      <label class="attach-btn">
+        📎 Attach
+        <input type="file" id="compose-file" accept="image/*,video/*,audio/*" style="display:none" onchange="previewAttachment(this)">
+      </label>
       <button class="btn-primary" onclick="submitPost()">Post</button>
     </div>
+    <div id="attachment-preview" style="display:none;margin-top:8px;font-size:13px;color:var(--green-mid);"></div>
     <div id="compose-msg" class="composer-note" style="display:none;"></div>
   </div>
 
@@ -129,14 +128,32 @@ async function toggleFollow() {
   if (data.ok) loadProfile();
 }
 
+function previewAttachment(input) {
+  const preview = document.getElementById('attachment-preview');
+  if (input.files && input.files[0]) {
+    preview.textContent = '📎 ' + input.files[0].name;
+    preview.style.display = '';
+  }
+}
+
 async function submitPost() {
-  const content = document.getElementById('compose-text').value.trim();
-  const msgEl   = document.getElementById('compose-msg');
-  if (!content) return;
+  const content   = document.getElementById('compose-text').value.trim();
+  const msgEl     = document.getElementById('compose-msg');
+  const fileInput = document.getElementById('compose-file');
+  const file      = fileInput && fileInput.files[0];
+  if (!content && !file) return;
+
+  let post_type = 'text';
+  if (file) {
+    if (file.type.startsWith('image/')) post_type = 'image';
+    else if (file.type.startsWith('video/')) post_type = 'video';
+    else if (file.type.startsWith('audio/')) post_type = 'audio';
+  }
 
   const form = new FormData();
   form.append('content',   content);
-  form.append('post_type', document.getElementById('compose-type').value);
+  form.append('post_type', post_type);
+  if (file) form.append('media', file);
 
   const res  = await fetch('/api/posts', {
     method:  'POST',
@@ -147,14 +164,17 @@ async function submitPost() {
 
   msgEl.style.display = '';
   if (data.ok) {
-    msgEl.style.color   = '#2e7d4f';
-    msgEl.textContent   = data.message || 'Posted!';
+    msgEl.style.color = '#2e7d4f';
+    msgEl.textContent = data.message || 'Posted!';
     document.getElementById('compose-text').value = '';
+    if (fileInput) fileInput.value = '';
+    document.getElementById('attachment-preview').style.display = 'none';
     setTimeout(() => loadProfile(), 800);
   } else {
     msgEl.style.color = '#c0392b';
     msgEl.textContent = data.error || 'Something went wrong.';
   }
+}
 }
 
 async function deletePost(postId, btn) {
