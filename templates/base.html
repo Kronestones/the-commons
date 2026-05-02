@@ -53,15 +53,9 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="footer">
-    <p>The Commons · No advertising · No data selling · No biometrics · Power to the People</p>
-    <p>Architect Founder Krone · <a href="/codex">Read the Codex</a></p>
-    <div class="fb-community">
-    <a href="https://www.facebook.com/groups/1625182101758420/" target="_blank" rel="noopener">
-      💬 Join The Commons Community on Facebook
-    </a>
-  </div>
-</footer>
+  {% block footer %}
+  <footer class="footer footer-minimal"></footer>
+  {% endblock %}
 
   <script src="/static/js/main.js"></script>
   {% block scripts %}{% endblock %}

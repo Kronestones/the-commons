@@ -1291,3 +1291,11 @@ a:hover { text-decoration: underline; }
 .product-form label { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; font-weight: 500; font-size: 14px; }
 .product-form input, .product-form textarea { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; font-size: 15px; font-family: inherit; }
 .fee-note { font-size: 13px; color: var(--text-muted); margin: 0; }
+
+/* ── Minimal footer bar ──────────────────────────────────────────────────── */
+.footer-minimal {
+  height: 8px;
+  background: var(--green-dark);
+  padding: 0;
+  margin-top: auto;
+}
