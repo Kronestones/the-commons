@@ -15,9 +15,12 @@ function getUsername() { return localStorage.getItem('username'); }
 function isLoggedIn()  { return !!getToken(); }
 
 function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('username');
-  window.location.href = '/';
+  try {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.clear();
+  } catch(e) {}
+  window.location.href = '/login';
 }
 
 // ── Nav ───────────────────────────────────────────────────────────────────────
@@ -372,11 +375,13 @@ function togglePassword(inputId, btn) {
 const PUBLIC_PATHS = ['/login', '/register', '/codex', '/kinto'];
 
 (function authGuard() {
-  const path = window.location.pathname;
-  const isPublic = PUBLIC_PATHS.some(p => path === p || path.startsWith(p + '/'));
-  if (!isPublic && !getToken()) {
-    window.location.href = '/register';
-  }
+  try {
+    const path = window.location.pathname;
+    const isPublic = PUBLIC_PATHS.some(p => path === p || path.startsWith(p + '/'));
+    if (!isPublic && !getToken()) {
+      window.location.href = '/register';
+    }
+  } catch(e) {}
 })();
 
 // ── Mobile Nav ────────────────────────────────────────────────────────────────
