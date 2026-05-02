@@ -198,7 +198,7 @@ async function deleteProduct(productId, btn) {
 
 async function vote(postId, value) {
   const token = getToken();
-  if (!token) { window.location = '/login'; return; }
+  if (!token) { showMessage('Not logged in', true); return; }
   const form = new FormData();
   form.append('value', value);
   try {
@@ -207,6 +207,8 @@ async function vote(postId, value) {
       headers: { 'Authorization': 'Bearer ' + token },
       body: form
     });
+    if (res.status === 401) { showMessage('Session expired - please sign in again', true); return; }
+    if (res.status === 422) { showMessage('Invalid request (422)', true); return; }
     const data = await res.json();
     if (data.ok) {
       showMessage('❤️');
@@ -214,7 +216,7 @@ async function vote(postId, value) {
       showMessage(data.error || 'Could not vote', true);
     }
   } catch(e) {
-    showMessage('Network error', true);
+    showMessage('Network error: ' + e.message, true);
   }
 }
 
