@@ -44,11 +44,11 @@
 <script>
 const PAGE_USERNAME = {{ username | tojson }};
 const currentUsername = localStorage.getItem('username') || '';
-const token = localStorage.getItem('token') || '';
+const getProfileToken = () => localStorage.getItem('token') || '';
 const isOwn = currentUsername === PAGE_USERNAME;
 
 async function loadProfile() {
-  const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+  const headers = getProfileToken() ? { 'Authorization': 'Bearer ' + getProfileToken() } : {};
   const res  = await fetch('/api/users/' + PAGE_USERNAME + '/profile', { headers });
   const data = await res.json();
 
@@ -90,7 +90,7 @@ async function loadProfile() {
   if (isOwn) {
     document.getElementById('profile-composer').style.display = '';
     actionsEl.innerHTML = '<a href="/profile/edit" class="btn-primary" style="white-space:nowrap;">Edit Profile</a>';
-  } else if (token) {
+  } else if (getProfileToken()) {
     const following = p.is_following;
     actionsEl.innerHTML = '<button id="follow-btn" onclick="toggleFollow()" class="btn-primary">' +
       (following ? 'Unfollow' : 'Follow') + '</button>';
@@ -120,10 +120,10 @@ async function loadProfile() {
 }
 
 async function toggleFollow() {
-  if (!token) { window.location.href = '/login'; return; }
+  if (!getProfileToken()) { window.location.href = '/login'; return; }
   const res  = await fetch('/api/users/' + PAGE_USERNAME + '/follow', {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + token }
+    headers: { 'Authorization': 'Bearer ' + getProfileToken() }
   });
   const data = await res.json();
   if (data.ok) loadProfile();
@@ -140,7 +140,7 @@ async function submitPost() {
 
   const res  = await fetch('/api/posts', {
     method:  'POST',
-    headers: { 'Authorization': 'Bearer ' + token },
+    headers: { 'Authorization': 'Bearer ' + getProfileToken() },
     body:    form
   });
   const data = await res.json();
@@ -161,7 +161,7 @@ async function deletePost(postId, btn) {
   if (!confirm('Delete this post?')) return;
   const res  = await fetch('/api/posts/' + postId, {
     method:  'DELETE',
-    headers: { 'Authorization': 'Bearer ' + token }
+    headers: { 'Authorization': 'Bearer ' + getProfileToken() }
   });
   const data = await res.json();
   if (data.ok) {
