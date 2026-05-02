@@ -1373,13 +1373,32 @@ async def kinto_page():
 
 @app.get("/giving")
 async def giving_page(request: Request, db: Session = Depends(get_db)):
-    """Public page showing every donation ever made. Full transparency."""
-    record = surplus_manager.get_public_record(db)
+    """Combined Giving, Blessing and Transparency page."""
+    from datetime import datetime
+    month   = datetime.utcnow().strftime("%Y-%m")
+    record  = surplus_manager.get_public_record(db)
+    current = blessing_manager.get_current_applications(db, month)
+    history = blessing_manager.get_public_record(db)
+    reports = transparency_manager.get_public_reports(db)
     return templates.TemplateResponse("giving.html", {
-        "request": request,
+        "request":   request,
         "donations": record,
-        "codex": TheCommonsCodex,
+        "month":     month,
+        "current":   current,
+        "history":   history,
+        "reports":   reports,
+        "codex":     TheCommonsCodex,
     })
+
+@app.get("/blessing")
+async def blessing_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/giving")
+
+@app.get("/transparency")
+async def transparency_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/giving")
 
 @app.get("/api/giving")
 async def api_giving(db: Session = Depends(get_db)):
