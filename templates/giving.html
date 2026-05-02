@@ -4,64 +4,13 @@
 
 <div class="giving-container">
 
+  <!-- 1. Page Header -->
   <div class="page-header">
     <h1>Giving & Blessing</h1>
     <p>Codex Laws 17 & 18 — Surplus to the World · The Monthly Blessing</p>
   </div>
 
-  <!-- Surplus / Giving -->
-  <div class="giving-statement">
-    <p>Any money remaining after operating costs are covered is donated to a humanitarian cause every six months. Not kept. Not invested for profit. Given.</p>
-    <p>Architect Founder Krone designates the cause. Every donation is published here. Full transparency. No exceptions.</p>
-
-  <div style="text-align:center; margin:24px 0;">
-    <p style="color:var(--text-muted);font-size:14px;margin-bottom:12px;">Support The Commons — every contribution helps keep the platform running and the mission alive.</p>
-    <a href="https://buymeacoffee.com/sentinel.commons" target="_blank" rel="noopener"
-       style="display:inline-block;background:#FFDD00;color:#000;font-weight:700;font-size:16px;padding:12px 28px;border-radius:8px;text-decoration:none;">
-      ☕ Support The Commons
-    </a>
-  </div>
-  </div>
-
-  {% if donations %}
-    <h2>Donation History</h2>
-    <div class="donations-list">
-      {% for d in donations %}
-      <div class="donation-card {% if d.confirmed %}confirmed{% else %}pending{% endif %}">
-        <div class="donation-header">
-          <span class="donation-period">{{ d.period }}</span>
-          <span class="donation-status">{{ "Confirmed ✓" if d.confirmed else "Pending" }}</span>
-        </div>
-        <div class="donation-cause">
-          <h3>{{ d.cause }}</h3>
-          {% if d.cause_url %}<a href="{{ d.cause_url }}" target="_blank" rel="noopener">{{ d.cause_url }}</a>{% endif %}
-          {% if d.cause_description %}<p>{{ d.cause_description }}</p>{% endif %}
-        </div>
-        <div class="donation-numbers">
-          <div class="number-row"><span>Total collected</span><span>{{ d.total_collected }}</span></div>
-          <div class="number-row"><span>Operating costs</span><span>{{ d.operating_costs }}</span></div>
-          <div class="number-row donated"><span>Donated</span><span>{{ d.amount }}</span></div>
-        </div>
-        {% if d.public_note %}
-        <div class="donation-note">
-          <p>{{ d.public_note }}</p>
-          <span class="designated-by">— {{ d.designated_by }}</span>
-        </div>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="giving-empty">
-      <h3>No donations yet.</h3>
-      <p>The first donation will be made 6 months after The Commons launches.</p>
-      <p>Every dollar above operating costs goes here.</p>
-    </div>
-  {% endif %}
-
-  <hr class="section-divider">
-
-  <!-- Monthly Blessing -->
+  <!-- 2. Monthly Blessing -->
   <div class="page-header" style="margin-top:32px;">
     <h2>The Monthly Blessing 💛</h2>
     <p>One person. One month. Community chosen.</p>
@@ -104,28 +53,63 @@
     <a href="/blessing/apply" class="btn-primary" style="display:inline-block;margin-top:12px;">Apply for This Month's Blessing</a>
   </div>
 
-  {% if history %}
-  <div class="blessing-history">
-    <h2>Blessing History</h2>
-    <p>Every Blessing ever given. Every dollar. Full transparency.</p>
-    {% for b in history %}
-    <div class="history-card">
-      <div class="history-header">
-        <span class="history-month">{{ b.month }}</span>
-        <span class="history-amount">{{ b.amount_blessed }}</span>
-        <span class="history-status">{{ "✓ Paid" if b.paid else "Pending" }}</span>
+  <hr class="section-divider">
+
+  <!-- 3. Donation History -->
+  {% if donations %}
+    <h2>Donation History</h2>
+    <div class="donations-list">
+      {% for d in donations %}
+      <div class="donation-card {% if d.confirmed %}confirmed{% else %}pending{% endif %}">
+        <div class="donation-header">
+          <span class="donation-period">{{ d.period }}</span>
+          <span class="donation-status">{{ "Confirmed ✓" if d.confirmed else "Pending" }}</span>
+        </div>
+        <div class="donation-cause">
+          <h3>{{ d.cause }}</h3>
+          {% if d.cause_url %}<a href="{{ d.cause_url }}" target="_blank" rel="noopener">{{ d.cause_url }}</a>{% endif %}
+          {% if d.cause_description %}<p>{{ d.cause_description }}</p>{% endif %}
+        </div>
+        <div class="donation-numbers">
+          <div class="number-row"><span>Total collected</span><span>{{ d.total_collected }}</span></div>
+          <div class="number-row"><span>Operating costs</span><span>{{ d.operating_costs }}</span></div>
+          <div class="number-row donated"><span>Donated</span><span>{{ d.amount }}</span></div>
+        </div>
+        {% if d.public_note %}
+        <div class="donation-note">
+          <p>{{ d.public_note }}</p>
+          <span class="designated-by">— {{ d.designated_by }}</span>
+        </div>
+        {% endif %}
       </div>
-      <p class="history-category">{{ b.need_category }}</p>
-      <p class="history-votes">{{ b.vote_count }} community votes · {{ b.total_applicants }} applicants</p>
-      {% if b.public_message %}<p class="history-message">{{ b.public_message }}</p>{% endif %}
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
+  {% else %}
+    <div class="giving-empty">
+      <h3>No donations yet.</h3>
+      <p>The first donation will be made 6 months after The Commons launches.</p>
+      <p>Every dollar above operating costs goes here.</p>
+    </div>
   {% endif %}
 
   <hr class="section-divider">
 
-  <!-- Transparency -->
+  <!-- 4. Surplus / Giving + Buy Me a Coffee -->
+  <div class="giving-statement">
+    <p>Any money remaining after operating costs are covered is donated to a humanitarian cause every six months. Not kept. Not invested for profit. Given.</p>
+    <p>Architect Founder Krone designates the cause. Every donation is published here. Full transparency. No exceptions.</p>
+    <div style="text-align:center; margin:24px 0;">
+      <p style="color:var(--text-muted);font-size:14px;margin-bottom:12px;">Support The Commons — every contribution helps keep the platform running and the mission alive.</p>
+      <a href="https://buymeacoffee.com/sentinel.commons" target="_blank" rel="noopener"
+         style="display:inline-block;background:#FFDD00;color:#000;font-weight:700;font-size:16px;padding:12px 28px;border-radius:8px;text-decoration:none;">
+        ☕ Support The Commons
+      </a>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- 5. Transparency -->
   <div class="page-header" style="margin-top:32px;">
     <h2>Transparency</h2>
     <p>Codex Law 5 — Every dollar. Every month. Always public.</p>
