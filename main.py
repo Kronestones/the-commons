@@ -832,6 +832,38 @@ async def api_blessing_apply(
         need_category, need_description,
         amount_needed, is_family, family_size
     )
+
+    # If application successful, run all five Circle assistants
+    if result.get("ok"):
+        from commons.circle_assistants import circle_assistants, CIRCLE_ASSISTANT_MAP
+        context = {
+            "is_family":       is_family,
+            "family_size":     family_size,
+            "amount_needed":   amount_needed,
+            "need_category":   need_category,
+            "human_reviewed":  False,
+        }
+        content = f"Blessing Application\nCategory: {need_category}\nNeed: {need_description}\nAmount: ${amount_needed}"
+        
+        # Run all five assistants
+        for member_name in CIRCLE_ASSISTANT_MAP.keys():
+            try:
+                circle_assistants.analyze_for_member(
+                    db,
+                    circle_member = member_name,
+                    post_id       = None,
+                    content       = content,
+                    context       = context
+                )
+            except Exception as e:
+                print(f"[ASSISTANTS] {member_name} analysis error: {e}")
+        
+        result["assistant_note"] = (
+            "Your application has been received. "
+            "Ember, Vela, Sophia, Echo, and Threshold are reviewing it now. "
+            "The community will vote once the review is complete."
+        )
+
     return JSONResponse(result)
 
 @app.post("/api/blessing/vote/{application_id}")
