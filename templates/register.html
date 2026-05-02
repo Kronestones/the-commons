@@ -82,6 +82,8 @@
 {% endblock %}
 {% block scripts %}
 <script>
+// Clear any stale tokens on auth pages
+try { localStorage.removeItem("token"); localStorage.removeItem("username"); } catch(e) {}
 document.getElementById('register-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const form = new FormData();
@@ -110,4 +112,6 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
   }
 });
 </script>
+{% endblock %}
+
 {% endblock %}
