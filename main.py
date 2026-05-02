@@ -1169,8 +1169,8 @@ async def api_follow(
 @app.get("/api/users/{username}/profile")
 async def api_profile(
     username:     str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_optional)
 ):
     profile = profile_manager.get_profile(db, username, current_user)
     if not profile:
