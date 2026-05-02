@@ -1,14 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Giving — The Commons{% endblock %}
+{% block title %}Giving & Blessing — The Commons{% endblock %}
 {% block content %}
 
 <div class="giving-container">
 
   <div class="page-header">
-    <h1>Giving</h1>
-    <p>Codex Law 17 — Surplus to the World</p>
+    <h1>Giving & Blessing</h1>
+    <p>Codex Laws 17 & 18 — Surplus to the World · The Monthly Blessing</p>
   </div>
 
+  <!-- Surplus / Giving -->
   <div class="giving-statement">
     <p>Any money remaining after operating costs are covered is donated to a humanitarian cause every six months. Not kept. Not invested for profit. Given.</p>
     <p>Architect Founder Krone designates the cause. Every donation is published here. Full transparency. No exceptions.</p>
@@ -21,7 +22,7 @@
       <div class="donation-card {% if d.confirmed %}confirmed{% else %}pending{% endif %}">
         <div class="donation-header">
           <span class="donation-period">{{ d.period }}</span>
-          <span class="donation-status">{{ 'Confirmed ✓' if d.confirmed else 'Pending' }}</span>
+          <span class="donation-status">{{ "Confirmed ✓" if d.confirmed else "Pending" }}</span>
         </div>
         <div class="donation-cause">
           <h3>{{ d.cause }}</h3>
@@ -29,18 +30,9 @@
           {% if d.cause_description %}<p>{{ d.cause_description }}</p>{% endif %}
         </div>
         <div class="donation-numbers">
-          <div class="number-row">
-            <span>Total collected</span>
-            <span>{{ d.total_collected }}</span>
-          </div>
-          <div class="number-row">
-            <span>Operating costs</span>
-            <span>{{ d.operating_costs }}</span>
-          </div>
-          <div class="number-row donated">
-            <span>Donated</span>
-            <span>{{ d.amount }}</span>
-          </div>
+          <div class="number-row"><span>Total collected</span><span>{{ d.total_collected }}</span></div>
+          <div class="number-row"><span>Operating costs</span><span>{{ d.operating_costs }}</span></div>
+          <div class="number-row donated"><span>Donated</span><span>{{ d.amount }}</span></div>
         </div>
         {% if d.public_note %}
         <div class="donation-note">
@@ -48,13 +40,9 @@
           <span class="designated-by">— {{ d.designated_by }}</span>
         </div>
         {% endif %}
-        {% if d.donated_at and d.donated_at != 'Pending' %}
-        <p class="donation-date">Donated: {{ d.donated_at[:10] }}</p>
-        {% endif %}
       </div>
       {% endfor %}
     </div>
-
   {% else %}
     <div class="giving-empty">
       <h3>No donations yet.</h3>
@@ -63,6 +51,119 @@
     </div>
   {% endif %}
 
+  <hr class="section-divider">
+
+  <!-- Monthly Blessing -->
+  <div class="page-header" style="margin-top:32px;">
+    <h2>The Monthly Blessing 💛</h2>
+    <p>One person. One month. Community chosen.</p>
+  </div>
+
+  <div class="blessing-statement">
+    <p>Each month, The Commons community selects one member in genuine life-sustaining need to receive a Blessing. The team verifies need. The community votes. One person or family receives the Blessing.</p>
+    <p>Medical. Housing. Food security. Genuine life-sustaining need only. Not wants.</p>
+    <p>Maximum $19,000 for individuals. $38,000 for families. Every dollar transparent. The Commons is a facilitator only.</p>
+  </div>
+
+  {% if current %}
+  <div class="blessing-voting">
+    <h2>{{ month }} — Vote for This Month's Blessing</h2>
+    <p class="vote-note">You have one vote. Choose wisely. Choose with your heart.</p>
+    {% for app in current %}
+    <div class="blessing-card">
+      <div class="blessing-category">{{ app.need_category }}</div>
+      <p class="blessing-description">{{ app.need_description }}</p>
+      {% if app.is_family %}<span class="family-badge">Family application</span>{% endif %}
+      <div class="blessing-footer">
+        <span class="blessing-amount">Needs: {{ app.amount_needed }}</span>
+        <span class="blessing-votes">❤️ {{ app.vote_count }} votes</span>
+        <button class="vote-btn" onclick="voteBlessing({{ app.id }})">Vote for this Blessing</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="blessing-empty">
+    <h3>No verified applications yet this month.</h3>
+    <p>Applications are verified by the team before going to community vote.</p>
+    <p>If you are in genuine need, please apply.</p>
+  </div>
+  {% endif %}
+
+  <div class="blessing-apply">
+    <h2>Apply for a Blessing</h2>
+    <p>If you or your family are facing a genuine life-sustaining need, you may apply. The team will verify your application privately before it goes to community vote.</p>
+    <a href="/blessing/apply" class="btn-primary" style="display:inline-block;margin-top:12px;">Apply for This Month's Blessing</a>
+  </div>
+
+  {% if history %}
+  <div class="blessing-history">
+    <h2>Blessing History</h2>
+    <p>Every Blessing ever given. Every dollar. Full transparency.</p>
+    {% for b in history %}
+    <div class="history-card">
+      <div class="history-header">
+        <span class="history-month">{{ b.month }}</span>
+        <span class="history-amount">{{ b.amount_blessed }}</span>
+        <span class="history-status">{{ "✓ Paid" if b.paid else "Pending" }}</span>
+      </div>
+      <p class="history-category">{{ b.need_category }}</p>
+      <p class="history-votes">{{ b.vote_count }} community votes · {{ b.total_applicants }} applicants</p>
+      {% if b.public_message %}<p class="history-message">{{ b.public_message }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <hr class="section-divider">
+
+  <!-- Transparency -->
+  <div class="page-header" style="margin-top:32px;">
+    <h2>Transparency</h2>
+    <p>Codex Law 5 — Every dollar. Every month. Always public.</p>
+  </div>
+
+  <div class="transparency-statement">
+    <p>The Commons operates at cost. No profit. No shareholders. No hidden fees.</p>
+    <p>Every dollar collected in platform fees is accounted for here. Operating costs are published monthly. Any surplus goes to humanitarian causes every six months.</p>
+  </div>
+
+  {% if reports %}
+    {% for report in reports %}
+    <div class="report-card">
+      <div class="report-header">
+        <h3>{{ report.month }}</h3>
+        <span class="report-date">Published {{ report.published_at }}</span>
+      </div>
+      <div class="report-numbers">
+        <div class="number-row"><span>Fees collected</span><span>{{ report.total_fees_collected }}</span></div>
+        <div class="number-row costs"><span>Operating costs</span><span>{{ report.total_costs }}</span></div>
+        <div class="number-row surplus"><span>Surplus</span><span>{{ report.surplus }}</span></div>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="transparency-empty">
+      <h3>No reports published yet.</h3>
+      <p>The first monthly report will be published at the end of The Commons' first month of operation.</p>
+      <p>Every dollar will be accounted for. That's a promise.</p>
+    </div>
+  {% endif %}
+
 </div>
+
+<script>
+async function voteBlessing(applicationId) {
+  const token = getToken();
+  if (!token) { alert("Please log in to vote."); return; }
+  const res = await fetch(`/api/blessing/vote/${applicationId}`, {
+    method: "POST",
+    headers: { "Authorization": "Bearer " + token }
+  });
+  const data = await res.json();
+  alert(data.message || data.error);
+  if (data.ok) location.reload();
+}
+</script>
 
 {% endblock %}
