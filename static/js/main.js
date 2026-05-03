@@ -210,7 +210,7 @@ async function vote(postId, value) {
       headers: { 'Authorization': 'Bearer ' + token },
       body: form
     });
-    if (res.status === 401) { showMessage('Session expired - please sign in again', true); return; }
+    if (res.status === 401) { localStorage.removeItem('token'); localStorage.removeItem('username'); window.location.href = '/login'; return; }
     if (res.status === 422) { showMessage('Invalid request (422)', true); return; }
     const data = await res.json();
     if (data.ok) {
