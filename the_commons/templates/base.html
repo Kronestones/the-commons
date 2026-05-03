@@ -71,7 +71,7 @@
     const u = localStorage.getItem('username');
     const link = document.getElementById('menu-profile-link');
     if (u && link) {
-      link.textContent = '@' + u;
+      link.textContent = '👤 Profile';
       link.href = '/profile/' + u;
     }
     const section = document.getElementById('menu-user-section');
