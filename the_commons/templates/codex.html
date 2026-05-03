@@ -10,8 +10,6 @@
       <p class="codex-platform">THE COMMONS</p>
       <h1 class="codex-title">The Codex</h1>
       <p class="codex-subtitle">Our Constitution. Our Promise. Our Foundation.</p>
-      <p class="codex-meta">Founded by {{ codex.SOVEREIGN }}</p>
-      <p class="codex-meta">Ratified {{ codex.RATIFIED }}</p>
       <p class="codex-spirit-doc">{{ codex.SPIRIT }}</p>
     </div>
   </div>
@@ -22,15 +20,15 @@
     <p>The Commons is a social platform — video, text, images, live streaming, everything — but built on a completely different foundation. No advertising. No data selling. No algorithm designed to keep you scrolling at the cost of your wellbeing. No corporations extracting wealth from local communities. No foreign ownership of the infrastructure your democracy runs on.</p>
     <p>The feed is transparent — you can always see why you're shown what you're shown. You choose how it works. Truth is verified before it reaches you — political content and news goes through a built-in fact-checking system before it publishes. Deepfakes are detected and blocked. Misinformation simply doesn't exist on the platform because it never gets published in the first place.</p>
     <p>Local small businesses and individual creators can sell their products through it. The platform takes a flat $1 per sale — not a percentage, not advertising revenue, just enough to keep the lights on. Any surplus goes back into the platform. No profit. Ever.</p>
-    <p>Any surplus from the $1 we charge for purchases is donated to a different humanitarian cause every 6 months. Every donation is transparent and publicly available on the platform. The community also votes each month to give a Blessing — up to 10% of surplus — to one member in genuine life-sustaining need.</p>
+    <p>Any surplus above operating costs is directed to humanitarian causes every 6 months and to The Monthly Blessing — community chosen, community voted. Every dollar is transparent and publicly available on the platform.</p>
   </div>
 
   <div class="codex-divider"></div>
 
   <!-- The Laws -->
   <div class="codex-section">
-    <h2>The {{ codex.LAWS|length }} Laws</h2>
-    <p class="codex-laws-intro">These laws govern The Commons. Immutable laws cannot be changed by anyone. Mutable laws require a two-thirds supermajority vote of the team. No law can be quietly changed. Every amendment is logged publicly.</p>
+    <h2>Guidelines</h2>
+    <p class="codex-laws-intro">These guidelines govern The Commons. No guideline can be quietly changed. Every amendment is logged publicly.</p>
 
     {% for law in codex.LAWS %}
     <div class="codex-law-doc {% if law.immutable %}law-immutable{% endif %}">

@@ -136,15 +136,7 @@ class TheCommonsCodex:
             ),
             "immutable": True,
         },
-        {
-            "number": 10,
-            "name": "Governance",
-            "text": (
-                "The team governs. The Codex constrains. Users have voice. "
-                "Governance is democratic, transparent, and resistant to capture."
-            ),
-            "immutable": False,
-        },
+
         {
             "number": 11,
             "name": "Local Commerce",
@@ -152,7 +144,7 @@ class TheCommonsCodex:
                 "The marketplace serves individuals and locally owned "
                 "small businesses only. "
                 "No corporations. No private equity. No publicly traded companies. "
-                "The $1 fee circulates money locally."
+                "The $1 contribution circulates money locally."
             ),
             "immutable": True,
         },
@@ -161,7 +153,7 @@ class TheCommonsCodex:
             "name": "No Profit",
             "text": (
                 "The Commons operates at cost. "
-                "The $1 transaction fee covers operating costs only. "
+                "The $1 transaction contribution covers operating costs only. "
                 "Any surplus is reinvested into the platform. "
                 "No profit is ever distributed to anyone."
             ),
@@ -177,27 +169,8 @@ class TheCommonsCodex:
             ),
             "immutable": False,
         },
-        {
-            "number": 14,
-            "name": "Founding Authority",
-            "text": (
-                "Architect Founder Krone holds permanent founding authority "
-                "over The Commons. "
-                "The Founder protects what The Commons is. "
-                "The team governs how it runs."
-            ),
-            "immutable": True,
-        },
-        {
-            "number": 15,
-            "name": "Open Source",
-            "text": (
-                "The core codebase of The Commons is open source. "
-                "The people can see how it works. "
-                "The people can verify it does what it says."
-            ),
-            "immutable": False,
-        },
+
+
         {
             "number": 18,
             "name": "The Monthly Blessing",
