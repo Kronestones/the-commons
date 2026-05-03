@@ -172,7 +172,7 @@ class TheCommonsCodex:
 
 
         {
-            "number": 18,
+            "number": 16,
             "name": "The Monthly Blessing",
             "text": (
                 "Each month, The Commons community selects one member "
@@ -203,7 +203,7 @@ class TheCommonsCodex:
             "immutable": True,
         },
         {
-            "number": 16,
+            "number": 18,
             "name": "Power to the People",
             "text": (
                 "This platform was built by the people, for the people. "
