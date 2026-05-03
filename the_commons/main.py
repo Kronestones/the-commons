@@ -8,7 +8,7 @@ Usage:
     python main.py --check      # Check configuration
     python main.py --dev        # Development mode
 
-— The Architect, Founder of The Commons · The Commons · 2026
+— Sovereign Human T.L. Powers · The Commons · 2026
   Power to the People
 """
 
@@ -59,6 +59,8 @@ from commons.support         import support_manager, SupportTicket, SupportMessa
 from commons.blessing        import blessing_manager, BlessingApplication, BlessingVote, MonthlyBlessingRecord
 from commons.livestream      import livestream_manager, LiveStream, LiveChatMessage, StreamViewer, StreamGiftEvent, COMING_SOON
 from commons.transparency    import transparency_manager, OperatingCostEntry, MonthlyReport
+from commons.magic_routes    import router as magic_router
+from commons.email_auth      import generate_magic_token, verify_magic_token, send_magic_link, MagicToken
 from commons.uploads         import upload_manager
 from commons.translation import translation_manager
 from commons.captions    import caption_manager, Caption
@@ -95,6 +97,8 @@ app = FastAPI(
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware)
 app.add_middleware(RateLimitMiddleware)
+
+app.include_router(magic_router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/media",  StaticFiles(directory=str(config.media_dir)), name="media")
@@ -143,7 +147,7 @@ async def startup():
     print(f"║  Host:     {config.host}:{config.port:<38}║")
     print(f"║  Mode:     {'Development' if config.debug else 'Production':<43}║")
     print("╠══════════════════════════════════════════════════════╣")
-    print("║  The Architect, Founder of The Commons                         ║")
+    print("║  Sovereign Human T.L. Powers                         ║")
     print("║  Power to the People                                 ║")
     print("╚══════════════════════════════════════════════════════╝")
     print()
@@ -166,10 +170,19 @@ async def home(request: Request, db: Session = Depends(get_db)):
         .limit(20)
         .all()
     )
+    # Decode token from Authorization header or cookie for template use
+    current_username = None
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        from commons.auth import decode_token
+        payload = decode_token(auth_header[7:])
+        if payload:
+            current_username = payload.get("username")
     return templates.TemplateResponse("index.html", {
-        "request": request,
-        "posts":   recent_posts,
-        "version": VERSION,
+        "request":          request,
+        "posts":            recent_posts,
+        "version":          VERSION,
+        "current_username": current_username,
     })
 
 @app.get("/register", response_class=HTMLResponse)
@@ -179,6 +192,17 @@ async def register_page(request: Request):
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+
+@app.get("/profile/edit", response_class=HTMLResponse)
+async def profile_edit_page(request: Request):
+    return templates.TemplateResponse("profile_edit.html", {"request": request})
+
+@app.get("/profile/{username}", response_class=HTMLResponse)
+async def profile_page(username: str, request: Request):
+    return templates.TemplateResponse("profile.html", {
+        "request":  request,
+        "username": username,
+    })
 
 @app.get("/codex", response_class=HTMLResponse)
 async def codex_page(request: Request):
@@ -808,6 +832,38 @@ async def api_blessing_apply(
         need_category, need_description,
         amount_needed, is_family, family_size
     )
+
+    # If application successful, run all five Circle assistants
+    if result.get("ok"):
+        from commons.circle_assistants import circle_assistants, CIRCLE_ASSISTANT_MAP
+        context = {
+            "is_family":       is_family,
+            "family_size":     family_size,
+            "amount_needed":   amount_needed,
+            "need_category":   need_category,
+            "human_reviewed":  False,
+        }
+        content = f"Blessing Application\nCategory: {need_category}\nNeed: {need_description}\nAmount: ${amount_needed}"
+        
+        # Run all five assistants
+        for member_name in CIRCLE_ASSISTANT_MAP.keys():
+            try:
+                circle_assistants.analyze_for_member(
+                    db,
+                    circle_member = member_name,
+                    post_id       = None,
+                    content       = content,
+                    context       = context
+                )
+            except Exception as e:
+                print(f"[ASSISTANTS] {member_name} analysis error: {e}")
+        
+        result["assistant_note"] = (
+            "Your application has been received. "
+            "Ember, Vela, Sophia, Echo, and Threshold are reviewing it now. "
+            "The community will vote once the review is complete."
+        )
+
     return JSONResponse(result)
 
 @app.post("/api/blessing/vote/{application_id}")
@@ -997,16 +1053,19 @@ async def api_upload(
     import threading
     def notify_followers():
         try:
+            from commons.database import SessionLocal
             from commons.features import Follow, notification_manager
-            db2 = __import__('commons.database', fromlist=['SessionLocal']).SessionLocal()
-            followers = db2.query(Follow).filter(Follow.following_id == current_user.id).all()
-            for f in followers:
-                notification_manager.create(
-                    db2, f.follower_id, current_user.id,
-                    "post", f"@{current_user.username} posted something new",
-                    post_id=post.id
-                )
-            db2.close()
+            db2 = SessionLocal()
+            try:
+                followers = db2.query(Follow).filter(Follow.following_id == current_user.id).all()
+                for f in followers:
+                    notification_manager.create(
+                        db2, f.follower_id, current_user.id,
+                        "post", f"@{current_user.username} posted something new",
+                        post_id=post.id
+                    )
+            finally:
+                db2.close()
         except Exception:
             pass
     threading.Thread(target=notify_followers, daemon=True).start()
@@ -1142,8 +1201,8 @@ async def api_follow(
 @app.get("/api/users/{username}/profile")
 async def api_profile(
     username:     str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_optional)
 ):
     profile = profile_manager.get_profile(db, username, current_user)
     if not profile:
@@ -1295,9 +1354,13 @@ async def api_parental_setup(
     minor_user_id: int = Form(...),
     pin:           str = Form(...),
     parent_email:  str = Form(default=""),
+    current_user:  User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Parent sets up PIN control for a minor account."""
+    # Only the sovereign or the minor's own account holder may set this up
+    if current_user.role.value != "sovereign" and current_user.id != minor_user_id:
+        raise HTTPException(403, "You can only set up parental controls on your own account.")
     result = parental.setup_parental_control(db, minor_user_id, pin, parent_email)
     return JSONResponse(result)
 
@@ -1329,17 +1392,45 @@ async def api_parental_status(
     result = parental.get_status(db, minor_user_id)
     return JSONResponse(result)
 
+# ── Kinto ─────────────────────────────────────────────────────────────────────
+
+@app.get("/kinto", response_class=HTMLResponse)
+async def kinto_page():
+    """Kinto download page — standalone, separate from The Commons."""
+    kinto_html = os.path.join(os.path.dirname(__file__), "static", "kinto.html")
+    with open(kinto_html, "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
+
 # ── Surplus Donation API ──────────────────────────────────────────────────────
 
 @app.get("/giving")
 async def giving_page(request: Request, db: Session = Depends(get_db)):
-    """Public page showing every donation ever made. Full transparency."""
-    record = surplus_manager.get_public_record(db)
+    """Combined Giving, Blessing and Transparency page."""
+    from datetime import datetime
+    month   = datetime.utcnow().strftime("%Y-%m")
+    record  = surplus_manager.get_public_record(db)
+    current = blessing_manager.get_current_applications(db, month)
+    history = blessing_manager.get_public_record(db)
+    reports = transparency_manager.get_public_reports(db)
     return templates.TemplateResponse("giving.html", {
-        "request": request,
+        "request":   request,
         "donations": record,
-        "codex": TheCommonsCodex,
+        "month":     month,
+        "current":   current,
+        "history":   history,
+        "reports":   reports,
+        "codex":     TheCommonsCodex,
     })
+
+@app.get("/blessing")
+async def blessing_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/giving")
+
+@app.get("/transparency")
+async def transparency_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/giving")
 
 @app.get("/api/giving")
 async def api_giving(db: Session = Depends(get_db)):
@@ -1363,7 +1454,7 @@ async def api_designate_donation(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """The Architect, Founder of The Commons designates a humanitarian cause."""
+    """Sovereign Human T.L. Powers designates a humanitarian cause."""
     if current_user.role.value != "sovereign":
         raise HTTPException(403, "Sovereign authority required. Codex Law 17.")
     from datetime import datetime
@@ -1491,17 +1582,6 @@ async def api_video_responses(
 async def health():
     return {"status": "ok", "platform": "The Commons", "spirit": "Power to the People"}
 
-# ── Run ───────────────────────────────────────────────────────────────────────
-
-if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host    = config.host,
-        port    = config.port,
-        reload  = config.debug,
-        workers = 1 if config.debug else 4,
-    )
-
 # ── Marketplace API ───────────────────────────────────────────────────────────
 
 @app.get("/api/marketplace")
@@ -1510,10 +1590,11 @@ async def api_marketplace(
     offset: int = 0,
     db: Session = Depends(get_db)
 ):
+    from commons.database import SellerProfile
     products = commerce.get_marketplace(db, limit, offset)
     result = []
     for p in products:
-        seller = db.query(__import__('commons.database', fromlist=['SellerProfile']).SellerProfile).filter_by(id=p.seller_id).first()
+        seller = db.query(SellerProfile).filter_by(id=p.seller_id).first()
         seller_user = db.query(User).filter_by(id=seller.user_id).first() if seller else None
         result.append({
             "id":            p.id,
@@ -1523,6 +1604,7 @@ async def api_marketplace(
             "media_path":    p.media_path,
             "community_score": p.community_score,
             "seller":        seller_user.username if seller_user else "unknown",
+            "seller_user_id": seller_user.id if seller_user else None,
             "business_type": seller.business_type if seller else "unknown",
         })
     return JSONResponse({"ok": True, "products": result})
@@ -1603,6 +1685,43 @@ async def api_platform_stats(
         raise HTTPException(403, "Circle access required")
     return JSONResponse(commerce.platform_stats(db))
 
+@app.delete("/api/posts/{post_id}")
+async def api_delete_post(
+    post_id:      int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        return JSONResponse({"ok": False, "error": "Post not found."}, status_code=404)
+    if post.author_id != current_user.id and current_user.role.value not in ("circle", "sovereign"):
+        return JSONResponse({"ok": False, "error": "Not your post."}, status_code=403)
+    db.delete(post)
+    db.commit()
+    return JSONResponse({"ok": True})
+
+
+@app.delete("/api/marketplace/products/{product_id}")
+async def api_delete_product(
+    product_id:   int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    from commons.database import SellerProfile
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        return JSONResponse({"ok": False, "error": "Listing not found."}, status_code=404)
+    seller = db.query(SellerProfile).filter(
+        SellerProfile.id == product.seller_id,
+        SellerProfile.user_id == current_user.id
+    ).first()
+    if not seller and current_user.role.value not in ("circle", "sovereign"):
+        return JSONResponse({"ok": False, "error": "Not your listing."}, status_code=403)
+    product.is_active = False
+    db.commit()
+    return JSONResponse({"ok": True})
+
+
 @app.post("/api/user/algorithm-mode")
 async def api_set_algorithm_mode(
     mode: str = Form(...),
@@ -1616,3 +1735,14 @@ async def api_set_algorithm_mode(
         return JSONResponse({"ok": True, "mode": mode})
     except ValueError:
         return JSONResponse({"ok": False, "error": "Invalid mode."}, status_code=400)
+
+# ── Run ───────────────────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "main:app",
+        host    = config.host,
+        port    = config.port,
+        reload  = config.debug,
+        workers = 1 if config.debug else 4,
+    )
