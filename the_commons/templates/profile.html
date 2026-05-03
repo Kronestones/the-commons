@@ -47,6 +47,18 @@ const getProfileToken = () => localStorage.getItem('token') || '';
 const isOwn = currentUsername === PAGE_USERNAME;
 
 async function loadProfile() {
+  const debugToken = getProfileToken();
+  const debugEl = document.getElementById('profile-posts');
+  if (!debugToken) {
+    debugEl.innerHTML = '<p style="color:red">No token found - please sign in again</p>';
+    return;
+  }
+  const debugToken = getProfileToken();
+  const debugEl = document.getElementById('profile-posts');
+  if (!debugToken) {
+    debugEl.innerHTML = '<p style="color:red">No token found - please sign in again</p>';
+    return;
+  }
   const headers = getProfileToken() ? { 'Authorization': 'Bearer ' + getProfileToken() } : {};
   const res  = await fetch('/api/users/' + PAGE_USERNAME + '/profile', { headers });
   const data = await res.json();
