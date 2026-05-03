@@ -40,6 +40,11 @@
 {% endblock %}
 
 {% block scripts %}
+
+{% endblock %}
+
+{% endblock %}
+{% block scripts %}
 <script>
 const PAGE_USERNAME = {{ username | tojson }};
 const currentUsername = localStorage.getItem('username') || '';
