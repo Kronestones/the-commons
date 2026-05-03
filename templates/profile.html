@@ -43,20 +43,9 @@
 <script>
 const PAGE_USERNAME = {{ username | tojson }};
 const currentUsername = localStorage.getItem('username') || '';
-const getProfileToken = () => localStorage.getItem('token') || '';
+const getProfileToken = () => { try { return localStorage.getItem('token') || ''; } catch(e) { return ''; } };
 const isOwn = currentUsername === PAGE_USERNAME;
 
-async function loadProfile() {
-  const postsEl = document.getElementById('profile-posts');
-  const token = getProfileToken();
-  postsEl.innerHTML = '<p style="padding:20px;">Token: ' + (token ? token.substring(0,20)+'...' : 'NONE') + '</p>';
-  if (!token) return;
-  try {
-    const res = await fetch('/api/users/' + PAGE_USERNAME + '/profile', {headers:{'Authorization':'Bearer '+token}});
-    const data = await res.json();
-    postsEl.innerHTML += '<p style="padding:20px;">Status: ' + res.status + ' / ok: ' + data.ok + '</p>';
-  } catch(e) { postsEl.innerHTML += '<p style="color:red">Error: ' + e.message + '</p>'; }
-}
 async function loadProfile_real() {
   const debugToken = getProfileToken();
   const debugEl = document.getElementById('profile-posts');
