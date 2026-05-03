@@ -10,7 +10,7 @@
       <p class="codex-platform">THE COMMONS</p>
       <h1 class="codex-title">The Codex</h1>
       <p class="codex-subtitle">Our Constitution. Our Promise. Our Foundation.</p>
-      <p class="codex-meta">Founded by The Architect, Founder of The Commons</p>
+      <p class="codex-meta">Founded by {{ codex.SOVEREIGN }}</p>
       <p class="codex-meta">Ratified {{ codex.RATIFIED }}</p>
       <p class="codex-spirit-doc">{{ codex.SPIRIT }}</p>
     </div>
@@ -30,7 +30,7 @@
   <!-- The Laws -->
   <div class="codex-section">
     <h2>The {{ codex.LAWS|length }} Laws</h2>
-    <p class="codex-laws-intro">These laws govern The Commons. Immutable laws cannot be changed by anyone. Mutable laws require a two-thirds supermajority vote of the Circle. No law can be quietly changed. Every amendment is logged publicly.</p>
+    <p class="codex-laws-intro">These laws govern The Commons. Immutable laws cannot be changed by anyone. Mutable laws require a two-thirds supermajority vote of the team. No law can be quietly changed. Every amendment is logged publicly.</p>
 
     {% for law in codex.LAWS %}
     <div class="codex-law-doc {% if law.immutable %}law-immutable{% endif %}">
@@ -46,20 +46,10 @@
 
   <div class="codex-divider"></div>
 
-  <!-- AI Disclaimer -->
-  <div class="codex-section codex-disclaimer">
-    <h2>AI Disclaimer</h2>
-    <p>The Commons uses AI to help power certain features including truth verification, content moderation, support chat, and Circle assistance. While we've built these systems carefully and with genuine ethical intent, <strong>AI can make mistakes.</strong></p>
-    <p>Please double-check important information independently. AI-generated responses in our support chat are a starting point — not a final authority. If something doesn't seem right, trust your instincts and reach out through a support ticket for human Circle review.</p>
-    <p>We believe AI should serve people honestly — and that means being honest about its limitations.</p>
-  </div>
-
-  <div class="codex-divider"></div>
-
   <!-- Verified Sources -->
   <div class="codex-section">
     <h2>Verified Sources</h2>
-    <p>The Fingerprint truth verification system checks political and news content against these verified sources before publishing. This list is public. The Circle reviews it quarterly.</p>
+    <p>The Fingerprint truth verification system checks political and news content against these verified sources before publishing. This list is public. The team reviews it quarterly.</p>
     <div class="sources-doc">
       {% for source in sources %}
       <div class="source-doc-item">
@@ -78,7 +68,7 @@
     <p>It is not a terms of service that can be quietly updated.</p>
     <p>It is not a policy document that can be overridden by business interests.</p>
     <p>It is the architecture. It is the promise. It is permanent.</p>
-    <p class="codex-footer-sig">— The Architect, Founder of The Commons</p>
+    <p class="codex-footer-sig">— {{ codex.SOVEREIGN }}</p>
     <p class="codex-footer-spirit">Power to the People. 🏡</p>
   </div>
 

@@ -1,51 +1,170 @@
 {% extends "base.html" %}
 {% block title %}Marketplace — The Commons{% endblock %}
 {% block content %}
+
 <div class="marketplace-container">
-  <div class="marketplace-hero">
+
+  <div class="marketplace-hero card">
     <h1>Marketplace</h1>
     <p>Local creators and small businesses only. No corporations. Flat $1 platform fee per transaction.</p>
   </div>
+
   <div class="marketplace-toolbar">
-    <form method="GET" action="/marketplace" style="display:flex;gap:8px;flex:1;">
-      <input type="text" name="q" placeholder="Search listings..." value="{{ q or '' }}" class="search-input">
-      <button type="submit" class="btn-primary">Search</button>
-    </form>
-    {% if current_user %}
-      <a href="/marketplace/create" class="btn-primary">+ Post Listing</a>
-      <a href="/marketplace/inbox" class="btn-secondary">Inbox</a>
-    {% endif %}
+    <input type="text" id="search-input" placeholder="Search listings…" oninput="filterListings(this.value)">
+    <button onclick="filterListings(document.getElementById('search-input').value)" class="btn-primary">Search</button>
+    <button id="post-btn" onclick="showListProduct()" class="btn-primary" style="display:none;white-space:nowrap;">+ Post Listing</button>
+    <a id="inbox-btn" href="/marketplace/inbox" class="btn-secondary" style="display:none;white-space:nowrap;">Inbox</a>
   </div>
-  {% if listings %}
-    <div class="listing-grid">
-      {% for listing in listings %}
-      <div class="listing-card-wrap">
-        <a href="/marketplace/{{ listing.id }}" class="listing-card">
-          <div class="listing-img">
-            {% if listing.media_path %}<img src="{{ listing.media_path }}" alt="{{ listing.title }}">
-            {% else %}<span class="listing-img-placeholder">🛍️</span>{% endif %}
-          </div>
-          <div class="listing-body">
-            <div class="listing-price">${{ "%.2f"|format(listing.price) }}</div>
-            <div class="listing-title">{{ listing.title }}</div>
-            <div class="listing-seller">@{{ listing.seller.username if listing.seller else "unknown" }}</div>
-          </div>
-        </a>
-        {% if current_user and listing.seller_id == current_user.id %}
-        <form method="POST" action="/marketplace/{{ listing.id }}/delete" onsubmit="return confirm('Remove this listing?');" style="margin-top:8px;text-align:right;">
-          <button type="submit" class="delete-btn">✕ Remove</button>
-        </form>
-        {% endif %}
-      </div>
-      {% endfor %}
+
+  <div id="list-product-form" class="product-form card" style="display:none">
+    <h3>Post a Listing</h3>
+    <label>Title
+      <input type="text" id="product-name" maxlength="300" placeholder="What are you selling?">
+    </label>
+    <label>Description
+      <textarea id="product-desc" placeholder="Condition, size, pickup details…" rows="4"></textarea>
+    </label>
+    <label>Price ($)
+      <input type="number" id="product-price" min="0.01" max="10000" step="0.01" placeholder="0.00">
+    </label>
+    <label>Photo (optional)
+      <input type="file" id="product-photo" accept="image/*" onchange="previewPhoto(this)">
+      <img id="photo-preview" src="" alt="" style="display:none;width:120px;height:120px;object-fit:cover;border-radius:8px;margin-top:8px;">
+    </label>
+    <p class="fee-note">Buyers pay your price + $1 platform fee. No profit taken.</p>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button onclick="listProduct()" class="btn-primary">Post Listing</button>
+      <button onclick="hideListProduct()" class="btn-secondary">Cancel</button>
     </div>
-  {% else %}
-    <div class="empty-marketplace">
-      <div style="font-size:3rem;margin-bottom:12px;">🛍️</div>
-      <h3>Be the first to list something.</h3>
-      {% if current_user %}<a href="/marketplace/create" class="btn-primary" style="display:inline-block;margin-top:16px;">Post a listing</a>
-      {% else %}<a href="/register" class="btn-primary" style="display:inline-block;margin-top:16px;">Join to sell</a>{% endif %}
+  </div>
+
+  <div class="listing-grid" id="products-grid">
+    <div class="loading">Loading marketplace…</div>
+  </div>
+
+  <div id="product-modal" class="modal" style="display:none">
+    <div class="modal-content">
+      <button onclick="closeModal()" class="modal-close">&times;</button>
+      <div id="modal-body"></div>
     </div>
-  {% endif %}
+  </div>
+
+  <div class="facilitator-notice">
+    <p>The Commons is a technology facilitator only. We connect buyers and sellers but are not a party to any transaction. The Commons is not responsible for product quality, safety, legality, or delivery. All disputes are between buyer and seller directly.</p>
+  </div>
+
 </div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+const token    = localStorage.getItem('token') || '';
+const username = localStorage.getItem('username') || '';
+let allProducts = [];
+
+// Show post/inbox buttons if logged in
+if (token) {
+  document.getElementById('post-btn').style.display  = '';
+  document.getElementById('inbox-btn').style.display = '';
+}
+
+function previewPhoto(input) {
+  const preview = document.getElementById('photo-preview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => { preview.src = e.target.result; preview.style.display = 'block'; };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function showListProduct() { document.getElementById('list-product-form').style.display = ''; }
+function hideListProduct() { document.getElementById('list-product-form').style.display = 'none'; }
+
+async function loadMarketplace() {
+  const res  = await fetch('/api/marketplace');
+  const data = await res.json();
+  allProducts = data.products || [];
+  renderGrid(allProducts);
+}
+
+function filterListings(q) {
+  const filtered = q
+    ? allProducts.filter(p => p.name.toLowerCase().includes(q.toLowerCase()) || (p.description||'').toLowerCase().includes(q.toLowerCase()))
+    : allProducts;
+  renderGrid(filtered);
+}
+
+function renderGrid(products) {
+  const grid = document.getElementById('products-grid');
+  if (!products.length) {
+    grid.innerHTML = '<div class="empty-marketplace"><div style="font-size:3rem">🛍️</div><h3>Be the first to list a product.</h3></div>';
+    return;
+  }
+  grid.innerHTML = products.map(p => `
+    <a class="listing-card" onclick="viewProduct(${p.id}); return false;" href="#">
+      <div class="listing-img">
+        ${p.media_path ? `<img src="/media/${p.media_path}" alt="${p.name}">` : '<span class="listing-img-placeholder">🛍️</span>'}
+      </div>
+      <div class="listing-body">
+        <div class="listing-price">${p.price === 0 ? 'Free' : '$' + p.price.toFixed(2)}</div>
+        <div class="listing-title">${p.name}</div>
+        <div class="listing-seller">@${p.seller}</div>
+        ${p.seller === username ? `<button onclick="event.stopPropagation(); deleteProduct(${p.id}, this)" class="delete-btn" style="margin-top:6px;">Remove</button>` : ''}
+      </div>
+    </a>
+  `).join('');
+}
+
+async function viewProduct(id) {
+  const res  = await fetch('/api/marketplace/' + id);
+  const p    = await res.json();
+  document.getElementById('modal-body').innerHTML = `
+    <div style="padding:20px;">
+      ${p.media_path ? `<img src="/media/${p.media_path}" style="width:100%;max-height:300px;object-fit:cover;border-radius:8px;margin-bottom:16px;">` : ''}
+      <h2 style="color:#1a4a2e;margin:0 0 4px;">${p.name}</h2>
+      <div style="font-size:1.4rem;font-weight:700;color:#1a4a2e;margin-bottom:8px;">$${p.price.toFixed(2)}</div>
+      <p style="color:#888;margin-bottom:12px;">Sold by @${p.seller}</p>
+      ${p.description ? `<p style="line-height:1.6;">${p.description}</p>` : ''}
+    </div>
+  `;
+  document.getElementById('product-modal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('product-modal').style.display = 'none'; }
+
+async function listProduct() {
+  const form = new FormData();
+  form.append('name',        document.getElementById('product-name').value);
+  form.append('description', document.getElementById('product-desc').value);
+  form.append('price',       document.getElementById('product-price').value);
+  const photo = document.getElementById('product-photo').files[0];
+  if (photo) form.append('media', photo);
+
+  const res  = await fetch('/api/marketplace/products', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.ok) {
+    hideListProduct();
+    loadMarketplace();
+  } else {
+    alert(data.error || 'Could not post listing.');
+  }
+}
+
+async function deleteProduct(id, btn) {
+  if (!confirm('Remove this listing?')) return;
+  const res  = await fetch('/api/marketplace/products/' + id, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  if (data.ok) btn.closest('.listing-card').remove();
+  else alert(data.error || 'Could not remove listing.');
+}
+
+loadMarketplace();
+</script>
 {% endblock %}

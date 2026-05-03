@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile — The Commons{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <h1>Edit Profile</h1>
+
+  <div class="auth-form">
+    <label>Display Name
+      <input type="text" id="display-name" maxlength="100" placeholder="How you want to appear">
+    </label>
+
+    <label>Bio <small>(max 300 characters)</small>
+      <textarea id="bio" maxlength="300" rows="4" placeholder="Tell The Commons who you are..."></textarea>
+    </label>
+
+    <div id="edit-msg" class="form-error" style="display:none;"></div>
+
+    <button class="btn-primary btn-full" onclick="saveProfile()">Save Changes</button>
+    <a id="cancel-link" href="/" class="btn-secondary btn-full" style="display:block; text-align:center; margin-top:8px;">Cancel</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const token = localStorage.getItem('token') || '';
+const username = localStorage.getItem('username') || '';
+
+if (!token) window.location.href = '/login';
+
+// Pre-fill current values
+async function loadCurrent() {
+  if (!username) return;
+  document.getElementById('cancel-link').href = '/profile/' + username;
+  const res  = await fetch('/api/users/' + username + '/profile', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  if (data.ok) {
+    const p = data.profile;
+    document.getElementById('display-name').value = p.display_name !== p.username ? p.display_name : '';
+    document.getElementById('bio').value           = p.bio || '';
+  }
+}
+
+async function saveProfile() {
+  const msgEl = document.getElementById('edit-msg');
+  const dn    = document.getElementById('display-name').value.trim();
+  const bio   = document.getElementById('bio').value.trim();
+
+  let ok = true;
+
+  if (dn) {
+    const f = new FormData();
+    f.append('display_name', dn);
+    const r = await fetch('/api/profile/display-name', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
+    });
+    const d = await r.json();
+    if (!d.ok) { ok = false; msgEl.textContent = d.error; msgEl.style.display = ''; }
+  }
+
+  if (ok) {
+    const f = new FormData();
+    f.append('bio', bio);
+    const r = await fetch('/api/profile/bio', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
+    });
+    const d = await r.json();
+    if (!d.ok) { ok = false; msgEl.textContent = d.error; msgEl.style.display = ''; }
+  }
+
+  if (ok) {
+    window.location.href = '/profile/' + username;
+  }
+}
+
+loadCurrent();
+</script>
+{% endblock %}

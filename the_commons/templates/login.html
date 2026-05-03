@@ -1,51 +1,65 @@
 {% extends "base.html" %}
 {% block title %}Sign In — The Commons{% endblock %}
+{% block nav_links %}
+<a href="/codex">Guidelines</a>
+{% endblock %}
 {% block content %}
 
 <div class="auth-container">
   <h1>Welcome back</h1>
+  <p class="auth-note">Enter your email and we'll send you a sign-in link. No password needed. Ever.</p>
 
   <form id="login-form" class="auth-form">
-    <label>Username
-      <input type="text" id="username" placeholder="your_username" required>
-    </label>
-    <label>Password
-      <div class="password-wrapper">
-        <input type="password" id="password" placeholder="Your password" required>
-        <button type="button" class="show-password-btn" onclick="togglePassword('password', this)">Show</button>
-      </div>
+    <label>Email
+      <input type="email" id="email" placeholder="Your email" required>
     </label>
     <div id="form-error" class="form-error" style="display:none"></div>
-    <button type="submit" class="btn-primary btn-full">Sign In</button>
+    <div id="form-success" style="display:none; padding:12px; background:#e8f5e9; border:1px solid #2e7d4f; border-radius:6px; color:#2e7d4f; font-size:14px; margin-bottom:12px;"></div>
+    <button type="submit" class="btn-primary btn-full">Send Sign-In Link</button>
   </form>
 
-  <p class="auth-switch">New here? <a href="/register">Join The Commons</a></p>
+  <p class="auth-switch">New here? <a href="/register"><strong>Join The Commons</strong></a></p>
 </div>
 
+{% block footer %}
+  <footer class="footer">
+    <p>The Commons · No advertising · No data selling · No biometrics · Power to the People</p>
+    <p>Architect Founder Krone · <a href="/codex">Read the Codex</a></p>
+    <div class="fb-community">
+      <a href="https://www.facebook.com/groups/1625182101758420/" target="_blank" rel="noopener">
+        💬 Join The Commons Community on Facebook
+      </a>
+    </div>
+  </footer>
 {% endblock %}
 {% block scripts %}
 <script>
+// Clear any stale tokens on auth pages
+try { localStorage.removeItem("token"); localStorage.removeItem("username"); } catch(e) {}
 document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const email  = document.getElementById('email').value.trim();
+  const errEl  = document.getElementById('form-error');
+  const succEl = document.getElementById('form-success');
+  errEl.style.display  = 'none';
+  succEl.style.display = 'none';
+
   const form = new FormData();
-  form.append('username', document.getElementById('username').value);
-  form.append('password', document.getElementById('password').value);
-  const res  = await fetch('/auth/login', { method: 'POST', body: form });
+  form.append('email', email);
+
+  const res  = await fetch('/auth/magic/request', { method: 'POST', body: form });
   const data = await res.json();
+
   if (data.ok) {
-    localStorage.setItem('token',    data.token);
-    localStorage.setItem('username', data.user.username);
-    window.location = '/';
+    succEl.textContent   = 'Check your email — your sign-in link is on its way.';
+    succEl.style.display = 'block';
+    document.querySelector('#login-form button').disabled = true;
   } else {
-    const err = document.getElementById('form-error');
-    err.textContent = data.error;
-    err.style.display = 'block';
+    errEl.textContent   = data.error || 'Something went wrong. Please try again.';
+    errEl.style.display = 'block';
   }
 });
 </script>
-<footer style="background:#1a3a2a;color:rgba(255,255,255,0.6);text-align:center;padding:20px 16px;font-size:13px;line-height:1.8;margin-top:auto;">
-  <p>The Commons · No advertising · No data selling · No biometrics · Power to the People</p>
-  <p>The Architect of Sentinel and Founder of The Commons · Krone · <a href="/codex" style="color:#7cb87c;">Read the Codex</a></p>
-  <p><a href="https://www.facebook.com/groups/1625182101758420/?ref=share_group_link&mibextid=NSMWBT" target="_blank" rel="noopener" style="color:#7cb87c;">💬 Join The Commons Community on Facebook</a></p>
-</footer>
+{% endblock %}
+
 {% endblock %}

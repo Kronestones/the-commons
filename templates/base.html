@@ -34,28 +34,68 @@
   </div>
 
 
-  <nav class="nav">
-    <a href="/" class="nav-logo">The Commons</a>
-    <button class="hamburger" id="hamburger" onclick="toggleNav()" aria-label="Menu">&#9776;</button>
-    <div class="nav-links" id="nav-links">
-      {% block nav_links %}
-      <span id="nav-user"></span>
-      <a href="/">Feed</a>
-      <a href="/marketplace">Marketplace</a>
-      <a href="/codex">Codex</a>
-      <a href="/giving">Giving &amp; Blessing</a>
-      <a href="/live">Live <span class="coming-soon-badge">Coming Soon</span></a>
-      {% endblock %}
+  <!-- Slideout Menu Overlay -->
+  <div id="menu-overlay" onclick="closeMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;"></div>
+
+  <!-- Slideout Panel -->
+  <div id="slide-menu" style="position:fixed;top:0;right:-280px;width:280px;height:100%;background:#1a3a2a;z-index:201;transition:right 0.3s ease;padding:24px 0;display:flex;flex-direction:column;">
+    <div style="padding:0 24px 20px;border-bottom:1px solid rgba(255,255,255,0.1);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="color:white;font-weight:700;font-size:18px;">The Commons</span>
+        <button onclick="closeMenu()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;">✕</button>
+      </div>
+      <a id="menu-profile-link" href="#" style="color:#7cb87c;font-size:15px;font-weight:600;text-decoration:none;display:block;"></a>
     </div>
+    <nav style="display:flex;flex-direction:column;padding:16px 0;">
+      <a href="/feed" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">🏠 Feed</a>
+      <a href="/marketplace" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">🛍️ Marketplace</a>
+      <a href="/codex" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">📖 Codex</a>
+      <a href="/giving" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">🤝 Giving</a>
+      <a href="/live" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;">🎥 Live <span style="font-size:9px;background:#7cb87c;color:white;border-radius:10px;padding:1px 6px;margin-left:4px;vertical-align:middle;">Soon</span></a>
+    </nav>
+    <div style="margin-top:auto;padding:24px;border-top:1px solid rgba(255,255,255,0.1);">
+      {% if current_user %}
+      <a href="/profile/{{ current_user.username }}" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;">@{{ current_user.username }}</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a href="{% if current_user %}/profile/{{ current_user.username }}{% else %}/{% endif %}" class="nav-logo">The Commons</a>
+    <span class="nav-spirit">Power to the People</span>
+    <button onclick="openMenu()" style="margin-left:auto;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;line-height:1;">☰</button>
   </nav>
+
+  <script>
+  function openMenu() {
+    document.getElementById('slide-menu').style.right = '0';
+    document.getElementById('menu-overlay').style.display = 'block';
+    const u = localStorage.getItem('username');
+    const link = document.getElementById('menu-profile-link');
+    if (u && link) {
+      link.textContent = '@' + u;
+      link.href = '/profile/' + u;
+    }
+  }
+  function closeMenu() {
+    document.getElementById('slide-menu').style.right = '-280px';
+    document.getElementById('menu-overlay').style.display = 'none';
+  }
+  </script>
 
   <main class="main">
     {% block content %}{% endblock %}
   </main>
 
-  {% block footer %}
-  <footer class="footer footer-minimal"></footer>
-  {% endblock %}
+  <footer class="footer">
+    <p>The Commons · No advertising · No data selling · No biometrics · Power to the People</p>
+    <p>Founded by The Architect, Founder of The Commons · <a href="/codex">Read the Codex</a></p>
+    <div class="fb-community">
+    <a href="https://www.facebook.com/groups/1625182101758420/" target="_blank" rel="noopener">
+      💬 Join The Commons Community on Facebook
+    </a>
+  </div>
+</footer>
 
   <script src="/static/js/main.js"></script>
   {% block scripts %}{% endblock %}
