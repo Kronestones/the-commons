@@ -4,7 +4,6 @@
 {% block content %}
 <div class="profile-layout">
 
-  <!-- Profile Header — populated by JS -->
   <div class="profile-header" id="profile-header">
     <div class="profile-avatar" id="profile-avatar"></div>
     <div class="profile-info">
@@ -17,7 +16,6 @@
     <div id="profile-actions"></div>
   </div>
 
-  <!-- Composer — shown only on own profile -->
   <div class="profile-composer post-composer" id="profile-composer" style="display:none;">
     <textarea id="compose-text" placeholder="Share something with The Commons..." rows="3" maxlength="10000"></textarea>
     <div class="composer-actions">
@@ -31,7 +29,6 @@
     <div id="compose-msg" class="composer-note" style="display:none;"></div>
   </div>
 
-  <!-- Posts -->
   <div class="profile-posts" id="profile-posts">
     <p class="empty-feed">Loading...</p>
   </div>
@@ -40,176 +37,146 @@
 {% endblock %}
 
 {% block scripts %}
-
-{% endblock %}
-
-{% endblock %}
-{% block scripts %}
 <script>
 const PAGE_USERNAME = {{ username | tojson }};
 const currentUsername = localStorage.getItem('username') || '';
-const getProfileToken = () => { try { return localStorage.getItem('token') || ''; } catch(e) { return ''; } };
 const isOwn = currentUsername === PAGE_USERNAME;
 
-async function loadProfile_real() {
-  const debugToken = getProfileToken();
-  const debugEl = document.getElementById('profile-posts');
-  if (!debugToken) {
-    debugEl.innerHTML = '<p style="color:red">No token found - please sign in again</p>';
-    return;
-  }
-  const debugToken = getProfileToken();
-  const debugEl = document.getElementById('profile-posts');
-  if (!debugToken) {
-    debugEl.innerHTML = '<p style="color:red">No token found - please sign in again</p>';
-    return;
-  }
-  const headers = getProfileToken() ? { 'Authorization': 'Bearer ' + getProfileToken() } : {};
-  const res  = await fetch('/api/users/' + PAGE_USERNAME + '/profile', { headers });
-  const data = await res.json();
-
-  if (!data.ok) {
-    document.getElementById('profile-posts').innerHTML = '<p class="empty-feed">User not found.</p>';
-    return;
-  }
-
-  const p = data.profile;
-
-  // Avatar
-  const avatarEl = document.getElementById('profile-avatar');
-  avatarEl.textContent = p.username[0].toUpperCase();
-
-  // Name / bio
-  document.getElementById('profile-username').textContent = '@' + p.username;
-
-  if (p.display_name && p.display_name !== p.username) {
-    const dn = document.getElementById('profile-displayname');
-    dn.textContent = p.display_name;
-    dn.style.display = '';
-  }
-
-  if (p.bio) {
-    const bioEl = document.getElementById('profile-bio');
-    bioEl.textContent = p.bio;
-    bioEl.style.display = '';
-  }
-
-  document.getElementById('profile-joined').textContent = 'Member since ' + p.joined;
-
-  document.getElementById('profile-stats').innerHTML =
-    '<span>' + p.followers + ' followers</span> · ' +
-    '<span>' + p.following + ' following</span> · ' +
-    '<span>' + p.post_count + ' posts</span>';
-
-  // Actions
-  const actionsEl = document.getElementById('profile-actions');
-  if (isOwn) {
-    document.getElementById('profile-composer').style.display = '';
-    actionsEl.innerHTML = '<a href="/profile/edit" class="btn-primary" style="white-space:nowrap;">Edit Profile</a>';
-  } else if (getProfileToken()) {
-    const following = p.is_following;
-    actionsEl.innerHTML = '<button id="follow-btn" onclick="toggleFollow()" class="btn-primary">' +
-      (following ? 'Unfollow' : 'Follow') + '</button>';
-  }
-
-  // Posts
-  const postsEl = document.getElementById('profile-posts');
-  if (!p.posts || p.posts.length === 0) {
-    postsEl.innerHTML = '<p class="empty-feed">No posts yet.</p>';
-    return;
-  }
-
-  postsEl.innerHTML = p.posts.map(post => `
-    <div class="post-card" id="post-${post.id}">
-      <div class="post-header">
-        <span class="post-author">@${p.username}</span>
-        <span class="post-time">${formatTime(post.published_at)}</span>
-      </div>
-      <div class="post-content">${escapeHtml(post.content)}</div>
-      <div class="post-actions">
-        <button onclick="vote(${post.id}, 1)" class="vote-btn">❤️</button>
-        <span class="community-score">${Math.round(post.community_score)}</span>
-        ${isOwn ? `<button onclick="deletePost(${post.id}, this)" class="delete-btn">Delete</button>` : ''}
-      </div>
-    </div>
-  `).join('');
+function getProfileToken() {
+  try { return localStorage.getItem('token') || ''; } catch(e) { return ''; }
 }
 
-async function toggleFollow() {
-  if (!getProfileToken()) { window.location.href = '/login'; return; }
-  const res  = await fetch('/api/users/' + PAGE_USERNAME + '/follow', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + getProfileToken() }
-  });
-  const data = await res.json();
-  if (data.ok) // Small delay to ensure localStorage is ready after magic link redirect
-setTimeout(loadProfile, 100);
+async function loadProfile() {
+  const postsEl = document.getElementById('profile-posts');
+  const token = getProfileToken();
+  if (!token) {
+    postsEl.innerHTML = '<p style="padding:20px;color:#c00;">No token — please sign in again.</p>';
+    return;
+  }
+  try {
+    const res = await fetch('/api/users/' + PAGE_USERNAME + '/profile', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      window.location.href = '/login';
+      return;
+    }
+    const data = await res.json();
+    if (!data.ok) {
+      postsEl.innerHTML = '<p style="padding:20px;color:#c00;">' + (data.detail || data.error || 'Error loading profile') + '</p>';
+      return;
+    }
+    const p = data.profile;
+    document.getElementById('profile-avatar').textContent = p.username[0].toUpperCase();
+    document.getElementById('profile-username').textContent = '@' + p.username;
+    if (p.display_name && p.display_name !== p.username) {
+      const dn = document.getElementById('profile-displayname');
+      dn.textContent = p.display_name;
+      dn.style.display = '';
+    }
+    if (p.bio) {
+      const bioEl = document.getElementById('profile-bio');
+      bioEl.textContent = p.bio;
+      bioEl.style.display = '';
+    }
+    document.getElementById('profile-joined').textContent = 'Member since ' + p.joined;
+    document.getElementById('profile-stats').innerHTML =
+      '<span>' + p.followers + ' followers</span> · ' +
+      '<span>' + p.following + ' following</span> · ' +
+      '<span>' + p.post_count + ' posts</span>';
+    const actionsEl = document.getElementById('profile-actions');
+    if (isOwn) {
+      document.getElementById('profile-composer').style.display = '';
+      actionsEl.innerHTML = '<a href="/profile/edit" class="btn-primary">Edit Profile</a>';
+    } else if (token) {
+      actionsEl.innerHTML = '<button onclick="toggleFollow()" class="btn-primary">' + (p.is_following ? 'Unfollow' : 'Follow') + '</button>';
+    }
+    if (!p.posts || p.posts.length === 0) {
+      postsEl.innerHTML = '<p class="empty-feed">No posts yet.</p>';
+      return;
+    }
+    postsEl.innerHTML = p.posts.map(post => `
+      <div class="post-card" id="post-${post.id}">
+        <div class="post-header">
+          <span class="post-author">@${p.username}</span>
+          <span class="post-time">${post.published_at ? new Date(post.published_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}</span>
+        </div>
+        <div class="post-content">${post.content}</div>
+        <div class="post-actions">
+          <button onclick="vote(${post.id}, 1)" class="vote-btn">❤️</button>
+          <span class="community-score">${Math.round(post.community_score)}</span>
+          ${isOwn ? `<button onclick="deletePost(${post.id}, this)" class="delete-btn">Delete</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('profile-posts').innerHTML = '<p style="padding:20px;color:#c00;">Error: ' + e.message + '</p>';
+  }
 }
 
 function previewAttachment(input) {
   const preview = document.getElementById('attachment-preview');
   if (input.files && input.files[0]) {
-    preview.textContent = '📎 ' + input.files[0].name;
-    preview.style.display = '';
+    const reader = new FileReader();
+    reader.onload = e => { preview.style.display = ''; preview.textContent = '📎 ' + input.files[0].name; };
+    reader.readAsDataURL(input.files[0]);
   }
 }
 
 async function submitPost() {
-  const content   = document.getElementById('compose-text').value.trim();
-  const msgEl     = document.getElementById('compose-msg');
+  const content = document.getElementById('compose-text').value.trim();
+  const msgEl = document.getElementById('compose-msg');
   const fileInput = document.getElementById('compose-file');
-  const file      = fileInput && fileInput.files[0];
+  const file = fileInput && fileInput.files[0];
   if (!content && !file) return;
-
   let post_type = 'text';
   if (file) {
     if (file.type.startsWith('image/')) post_type = 'image';
     else if (file.type.startsWith('video/')) post_type = 'video';
     else if (file.type.startsWith('audio/')) post_type = 'audio';
   }
-
   const form = new FormData();
-  form.append('content',   content);
+  form.append('content', content);
   form.append('post_type', post_type);
   if (file) form.append('media', file);
-
-  const res  = await fetch('/api/posts', {
-    method:  'POST',
+  const res = await fetch('/api/posts', {
+    method: 'POST',
     headers: { 'Authorization': 'Bearer ' + getProfileToken() },
-    body:    form
+    body: form
   });
   const data = await res.json();
-
   msgEl.style.display = '';
   if (data.ok) {
     msgEl.style.color = '#2e7d4f';
     msgEl.textContent = data.message || 'Posted!';
     document.getElementById('compose-text').value = '';
-    if (fileInput) fileInput.value = '';
-    document.getElementById('attachment-preview').style.display = 'none';
     setTimeout(() => loadProfile(), 800);
   } else {
     msgEl.style.color = '#c0392b';
     msgEl.textContent = data.error || 'Something went wrong.';
   }
 }
+
+async function toggleFollow() {
+  const res = await fetch('/api/users/' + PAGE_USERNAME + '/follow', {
+    method: 'POST', headers: { 'Authorization': 'Bearer ' + getProfileToken() }
+  });
+  const data = await res.json();
+  if (data.ok) loadProfile();
 }
 
 async function deletePost(postId, btn) {
   if (!confirm('Delete this post?')) return;
-  const res  = await fetch('/api/posts/' + postId, {
-    method:  'DELETE',
-    headers: { 'Authorization': 'Bearer ' + getProfileToken() }
+  const res = await fetch('/api/posts/' + postId, {
+    method: 'DELETE', headers: { 'Authorization': 'Bearer ' + getProfileToken() }
   });
   const data = await res.json();
-  if (data.ok) {
-    document.getElementById('post-' + postId).remove();
-  } else {
-    showMessage(data.error || 'Could not delete post.', true);
-  }
+  if (data.ok) document.getElementById('post-' + postId).remove();
+  else showMessage(data.error || 'Could not delete post.', true);
 }
 
-// Small delay to ensure localStorage is ready after magic link redirect
-setTimeout(loadProfile, 100);
+setTimeout(loadProfile, 150);
 </script>
 {% endblock %}
