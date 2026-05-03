@@ -125,7 +125,8 @@ async function toggleFollow() {
     headers: { 'Authorization': 'Bearer ' + getProfileToken() }
   });
   const data = await res.json();
-  if (data.ok) loadProfile();
+  if (data.ok) // Small delay to ensure localStorage is ready after magic link redirect
+setTimeout(loadProfile, 100);
 }
 
 function previewAttachment(input) {
@@ -191,6 +192,7 @@ async function deletePost(postId, btn) {
   }
 }
 
-loadProfile();
+// Small delay to ensure localStorage is ready after magic link redirect
+setTimeout(loadProfile, 100);
 </script>
 {% endblock %}
