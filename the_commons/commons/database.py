@@ -72,6 +72,8 @@ class User(Base):
     password_hash   = Column(String(255), nullable=False)
     display_name    = Column(String(100))
     bio             = Column(Text, default="")
+    avatar_path     = Column(String(500), nullable=True)
+    banner_path     = Column(String(500), nullable=True)
     role            = Column(Enum(UserRole), default=UserRole.USER)
     algorithm_mode  = Column(Enum(AlgorithmMode), default=AlgorithmMode.TRANSPARENT)
     is_active       = Column(Boolean, default=True)

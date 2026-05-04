@@ -1209,6 +1209,46 @@ async def api_profile(
         raise HTTPException(404, "User not found")
     return JSONResponse({"ok": True, "profile": profile})
 
+
+@app.post("/api/profile/avatar")
+async def api_upload_avatar(
+    media:        UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db:           Session = Depends(get_db)
+):
+    import uuid, aiofiles
+    from pathlib import Path
+    ext = Path(media.filename).suffix.lower()
+    if ext not in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
+        return JSONResponse({"ok": False, "error": "Image files only."}, status_code=400)
+    filename = f"avatar_{current_user.id}_{uuid.uuid4().hex[:8]}{ext}"
+    path = config.media_dir / filename
+    async with aiofiles.open(path, "wb") as f:
+        await f.write(await media.read())
+    current_user.avatar_path = filename
+    db.commit()
+    return JSONResponse({"ok": True, "avatar_path": filename})
+
+
+@app.post("/api/profile/banner")
+async def api_upload_banner(
+    media:        UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db:           Session = Depends(get_db)
+):
+    import uuid, aiofiles
+    from pathlib import Path
+    ext = Path(media.filename).suffix.lower()
+    if ext not in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
+        return JSONResponse({"ok": False, "error": "Image files only."}, status_code=400)
+    filename = f"banner_{current_user.id}_{uuid.uuid4().hex[:8]}{ext}"
+    path = config.media_dir / filename
+    async with aiofiles.open(path, "wb") as f:
+        await f.write(await media.read())
+    current_user.banner_path = filename
+    db.commit()
+    return JSONResponse({"ok": True, "banner_path": filename})
+
 @app.post("/api/profile/bio")
 async def api_update_bio(
     bio:          str = Form(...),

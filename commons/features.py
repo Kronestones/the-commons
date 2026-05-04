@@ -253,6 +253,8 @@ class ProfileManager:
             "following":       following_count,
             "post_count":      len(posts),
             "is_following":    is_following,
+            "avatar_path":     user.avatar_path or None,
+            "banner_path":     user.banner_path or None,
             "posts": [
                 {
                     "id":              p.id,
