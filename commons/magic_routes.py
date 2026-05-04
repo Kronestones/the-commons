@@ -16,7 +16,18 @@ async def request_magic_link(
     email: str = Form(...),
     db:    Session = Depends(get_db)
 ):
-    user = db.query(User).filter(User.email == email).first()
+    # Check sovereign recovery emails first
+    from sqlalchemy import text
+    recovery = db.execute(
+        text("SELECT user_id FROM sovereign_recovery_emails WHERE LOWER(email) = LOWER(:email)"),
+        {"email": email}
+    ).fetchone()
+    
+    if recovery:
+        user = db.query(User).filter(User.id == recovery.user_id).first()
+    else:
+        user = db.query(User).filter(User.email == email).first()
+    
     if not user:
         return {"ok": True, "message": "Check your email for a sign-in link."}
     token = generate_magic_token(email, db)
