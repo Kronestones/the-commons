@@ -4,7 +4,24 @@
 {% block content %}
 <div class="profile-layout">
 
-  <div class="profile-header" id="profile-header">
+  <!-- Banner -->
+  <div class="profile-banner" id="profile-banner" style="height:160px;background:var(--green-dark);border-radius:12px;margin-bottom:-40px;position:relative;overflow:hidden;">
+    <img id="banner-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;">
+    <label id="banner-upload-btn" style="display:none;position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.5);color:white;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;">
+      📷 Edit Banner
+      <input type="file" accept="image/*" style="display:none" onchange="uploadBanner(this)">
+    </label>
+  </div>
+
+  <div class="profile-header" id="profile-header" style="position:relative;padding-top:20px;">
+    <!-- Avatar -->
+    <div style="position:relative;display:inline-block;">
+      <div class="profile-avatar" id="profile-avatar" style="width:80px;height:80px;border-radius:50%;background:var(--green-mid);display:flex;align-items:center;justify-content:center;font-size:32px;color:white;border:3px solid white;overflow:hidden;"></div>
+      <label id="avatar-upload-btn" style="display:none;position:absolute;bottom:0;right:0;background:var(--green-dark);color:white;width:24px;height:24px;border-radius:50%;display:none;align-items:center;justify-content:center;cursor:pointer;font-size:12px;">
+        📷
+        <input type="file" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+      </label>
+    </div>
     <div class="profile-avatar" id="profile-avatar"></div>
     <div class="profile-info">
       <h1 class="profile-username" id="profile-username"></h1>
@@ -46,6 +63,30 @@ function getProfileToken() {
   try { return localStorage.getItem('token') || ''; } catch(e) { return ''; }
 }
 
+async function uploadAvatar(input) {
+  if (!input.files[0]) return;
+  const form = new FormData();
+  form.append('media', input.files[0]);
+  const res = await fetch('/api/profile/avatar', {
+    method: 'POST', headers: { 'Authorization': 'Bearer ' + getProfileToken() }, body: form
+  });
+  const data = await res.json();
+  if (data.ok) loadProfile();
+  else showMessage(data.error || 'Upload failed', true);
+}
+
+async function uploadBanner(input) {
+  if (!input.files[0]) return;
+  const form = new FormData();
+  form.append('media', input.files[0]);
+  const res = await fetch('/api/profile/banner', {
+    method: 'POST', headers: { 'Authorization': 'Bearer ' + getProfileToken() }, body: form
+  });
+  const data = await res.json();
+  if (data.ok) loadProfile();
+  else showMessage(data.error || 'Upload failed', true);
+}
+
 async function loadProfile() {
   const postsEl = document.getElementById('profile-posts');
   const token = getProfileToken();
@@ -69,7 +110,22 @@ async function loadProfile() {
       return;
     }
     const p = data.profile;
-    document.getElementById('profile-avatar').textContent = p.username[0].toUpperCase();
+    const avatarEl = document.getElementById('profile-avatar');
+    if (p.avatar_path) {
+      avatarEl.innerHTML = '<img src="/media/' + p.avatar_path + '" style="width:100%;height:100%;object-fit:cover;">';
+    } else {
+      avatarEl.textContent = p.username[0].toUpperCase();
+    }
+    if (p.banner_path) {
+      const bannerImg = document.getElementById('banner-img');
+      bannerImg.src = '/media/' + p.banner_path;
+      bannerImg.style.display = '';
+    }
+    if (isOwn) {
+      document.getElementById('banner-upload-btn').style.display = '';
+      const avatarUpload = document.getElementById('avatar-upload-btn');
+      avatarUpload.style.display = 'flex';
+    }
     document.getElementById('profile-username').textContent = '@' + p.username;
     if (p.display_name && p.display_name !== p.username) {
       const dn = document.getElementById('profile-displayname');
