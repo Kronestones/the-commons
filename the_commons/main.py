@@ -1249,6 +1249,32 @@ async def api_upload_banner(
     db.commit()
     return JSONResponse({"ok": True, "banner_path": filename})
 
+
+@app.post("/api/profile/username")
+async def api_change_username(
+    username:     str  = Form(...),
+    current_user: User = Depends(get_current_user),
+    db:           Session = Depends(get_db)
+):
+    import re
+    username = username.strip()
+    
+    # Validate format
+    if not re.match(r'^[a-zA-Z0-9_-]{3,50}$', username):
+        return JSONResponse({"ok": False, "error": "Username must be 3-50 characters. Letters, numbers, underscores and hyphens only."}, status_code=400)
+    
+    # Check if taken (case-insensitive)
+    existing = db.query(User).filter(
+        User.username.ilike(username),
+        User.id != current_user.id
+    ).first()
+    if existing:
+        return JSONResponse({"ok": False, "error": "That username is already taken."}, status_code=400)
+    
+    current_user.username = username
+    db.commit()
+    return JSONResponse({"ok": True, "username": username, "message": "Username updated."})
+
 @app.post("/api/profile/bio")
 async def api_update_bio(
     bio:          str = Form(...),
