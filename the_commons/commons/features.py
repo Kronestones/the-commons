@@ -202,7 +202,7 @@ class ProfileManager:
     def get_profile(self, db: Session, username: str,
                     viewer: Optional[User] = None) -> Optional[dict]:
         """Get a user's public profile."""
-        user = db.query(User).filter(User.username == username).first()
+        user = db.query(User).filter(User.username.ilike(username)).first()
         if not user:
             return None
 
