@@ -1250,6 +1250,16 @@ async def api_upload_banner(
     return JSONResponse({"ok": True, "banner_path": filename})
 
 
+@app.delete("/api/users/{user_id}")
+async def api_delete_user(
+    user_id:      int,
+    current_user: User = Depends(get_current_user),
+    db:           Session = Depends(get_db)
+):
+    if user_id == 1:
+        return JSONResponse({"ok": False, "error": "This account is protected."}, status_code=403)
+    return JSONResponse({"ok": False, "error": "Account deletion not available."}, status_code=403)
+
 @app.post("/api/profile/username")
 async def api_change_username(
     username:     str  = Form(...),
