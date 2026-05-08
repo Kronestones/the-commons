@@ -59,14 +59,13 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
         return HTMLResponse("<h2>Account not found.</h2>")
 
     jwt_token = create_token(user.id, user.username)
-    return HTMLResponse(f"""
-<!DOCTYPE html>
+    return HTMLResponse(f"""<!DOCTYPE html>
 <html>
 <head><title>Signing in...</title></head>
 <body>
 <script>
-  localStorage.setItem('token', '' + jwt_token + '');
-  localStorage.setItem('username', '' + user.username + '');
+  localStorage.setItem('token', '{jwt_token}');
+  localStorage.setItem('username', '{user.username}');
   window.location.href = '/';
 </script>
 <p>Signing you in...</p>
