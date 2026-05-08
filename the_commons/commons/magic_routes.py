@@ -59,17 +59,11 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
     jwt_token = create_token(user.id, user.username)
     username  = user.username
     
-    html = """<!DOCTYPE html>
-<html>
-<head><title>Signing in...</title></head>
-<body>
-<script>
-  localStorage.setItem('token', '""" + jwt_token + """');
-  localStorage.setItem('username', '""" + username + """');
-  window.location.href = '/';
-</script>
-<p>Signing you in...</p>
-</body>
-</html>"""
-    
+    html = (
+        "<!DOCTYPE html><html><head><title>Signing in...</title></head><body><script>"
+        "localStorage.setItem('token','" + jwt_token + "');"
+        "localStorage.setItem('username','" + username + "');"
+        "window.location.href='/';"
+        "</script><p>Signing you in...</p></body></html>"
+    )
     return HTMLResponse(html)
