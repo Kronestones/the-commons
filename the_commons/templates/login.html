@@ -27,6 +27,10 @@
 // Clear any stale tokens on auth pages
 try { localStorage.removeItem("token"); localStorage.removeItem("username"); } catch(e) {}
 document.getElementById('login-form').addEventListener('submit', async (e) => {
+  const btn = document.querySelector('#login-form button');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
   e.preventDefault();
   const email  = document.getElementById('email').value.trim();
   const errEl  = document.getElementById('form-error');
