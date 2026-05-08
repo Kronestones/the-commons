@@ -17,7 +17,6 @@ async def request_magic_link(
     email: str = Form(...),
     db:    Session = Depends(get_db)
 ):
-    # Check sovereign recovery emails first
     recovery = db.execute(
         text("SELECT user_id FROM sovereign_recovery_emails WHERE LOWER(email) = LOWER(:email)"),
         {"email": email}
@@ -44,7 +43,6 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
     if not email:
         return HTMLResponse("<h2>This link has expired or is invalid. Please request a new one.</h2>")
 
-    # Check sovereign recovery emails
     recovery = db.execute(
         text("SELECT user_id FROM sovereign_recovery_emails WHERE LOWER(email) = LOWER(:email)"),
         {"email": email}
@@ -59,16 +57,19 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
         return HTMLResponse("<h2>Account not found.</h2>")
 
     jwt_token = create_token(user.id, user.username)
-    return HTMLResponse(f"""<!DOCTYPE html>
+    username  = user.username
+    
+    html = """<!DOCTYPE html>
 <html>
 <head><title>Signing in...</title></head>
 <body>
 <script>
-  localStorage.setItem('token', '{jwt_token}');
-  localStorage.setItem('username', '{user.username}');
+  localStorage.setItem('token', '""" + jwt_token + """');
+  localStorage.setItem('username', '""" + username + """');
   window.location.href = '/';
 </script>
 <p>Signing you in...</p>
 </body>
-</html>
-""")
+</html>"""
+    
+    return HTMLResponse(html)
