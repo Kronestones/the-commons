@@ -379,7 +379,7 @@ const PUBLIC_PATHS = ['/login', '/register', '/codex', '/kinto'];
     const path = window.location.pathname;
     const isPublic = PUBLIC_PATHS.some(p => path === p || path.startsWith(p + '/'));
     if (!isPublic && !getToken()) {
-      window.location.href = '/register';
+      window.location.href = '/login';
     }
   } catch(e) {}
 })();
