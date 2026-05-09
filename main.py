@@ -325,6 +325,10 @@ async def api_create_post(
         )
     })
 
+@app.get("/api/test-auth")
+async def test_auth(current_user: User = Depends(get_current_user)):
+    return JSONResponse({"ok": True, "user": current_user.username, "role": current_user.role.value})
+
 @app.get("/api/feed")
 async def api_feed(
     limit:  int = 20,
