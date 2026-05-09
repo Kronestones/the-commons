@@ -14,7 +14,7 @@ load_dotenv()
 class Config:
 
     def __init__(self):
-        self.secret_key       = os.getenv("SECRET_KEY", secrets.token_hex(32))
+        self.secret_key       = os.getenv("SECRET_KEY", "4741d006e2af37d8ddd3810610480e4f84ceeed6794fc1abc0ba255fc6008245")
         self.environment      = os.getenv("ENVIRONMENT", "development")
         self.debug            = os.getenv("DEBUG", "true").lower() == "true"
         self.host             = os.getenv("HOST", "0.0.0.0")
