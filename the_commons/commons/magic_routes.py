@@ -3,7 +3,6 @@ magic_routes.py — Magic Link Routes
 """
 from fastapi import APIRouter, Depends, Form
 from fastapi.responses import HTMLResponse
-from sqlalchemy import text
 from sqlalchemy.orm import Session
 from .database import get_db, User
 from .auth import create_token
@@ -17,9 +16,11 @@ async def request_magic_link(
     email: str = Form(...),
     db:    Session = Depends(get_db)
 ):
+    # Check recovery emails or regular email
+    from sqlalchemy import text
     recovery = db.execute(
-        text("SELECT user_id FROM sovereign_recovery_emails WHERE LOWER(email) = LOWER(:email)"),
-        {"email": email}
+        text("SELECT user_id FROM sovereign_recovery_emails WHERE LOWER(email) = LOWER(:e)"),
+        {"e": email}
     ).fetchone()
 
     if recovery:
@@ -43,9 +44,10 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
     if not email:
         return HTMLResponse("<h2>This link has expired or is invalid. Please request a new one.</h2>")
 
+    from sqlalchemy import text
     recovery = db.execute(
-        text("SELECT user_id FROM sovereign_recovery_emails WHERE LOWER(email) = LOWER(:email)"),
-        {"email": email}
+        text("SELECT user_id FROM sovereign_recovery_emails WHERE LOWER(email) = LOWER(:e)"),
+        {"e": email}
     ).fetchone()
 
     if recovery:
@@ -58,7 +60,7 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
 
     jwt_token = create_token(user.id, user.username)
     username  = user.username
-    
+
     html = (
         "<!DOCTYPE html><html><head><title>Signing in...</title></head><body><script>"
         "localStorage.setItem('token','" + jwt_token + "');"
