@@ -20,7 +20,7 @@ function logout() {
     localStorage.removeItem('username');
     localStorage.clear();
   } catch(e) {}
-  window.location.href = '/login';
+  window.location.href = (window.location.pathname === '/' ? '/register' : '/login');
 }
 
 // ── Nav ───────────────────────────────────────────────────────────────────────
@@ -210,7 +210,7 @@ async function vote(postId, value) {
       headers: { 'Authorization': 'Bearer ' + token },
       body: form
     });
-    if (res.status === 401) { localStorage.removeItem('token'); localStorage.removeItem('username'); window.location.href = '/login'; return; }
+    if (res.status === 401) { localStorage.removeItem('token'); localStorage.removeItem('username'); window.location.href = (window.location.pathname === '/' ? '/register' : '/login'); return; }
     if (res.status === 422) { showMessage('Invalid request (422)', true); return; }
     const data = await res.json();
     if (data.ok) {
@@ -373,13 +373,14 @@ function togglePassword(inputId, btn) {
 // ── Auth Guard ────────────────────────────────────────────────────────────────
 // Pages that don't require a token
 const PUBLIC_PATHS = ['/login', '/register', '/codex', '/kinto'];
+const LANDING_PAGE = '/register';
 
 (function authGuard() {
   try {
     const path = window.location.pathname;
     const isPublic = PUBLIC_PATHS.some(p => path === p || path.startsWith(p + '/'));
     if (!isPublic && !getToken()) {
-      window.location.href = '/login';
+      window.location.href = (window.location.pathname === '/' ? '/register' : '/login');
     }
   } catch(e) {}
 })();
