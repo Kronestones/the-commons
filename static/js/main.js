@@ -20,7 +20,7 @@ function logout() {
     localStorage.removeItem('username');
     localStorage.clear();
   } catch(e) {}
-  window.location.href = (window.location.pathname === '/' ? '/register' : '/login');
+  window.location.href = '/login';
 }
 
 // ── Nav ───────────────────────────────────────────────────────────────────────
@@ -210,7 +210,7 @@ async function vote(postId, value) {
       headers: { 'Authorization': 'Bearer ' + token },
       body: form
     });
-    if (res.status === 401) { localStorage.removeItem('token'); localStorage.removeItem('username'); window.location.href = (window.location.pathname === '/' ? '/register' : '/login'); return; }
+    if (res.status === 401) { showMessage('Session expired — please sign in again', true); return; }
     if (res.status === 422) { showMessage('Invalid request (422)', true); return; }
     const data = await res.json();
     if (data.ok) {
@@ -380,7 +380,7 @@ const LANDING_PAGE = '/register';
     const path = window.location.pathname;
     const isPublic = PUBLIC_PATHS.some(p => path === p || path.startsWith(p + '/'));
     if (!isPublic && !getToken()) {
-      window.location.href = (window.location.pathname === '/' ? '/register' : '/login');
+      window.location.href = '/login';
     }
   } catch(e) {}
 })();
