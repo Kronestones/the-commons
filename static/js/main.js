@@ -128,7 +128,7 @@ async function loadMorePosts() {
         ${post.reason ? `<p class="post-reason">${post.reason}</p>` : ''}
         <div class="post-content">${escapeHtml(post.content)}</div>
         <div class="post-actions">
-          <button onclick="vote(${post.id}, 1)" class="vote-btn">❤️</button>
+          <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}">${post.user_voted ? '❤️' : '🤍'}</button>
           <span class="community-score">${Math.round(post.community_score)}</span>
           ${post.author === getUsername() ? `<button onclick="deletePost(${post.id}, this)" class="delete-btn">Delete</button>` : ''}
         </div>
@@ -199,7 +199,7 @@ async function deleteProduct(productId, btn) {
   }
 }
 
-async function vote(postId, value) {
+async function vote(postId, value, btn) {
   const token = getToken();
   if (!token) { showMessage('Not logged in', true); return; }
   const form = new FormData();
@@ -214,7 +214,10 @@ async function vote(postId, value) {
     if (res.status === 422) { showMessage('Invalid request (422)', true); return; }
     const data = await res.json();
     if (data.ok) {
-      showMessage('❤️');
+      if (btn) {
+        btn.textContent = data.voted ? '❤️' : '🤍';
+        btn.classList.toggle('voted', data.voted);
+      }
     } else {
       showMessage(data.error || 'Could not vote', true);
     }

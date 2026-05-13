@@ -339,6 +339,11 @@ async def api_feed(
     result = posts.get_feed(db, current_user, limit, offset)
     feed = []
     for post in result["posts"]:
+        from commons.database import CommunityVote
+        user_voted = db.query(CommunityVote).filter(
+            CommunityVote.post_id == post.id,
+            CommunityVote.user_id == current_user.id
+        ).first() is not None
         feed.append({
             "id":            post.id,
             "author":        post.author.username if post.author else "unknown",
@@ -348,6 +353,7 @@ async def api_feed(
             "view_count":    post.view_count,
             "published_at":  post.published_at.isoformat() if post.published_at else None,
             "reason":        posts.get_feed_reason(post, current_user),
+            "user_voted":    user_voted,
         })
     return JSONResponse({"ok": True, "feed": feed, "mode": result["mode"].value})
 

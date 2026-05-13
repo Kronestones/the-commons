@@ -179,7 +179,10 @@ class PostManager:
                     .first())
 
         if existing:
-            existing.value = value
+            db.delete(existing)
+            db.commit()
+            self._recalculate_score(db, post)
+            return {"ok": True, "voted": False}
         else:
             vote = CommunityVote(
                 post_id = post_id,
@@ -190,7 +193,7 @@ class PostManager:
 
         db.commit()
         self._recalculate_score(db, post)
-        return {"ok": True}
+        return {"ok": True, "voted": True}
 
     def _recalculate_score(self, db: Session, post: Post):
         result = (db.query(func.sum(CommunityVote.value))
