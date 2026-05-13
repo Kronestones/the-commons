@@ -291,8 +291,8 @@ async function sendWatchEvent(postId, watchPercent) {
 // When you vote on a post, it also updates your preference profile.
 
 const originalVote = window.vote;
-window.vote = async function(postId, value) {
-  await originalVote(postId, value);
+window.vote = async function(postId, value, btn) {
+  await originalVote(postId, value, btn);
   // Voting is already handled — preference engine picks it up server-side
 };
 
