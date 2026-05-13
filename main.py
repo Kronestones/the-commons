@@ -170,19 +170,29 @@ async def home(request: Request, db: Session = Depends(get_db)):
         .limit(20)
         .all()
     )
-    # Decode token from Authorization header or cookie for template use
+    # Decode token from cookie for template use
+    from commons.auth import decode_token
+    from commons.database import CommunityVote
     current_username = None
-    auth_header = request.headers.get("Authorization", "")
-    if auth_header.startswith("Bearer "):
-        from commons.auth import decode_token
-        payload = decode_token(auth_header[7:])
+    voted_post_ids = set()
+    token = request.cookies.get("token", "")
+    if token:
+        payload = decode_token(token)
         if payload:
             current_username = payload.get("username")
+            user_id = int(payload.get("sub", 0))
+            post_ids = [p.id for p in recent_posts]
+            votes = db.query(CommunityVote).filter(
+                CommunityVote.user_id == user_id,
+                CommunityVote.post_id.in_(post_ids)
+            ).all()
+            voted_post_ids = {v.post_id for v in votes}
     return templates.TemplateResponse("index.html", {
         "request":          request,
         "posts":            recent_posts,
         "version":          VERSION,
         "current_username": current_username,
+        "voted_post_ids":   voted_post_ids,
     })
 
 @app.get("/register", response_class=HTMLResponse)

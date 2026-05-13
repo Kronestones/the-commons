@@ -27,7 +27,7 @@
         </div>
         <div class="post-content">{{ post.content }}</div>
         <div class="post-actions">
-          <button onclick="vote({{ post.id }}, 1, this)" class="vote-btn">🤍</button>
+          <button onclick="vote({{ post.id }}, 1, this)" class="vote-btn {% if post.id in voted_post_ids %}voted{% endif %}">{% if post.id in voted_post_ids %}❤️{% else %}🤍{% endif %}</button>
           <span class="community-score">{{ post.community_score | int }}</span>
           {% if current_username and current_username == (post.author.username if post.author else '') %}
           <button onclick="deletePost({{ post.id }}, this)" class="delete-btn">Delete</button>

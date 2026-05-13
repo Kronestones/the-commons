@@ -46,7 +46,7 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
     if not user:
         return HTMLResponse("<h2>Account not found.</h2>")
     jwt_token = create_token(user.id, user.username)
-    return HTMLResponse(f"""
+    response = HTMLResponse(f"""
 <!DOCTYPE html>
 <html>
 <head><title>Signing in...</title></head>
