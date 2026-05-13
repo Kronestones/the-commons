@@ -279,3 +279,10 @@ def get_db():
 def init_db():
     Base.metadata.create_all(bind=engine)
     print("[DATABASE] Tables created.")
+class MagicToken(Base):
+    __tablename__ = "magic_tokens"
+    id         = Column(Integer, primary_key=True)
+    token      = Column(String, unique=True, index=True, nullable=False)
+    email      = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    used       = Column(Boolean, default=False)
