@@ -161,7 +161,7 @@ async function loadProfile() {
         </div>
         <div class="post-content">${post.content}</div>
         <div class="post-actions">
-          <button onclick="vote(${post.id}, 1)" class="vote-btn">❤️</button>
+          <button onclick="vote(${post.id}, 1, this)" class="vote-btn">🤍</button>
           <span class="community-score">${Math.round(post.community_score)}</span>
           ${isOwn ? `<button onclick="deletePost(${post.id}, this)" class="delete-btn">Delete</button>` : ''}
         </div>
