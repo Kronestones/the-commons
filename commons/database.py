@@ -279,3 +279,23 @@ def get_db():
 def init_db():
     Base.metadata.create_all(bind=engine)
     print("[DATABASE] Tables created.")
+
+
+class Follow(Base):
+    __tablename__ = "follows"
+    id          = Column(Integer, primary_key=True)
+    follower_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    following_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+
+
+class DirectMessage(Base):
+    __tablename__ = "direct_messages"
+    id          = Column(Integer, primary_key=True)
+    sender_id   = Column(Integer, ForeignKey("users.id"), nullable=False)
+    receiver_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    content     = Column(Text, nullable=False)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+    read        = Column(Boolean, default=False)
+    request     = Column(Boolean, default=False)  # True = stranger, needs acceptance
+    accepted    = Column(Boolean, default=None, nullable=True)  # None=pending, True=accepted, False=declined

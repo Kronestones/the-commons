@@ -1842,3 +1842,77 @@ if __name__ == "__main__":
         reload  = config.debug,
         workers = 1 if config.debug else 4,
     )
+
+
+# ── Messaging & Follow Routes ─────────────────────────────────────────────────
+
+from commons.messaging import (
+    follow_user, send_message, get_inbox, get_requests,
+    accept_request, decline_request, get_conversation
+)
+
+@app.post("/api/follow/{username}")
+async def api_follow(
+    username: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(follow_user(db, current_user, username))
+
+
+@app.post("/api/messages/send")
+async def api_send_message(
+    username: str = Form(...),
+    content:  str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(send_message(db, current_user, username, content))
+
+
+@app.get("/api/messages/inbox")
+async def api_inbox(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse({"ok": True, "inbox": get_inbox(db, current_user)})
+
+
+@app.get("/api/messages/requests")
+async def api_message_requests(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse({"ok": True, "requests": get_requests(db, current_user)})
+
+
+@app.post("/api/messages/requests/{message_id}/accept")
+async def api_accept_request(
+    message_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(accept_request(db, current_user, message_id))
+
+
+@app.post("/api/messages/requests/{message_id}/decline")
+async def api_decline_request(
+    message_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(decline_request(db, current_user, message_id))
+
+
+@app.get("/api/messages/{username}")
+async def api_conversation(
+    username: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse({"ok": True, "messages": get_conversation(db, current_user, username)})
+
+
+@app.get("/messages", response_class=HTMLResponse)
+async def messages_page(request: Request):
+    return templates.TemplateResponse("messages.html", {"request": request})

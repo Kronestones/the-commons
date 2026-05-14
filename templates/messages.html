@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages · The Commons</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <span class="site-title">The Commons</span>
+      <nav class="nav-links" id="nav-links">
+        <a href="/">Feed</a>
+        <a href="/messages" class="active">Messages</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="max-width:600px;margin:0 auto;padding:16px;">
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button onclick="showTab('inbox')" id="tab-inbox" class="vote-btn">Inbox</button>
+      <button onclick="showTab('requests')" id="tab-requests" class="vote-btn">Requests <span id="req-count"></span></button>
+      <button onclick="showTab('new')" id="tab-new" class="vote-btn">+ New</button>
+    </div>
+
+    <!-- Inbox -->
+    <div id="pane-inbox"></div>
+
+    <!-- Requests -->
+    <div id="pane-requests" style="display:none"></div>
+
+    <!-- New Message -->
+    <div id="pane-new" style="display:none">
+      <div class="post-card">
+        <h3 style="margin-bottom:12px;">New Message</h3>
+        <input id="new-to" type="text" placeholder="@username" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:15px;">
+        <textarea id="new-content" placeholder="Write a message..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:15px;min-height:100px;resize:vertical;"></textarea>
+        <button onclick="sendNewMessage()" class="vote-btn" style="margin-top:8px;width:100%;">Send</button>
+        <div id="new-msg-status" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- Conversation view -->
+    <div id="pane-conversation" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <button onclick="showTab('inbox')" class="delete-btn">← Back</button>
+        <strong id="convo-username"></strong>
+      </div>
+      <div id="convo-messages" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;max-height:60vh;overflow-y:auto;"></div>
+      <div style="display:flex;gap:8px;">
+        <textarea id="convo-input" placeholder="Write a message..." style="flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:15px;resize:none;height:60px;"></textarea>
+        <button onclick="sendReply()" class="vote-btn" style="align-self:flex-end;">Send</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login';
+
+    let currentConvo = null;
+
+    function showTab(tab) {
+      ['inbox','requests','new','conversation'].forEach(t => {
+        document.getElementById('pane-' + t).style.display = 'none';
+        const btn = document.getElementById('tab-' + t);
+        if (btn) btn.style.opacity = '0.6';
+      });
+      document.getElementById('pane-' + tab).style.display = 'block';
+      const btn = document.getElementById('tab-' + tab);
+      if (btn) btn.style.opacity = '1';
+      if (tab === 'inbox') loadInbox();
+      if (tab === 'requests') loadRequests();
+    }
+
+    async function loadInbox() {
+      const res = await fetch('/api/messages/inbox', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      const pane = document.getElementById('pane-inbox');
+      if (!data.inbox || data.inbox.length === 0) {
+        pane.innerHTML = '<p style="color:var(--muted);text-align:center;padding:32px;">No messages yet.</p>';
+        return;
+      }
+      pane.innerHTML = data.inbox.map(m => `
+        <div class="post-card" onclick="openConvo('${m.username}')" style="cursor:pointer;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong>@${m.username}</strong>
+            <span style="font-size:12px;color:var(--muted);">${formatTime(m.time)}</span>
+          </div>
+          <p style="margin:4px 0 0;color:var(--muted);font-size:14px;">${m.last_message.substring(0,80)}${m.last_message.length>80?'...':''}</p>
+          ${m.unread ? '<span style="color:var(--green-dark);font-size:12px;font-weight:600;">● New</span>' : ''}
+        </div>
+      `).join('');
+    }
+
+    async function loadRequests() {
+      const res = await fetch('/api/messages/requests', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      const pane = document.getElementById('pane-requests');
+      const count = document.getElementById('req-count');
+      if (!data.requests || data.requests.length === 0) {
+        pane.innerHTML = '<p style="color:var(--muted);text-align:center;padding:32px;">No message requests.</p>';
+        count.textContent = '';
+        return;
+      }
+      count.textContent = `(${data.requests.length})`;
+      pane.innerHTML = data.requests.map(r => `
+        <div class="post-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong>@${r.username}</strong>
+            <span style="font-size:12px;color:var(--muted);">${formatTime(r.time)}</span>
+          </div>
+          <p style="margin:8px 0;">${r.preview}</p>
+          <div style="display:flex;gap:8px;">
+            <button onclick="acceptRequest(${r.id}, '${r.username}')" class="vote-btn">Accept</button>
+            <button onclick="declineRequest(${r.id})" class="delete-btn">Decline</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function acceptRequest(id, username) {
+      await fetch('/api/messages/requests/' + id + '/accept', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      openConvo(username);
+    }
+
+    async function declineRequest(id) {
+      await fetch('/api/messages/requests/' + id + '/decline', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      loadRequests();
+    }
+
+    async function openConvo(username) {
+      currentConvo = username;
+      document.getElementById('convo-username').textContent = '@' + username;
+      ['inbox','requests','new'].forEach(t => {
+        document.getElementById('pane-' + t).style.display = 'none';
+      });
+      document.getElementById('pane-conversation').style.display = 'block';
+      const res = await fetch('/api/messages/' + username, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      const me = localStorage.getItem('username');
+      const pane = document.getElementById('convo-messages');
+      pane.innerHTML = data.messages.map(m => `
+        <div style="align-self:${m.mine?'flex-end':'flex-start'};max-width:80%;">
+          <div style="background:${m.mine?'var(--green-dark)':'var(--card)'};color:${m.mine?'white':'inherit'};padding:10px 14px;border-radius:16px;border:${m.mine?'none':'1px solid var(--border)'};">
+            ${m.content}
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;text-align:${m.mine?'right':'left'}">${formatTime(m.time)}</div>
+        </div>
+      `).join('');
+      pane.scrollTop = pane.scrollHeight;
+    }
+
+    async function sendReply() {
+      const content = document.getElementById('convo-input').value.trim();
+      if (!content) return;
+      const form = new FormData();
+      form.append('username', currentConvo);
+      form.append('content', content);
+      const res = await fetch('/api/messages/send', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: form
+      });
+      const data = await res.json();
+      if (data.ok) {
+        document.getElementById('convo-input').value = '';
+        openConvo(currentConvo);
+      }
+    }
+
+    async function sendNewMessage() {
+      const username = document.getElementById('new-to').value.replace('@','').trim();
+      const content = document.getElementById('new-content').value.trim();
+      const status = document.getElementById('new-msg-status');
+      if (!username || !content) { status.textContent = 'Fill in both fields.'; return; }
+      const form = new FormData();
+      form.append('username', username);
+      form.append('content', content);
+      const res = await fetch('/api/messages/send', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: form
+      });
+      const data = await res.json();
+      if (data.ok) {
+        status.style.color = 'var(--green-dark)';
+        status.textContent = data.request ? 'Message request sent.' : 'Message sent.';
+        document.getElementById('new-to').value = '';
+        document.getElementById('new-content').value = '';
+      } else {
+        status.style.color = 'red';
+        status.textContent = data.error || 'Could not send.';
+      }
+    }
+
+    function formatTime(iso) {
+      const d = new Date(iso);
+      const now = new Date();
+      const diff = Math.floor((now - d) / 1000);
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+      return d.toLocaleDateString();
+    }
+
+    // Load inbox on start
+    showTab('inbox');
+  </script>
+</body>
+</html>
