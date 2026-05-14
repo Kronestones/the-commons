@@ -99,6 +99,8 @@ class DirectMessage(Base):
     recipient_id    = Column(Integer, ForeignKey("users.id"), nullable=False)
     content_encrypted = Column(Text, nullable=False)  # Encrypted — not readable by platform
     is_read         = Column(Boolean, default=False)
+    is_request      = Column(Boolean, default=False)  # True = stranger needs to accept
+    accepted        = Column(Boolean, default=None, nullable=True)  # None=pending, True=accepted, False=declined
     created_at      = Column(DateTime, default=datetime.utcnow)
 
 

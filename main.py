@@ -1847,9 +1847,10 @@ if __name__ == "__main__":
 # ── Messaging & Follow Routes ─────────────────────────────────────────────────
 
 from commons.messaging import (
-    follow_user, send_message, get_inbox, get_requests,
+    send_message, get_inbox, get_requests,
     accept_request, decline_request, get_conversation
 )
+from commons.features import follow_manager
 
 @app.post("/api/follow/{username}")
 async def api_follow(
@@ -1857,7 +1858,10 @@ async def api_follow(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return JSONResponse(follow_user(db, current_user, username))
+    target = db.query(User).filter(User.username == username).first()
+    if not target:
+        return JSONResponse({"ok": False, "error": "User not found."})
+    return JSONResponse(follow_manager.toggle_follow(db, current_user, target.id))
 
 
 @app.post("/api/messages/send")
