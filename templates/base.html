@@ -61,7 +61,8 @@
   <nav class="nav">
     <a href="{% if current_user %}/profile/{{ current_user.username }}{% else %}/{% endif %}" class="nav-logo">The Commons</a>
     <span class="nav-spirit">Power to the People</span>
-    <button onclick="openMenu()" style="margin-left:auto;background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;line-height:1;">☰</button>
+    <a href="/messages" id="msg-btn" style="margin-left:auto;background:none;border:none;color:white;font-size:22px;cursor:pointer;padding:4px 8px;line-height:1;text-decoration:none;position:relative;">💬<span id="msg-badge" style="display:none;position:absolute;top:0;right:2px;background:#e53935;color:white;border-radius:50%;font-size:10px;font-weight:700;width:16px;height:16px;line-height:16px;text-align:center;"></span></a>
+    <button onclick="openMenu()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;line-height:1;">☰</button>
   </nav>
 
   <script>

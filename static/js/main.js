@@ -400,3 +400,34 @@ function toggleNav() {
   const open  = nav.classList.toggle('nav-open');
   btn.textContent = open ? '✕' : '☰';
 }
+
+// ── Message Badge ─────────────────────────────────────────────────────────────
+async function updateMessageBadge() {
+  const token = getToken();
+  if (!token) return;
+  try {
+    const [inboxRes, reqRes] = await Promise.all([
+      fetch('/api/messages/inbox',    { headers: { 'Authorization': 'Bearer ' + token } }),
+      fetch('/api/messages/requests', { headers: { 'Authorization': 'Bearer ' + token } })
+    ]);
+    const inbox = await inboxRes.json();
+    const reqs  = await reqRes.json();
+    const unread = (inbox.inbox  || []).filter(m => m.unread).length;
+    const pending = (reqs.requests || []).length;
+    const total = unread + pending;
+    const badge = document.getElementById('msg-badge');
+    if (badge) {
+      if (total > 0) {
+        badge.textContent = total > 9 ? '9+' : total;
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  } catch(e) {}
+}
+
+if (getToken()) {
+  updateMessageBadge();
+  setInterval(updateMessageBadge, 30000);
+}
