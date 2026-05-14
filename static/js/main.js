@@ -217,6 +217,11 @@ async function vote(postId, value, btn) {
       if (btn) {
         btn.textContent = data.voted ? '❤️' : '🤍';
         btn.classList.toggle('voted', data.voted);
+        const scoreEl = btn.parentElement.querySelector('.community-score');
+        if (scoreEl) {
+          const current = parseInt(scoreEl.textContent) || 0;
+          scoreEl.textContent = data.voted ? current + 1 : current - 1;
+        }
       }
     } else {
       showMessage(data.error || 'Could not vote', true);
