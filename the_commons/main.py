@@ -801,6 +801,36 @@ async def blessing_page(request: Request, db: Session = Depends(get_db)):
         "history": history,
     })
 
+
+@app.get("/api/blessing/feed")
+async def api_blessing_feed(db: Session = Depends(get_db)):
+    """Posts tagged #blessing sorted by community votes — the community chooses."""
+    from sqlalchemy import func
+    blessing_posts = (
+        db.query(Post)
+        .filter(
+            Post.status == PostStatus.PUBLISHED,
+            Post.content.ilike('%#blessing%')
+        )
+        .order_by(Post.community_score.desc())
+        .limit(50)
+        .all()
+    )
+    return JSONResponse({
+        "ok": True,
+        "posts": [
+            {
+                "id":              p.id,
+                "content":         p.content,
+                "author":          p.author.username if p.author else "unknown",
+                "community_score": p.community_score,
+                "published_at":    p.published_at.isoformat() if p.published_at else None,
+            }
+            for p in blessing_posts
+        ],
+        "note": "Posts tagged #blessing, sorted by community ❤️. Highest voted at month end receives The Blessing."
+    })
+
 @app.get("/api/blessing/current")
 async def api_blessing_current(db: Session = Depends(get_db)):
     from datetime import datetime
