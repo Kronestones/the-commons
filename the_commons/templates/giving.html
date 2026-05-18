@@ -22,6 +22,15 @@
     <p>Maximum $19,000 for individuals. $38,000 for families. Every dollar transparent. The Commons is a facilitator only.</p>
   </div>
 
+  <div class="blessing-how">
+    <p>To nominate yourself or someone you know, post on the feed with <strong>#blessing</strong> and describe the genuine need. The community votes with ❤️. The post with the most hearts at the end of the month receives The Blessing. The team verifies need before payment.</p>
+  </div>
+
+  <!-- Live #blessing nominations -->
+  <div id="blessing-nominations">
+    <p class="empty-feed">Loading nominations...</p>
+  </div>
+
   {% if current %}
   <div class="blessing-voting">
     <h2>{{ month }} — Vote for This Month's Blessing</h2>
@@ -148,6 +157,31 @@
 </div>
 
 <script>
+async function loadBlessingFeed() {
+  const res  = await fetch('/api/blessing/feed');
+  const data = await res.json();
+  const el   = document.getElementById('blessing-nominations');
+  if (!data.posts || data.posts.length === 0) {
+    el.innerHTML = '<p class="empty-feed">No #blessing posts yet this month. Be the first to share a need.</p>';
+    return;
+  }
+  el.innerHTML = data.posts.map(p => `
+    <div class="post-card">
+      <div class="post-header">
+        <span class="post-author">@${p.author}</span>
+        <span class="post-time">${p.published_at ? new Date(p.published_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}</span>
+      </div>
+      <div class="post-content">${p.content}</div>
+      <div class="post-actions">
+        <button onclick="vote(${p.id}, 1)" class="vote-btn">❤️</button>
+        <span class="community-score">${Math.round(p.community_score)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+loadBlessingFeed();
+
 async function voteBlessing(applicationId) {
   const token = getToken();
   if (!token) { alert("Please log in to vote."); return; }
