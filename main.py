@@ -162,6 +162,12 @@ async def shutdown():
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: Session = Depends(get_db)):
+    # Redirect unauthenticated users to register
+    token = request.cookies.get("token", "")
+    if not token:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/register", status_code=302)
+
     # Get recent published posts for the landing feed
     recent_posts = (
         db.query(Post)
