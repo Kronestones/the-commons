@@ -908,11 +908,53 @@ async def api_blessing_apply(
             except Exception as e:
                 print(f"[ASSISTANTS] {member_name} analysis error: {e}")
         
-        result["assistant_note"] = (
-            "Your application has been received. "
-            "Ember, Vela, Sophia, Echo, and Threshold are reviewing it now. "
-            "The community will vote once the review is complete."
-        )
+        # Tally Circle recommendations
+        from commons.circle_assistants import AssistantAnalysis
+        from commons.blessing import BlessingApplication
+        analyses = db.query(AssistantAnalysis).filter(
+            AssistantAnalysis.post_id == None,
+            AssistantAnalysis.reviewed == False
+        ).order_by(AssistantAnalysis.created_at.desc()).limit(20).all()
+
+        recommendations = [a.recommendation for a in analyses]
+        approve_count  = recommendations.count("approve")
+        escalate_count = recommendations.count("escalate")
+        flag_count     = recommendations.count("flag")
+
+        # Get the application we just created
+        from datetime import datetime as _dt
+        month = _dt.utcnow().strftime("%Y-%m")
+        application = db.query(BlessingApplication).filter(
+            BlessingApplication.applicant_id == current_user.id,
+            BlessingApplication.month == month
+        ).order_by(BlessingApplication.id.desc()).first()
+
+        if application:
+            if escalate_count > 0:
+                # Hold for sovereign review
+                application.status = "sovereign_review"
+                db.commit()
+                result["assistant_note"] = (
+                    "Your application has been received and is under careful review. "
+                    "The team will follow up with you."
+                )
+            elif approve_count >= 3:
+                # Auto-verify
+                application.status = "verified"
+                db.commit()
+                result["assistant_note"] = (
+                    "Your application has been reviewed and verified by the Circle. "
+                    "The community will now vote. Thank you for trusting The Commons."
+                )
+            else:
+                # Needs more review
+                application.status = "pending"
+                db.commit()
+                result["assistant_note"] = (
+                    "Your application has been received. "
+                    "The Circle is completing their review. "
+                    "You will be notified when it goes to community vote."
+                )
 
     return JSONResponse(result)
 
