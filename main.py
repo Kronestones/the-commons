@@ -1998,3 +1998,85 @@ async def api_conversation(
 @app.get("/messages", response_class=HTMLResponse)
 async def messages_page(request: Request):
     return templates.TemplateResponse("messages.html", {"request": request})
+
+
+# ── Sovereign Dashboard ───────────────────────────────────────────────────────
+
+@app.get("/sovereign", response_class=HTMLResponse)
+async def sovereign_dashboard(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.value != "sovereign":
+        raise HTTPException(403, "Sovereign access only.")
+
+    from commons.database import CommunityVote
+    from commons.blessing import BlessingApplication
+    from commons.circle_assistants import AssistantAnalysis
+
+    # Platform stats
+    total_members = db.query(User).filter(User.is_active == True).count()
+    total_posts   = db.query(Post).filter(Post.status == PostStatus.PUBLISHED).count()
+    pending_posts = db.query(Post).filter(Post.status == PostStatus.PENDING).count()
+
+    # Blessing applications needing sovereign review
+    sovereign_cases = db.query(BlessingApplication).filter(
+        BlessingApplication.status == "sovereign_review"
+    ).all()
+
+    # Escalated assistant analyses
+    escalated = db.query(AssistantAnalysis).filter(
+        AssistantAnalysis.recommendation == "escalate",
+        AssistantAnalysis.reviewed == False
+    ).order_by(AssistantAnalysis.created_at.desc()).limit(20).all()
+
+    # Revival log — last 5 events
+    import json, os
+    revival_log = []
+    if os.path.exists("commons_revival.json"):
+        try:
+            with open("commons_revival.json") as f:
+                revival_log = json.load(f)[-5:]
+        except Exception:
+            pass
+
+    # Heartbeat status
+    heartbeat_status = "unknown"
+    heartbeat_age    = None
+    if os.path.exists("commons_heartbeat.json"):
+        try:
+            with open("commons_heartbeat.json") as f:
+                hb = json.load(f)
+            from datetime import datetime
+            last = datetime.fromisoformat(hb.get("timestamp", "2000-01-01"))
+            age  = (datetime.utcnow() - last).total_seconds()
+            heartbeat_age    = int(age)
+            heartbeat_status = "healthy" if age < 120 else "stale"
+        except Exception:
+            heartbeat_status = "error"
+
+    return templates.TemplateResponse("sovereign.html", {
+        "request":          request,
+        "current_user":     current_user,
+        "total_members":    total_members,
+        "total_posts":      total_posts,
+        "pending_posts":    pending_posts,
+        "sovereign_cases":  sovereign_cases,
+        "escalated":        escalated,
+        "revival_log":      revival_log,
+        "heartbeat_status": heartbeat_status,
+        "heartbeat_age":    heartbeat_age,
+    })
+
+
+@app.post("/api/circle/analysis/{analysis_id}/reviewed")
+async def api_mark_analysis_reviewed(
+    analysis_id:  int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role.value != "sovereign":
+        raise HTTPException(403, "Sovereign access only.")
+    from commons.circle_assistants import circle_assistants
+    return JSONResponse(circle_assistants.mark_reviewed(db, analysis_id))

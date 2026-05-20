@@ -51,7 +51,8 @@
       <a href="/live" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">Live <span style="font-size:9px;background:#7cb87c;color:white;border-radius:10px;padding:1px 6px;margin-left:4px;vertical-align:middle;">Soon</span></a>
       <a href="/giving" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">Mutual Aid</a>
       <a href="/marketplace" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">Market</a>
-      <a href="/codex" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;">Guidelines</a>
+      <a href="/codex" style="color:rgba(255,255,255,0.9);text-decoration:none;padding:14px 24px;font-size:16px;border-bottom:1px solid rgba(255,255,255,0.06);">Guidelines</a>
+      <a href="/sovereign" id="sovereign-link" style="display:none;color:#f5a623;text-decoration:none;padding:14px 24px;font-size:16px;">⚖️ Sovereign</a>
     </nav>
     <div style="margin-top:auto;padding:24px;border-top:1px solid rgba(255,255,255,0.1);">
       <div id="menu-user-section" style="display:none"></div>
@@ -84,6 +85,15 @@
       }
     }
   }
+  function openMenu() {
+    // already defined above — skip
+  }
+  // Show sovereign link if applicable
+  (function() {
+    const role = localStorage.getItem('role');
+    const link = document.getElementById('sovereign-link');
+    if (link && role === 'sovereign') link.style.display = 'block';
+  })();
   function closeMenu() {
     document.getElementById('slide-menu').style.right = '-280px';
     document.getElementById('menu-overlay').style.display = 'none';

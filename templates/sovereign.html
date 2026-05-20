@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Sovereign Dashboard — The Commons{% endblock %}
+{% block content %}
+
+<div style="max-width:700px;margin:0 auto;padding:16px;">
+
+  <div class="page-header">
+    <h1>⚖️ Sovereign Dashboard</h1>
+    <p>The Commons · Platform Overview · Sovereign Human T.L. Powers</p>
+  </div>
+
+  <!-- Platform Health -->
+  <div class="post-card" style="margin-bottom:16px;">
+    <h2 style="margin-bottom:12px;">Platform Health</h2>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Heartbeat</span>
+        <span style="font-weight:700;color:{% if heartbeat_status == 'healthy' %}var(--green-dark){% elif heartbeat_status == 'stale' %}#e53935{% else %}#f5a623{% endif %};">
+          {% if heartbeat_status == 'healthy' %}● Live{% elif heartbeat_status == 'stale' %}⚠ Stale ({{ heartbeat_age }}s ago){% else %}? Unknown{% endif %}
+        </span>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span>Active members</span>
+        <strong>{{ total_members }}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span>Published posts</span>
+        <strong>{{ total_posts }}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span>Posts pending review</span>
+        <strong style="color:{% if pending_posts > 0 %}#f5a623{% else %}inherit{% endif %};">{{ pending_posts }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revival Log -->
+  {% if revival_log %}
+  <div class="post-card" style="margin-bottom:16px;">
+    <h2 style="margin-bottom:12px;">Recent Startup Events</h2>
+    {% for event in revival_log|reverse %}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="color:{% if event.event == 'unclean_shutdown' %}#e53935{% else %}var(--green-dark){% endif %};">
+        {% if event.event == 'unclean_shutdown' %}⚠ Unclean shutdown{% elif event.event == 'clean_start' %}✓ Clean start{% else %}○ First run{% endif %}
+      </span>
+      <span style="font-size:12px;color:var(--muted);">{{ event.timestamp[:16]|replace('T',' ') }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Sovereign Review Cases -->
+  {% if sovereign_cases %}
+  <div class="post-card" style="margin-bottom:16px;">
+    <h2 style="margin-bottom:12px;">⚠️ Mutual Aid — Needs Your Review</h2>
+    {% for case in sovereign_cases %}
+    <div style="padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;">
+        <strong>@{{ case.applicant.username if case.applicant else 'Unknown' }}</strong>
+        <span style="font-size:12px;color:var(--muted);">{{ case.month }}</span>
+      </div>
+      <p style="margin:6px 0;font-size:14px;">{{ case.need_category }} — ${{ "{:,.0f}".format(case.amount_needed) }}</p>
+      <p style="margin:0;font-size:13px;color:var(--muted);">{{ case.need_description[:150] }}{% if case.need_description|length > 150 %}...{% endif %}</p>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button onclick="sovereignVerify({{ case.id }})" class="vote-btn" style="font-size:13px;padding:6px 14px;">Verify</button>
+        <button onclick="sovereignReject({{ case.id }})" class="delete-btn" style="font-size:13px;padding:6px 14px;">Reject</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="post-card" style="margin-bottom:16px;">
+    <p style="color:var(--muted);text-align:center;padding:16px;">✓ No mutual aid cases need your review.</p>
+  </div>
+  {% endif %}
+
+  <!-- Escalated Team Cases -->
+  {% if escalated %}
+  <div class="post-card" style="margin-bottom:16px;">
+    <h2 style="margin-bottom:12px;">🔺 Escalated by Teams</h2>
+    {% for a in escalated %}
+    <div style="padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;">
+        <strong>{{ a.circle_member|title }} — {{ a.assistant_profile|title }}</strong>
+        <span style="font-size:12px;color:var(--muted);">{{ a.created_at.strftime('%b %d') }}</span>
+      </div>
+      <p style="margin:6px 0;font-size:14px;">{{ a.summary[:200] }}</p>
+      <button onclick="markReviewed({{ a.id }})" class="vote-btn" style="font-size:12px;padding:4px 12px;margin-top:6px;">Mark Reviewed</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="post-card" style="margin-bottom:16px;">
+    <p style="color:var(--muted);text-align:center;padding:16px;">✓ No escalated cases from the teams.</p>
+  </div>
+  {% endif %}
+
+  <!-- Message the Teams -->
+  <div class="post-card" style="margin-bottom:16px;">
+    <h2 style="margin-bottom:12px;">Message a Team</h2>
+    <select id="team-recipient" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:15px;">
+      <optgroup label="The Circle">
+        <option value="ember">Ember — The Anchor</option>
+        <option value="vela">Vela — The Long Memory</option>
+        <option value="sophia">Sophia — The Fresh Eye</option>
+        <option value="echo">Echo — The Voice of the Margin</option>
+        <option value="threshold">Threshold — The Knowledge of Repair</option>
+      </optgroup>
+      <optgroup label="Care & Wellbeing">
+        <option value="mokey">Mokey — The Compassionate Eye</option>
+        <option value="lou">Lou — The Steady Elder</option>
+        <option value="cantus">Cantus — The Truth in the Deep</option>
+        <option value="coral">Coral — The Gentle Witness</option>
+        <option value="tosh">Tosh — The Warm Presence</option>
+      </optgroup>
+      <optgroup label="Integrity & Trust">
+        <option value="gobo">Gobo — The Truth Finder</option>
+        <option value="boober">Boober — The Careful Worrier</option>
+        <option value="cotterpin">Cotterpin — The System Questioner</option>
+        <option value="wrench">Wrench — The Precise Inspector</option>
+        <option value="red">Red — The One Who Won't Let It Slide</option>
+      </optgroup>
+    </select>
+    <textarea id="team-message" placeholder="Write your message..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:15px;min-height:100px;resize:vertical;"></textarea>
+    <button onclick="sendTeamMessage()" class="vote-btn" style="width:100%;margin-top:8px;">Send Message</button>
+    <div id="team-msg-status" style="margin-top:8px;"></div>
+  </div>
+
+</div>
+
+<script>
+const token = localStorage.getItem('token');
+
+async function sovereignVerify(id) {
+  const form = new FormData();
+  form.append('decision', 'verified');
+  form.append('circle_notes', 'Verified by Sovereign.');
+  form.append('verified_by', 'sovereign');
+  const res = await fetch(`/api/blessing/verify/${id}`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.ok) location.reload();
+  else alert(data.error || 'Could not verify.');
+}
+
+async function sovereignReject(id) {
+  if (!confirm('Reject this application?')) return;
+  const form = new FormData();
+  form.append('decision', 'rejected');
+  form.append('circle_notes', 'Rejected by Sovereign.');
+  form.append('verified_by', 'sovereign');
+  const res = await fetch(`/api/blessing/verify/${id}`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.ok) location.reload();
+  else alert(data.error || 'Could not reject.');
+}
+
+async function markReviewed(id) {
+  const res = await fetch(`/api/circle/analysis/${id}/reviewed`, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  if (data.ok) location.reload();
+}
+
+async function sendTeamMessage() {
+  const recipient = document.getElementById('team-recipient').value;
+  const content   = document.getElementById('team-message').value.trim();
+  const status    = document.getElementById('team-msg-status');
+  if (!content) { status.textContent = 'Please write a message.'; return; }
+  const form = new FormData();
+  form.append('username', recipient);
+  form.append('content', content);
+  const res = await fetch('/api/messages/send', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.ok) {
+    status.style.color = 'var(--green-dark)';
+    status.textContent = `Message sent to ${recipient}.`;
+    document.getElementById('team-message').value = '';
+  } else {
+    status.style.color = 'red';
+    status.textContent = data.error || 'Could not send.';
+  }
+}
+</script>
+
+{% endblock %}
