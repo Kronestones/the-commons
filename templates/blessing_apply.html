@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Apply for Mutual Aid — The Commons{% endblock %}
+{% block content %}
+
+<div class="auth-container">
+  <div class="page-header">
+    <h1>Apply for Mutual Aid 💛</h1>
+    <p>Genuine life-sustaining need only. Your application is private until verified.</p>
+  </div>
+
+  <div class="blessing-statement" style="margin-bottom:24px;">
+    <p>The team will review your application privately. If verified, the community votes. The highest voted application each month receives The Blessing.</p>
+    <p>Medical. Housing. Food security. Genuine need only. Maximum $19,000 for individuals, $38,000 for families.</p>
+  </div>
+
+  <div class="post-card">
+    <div id="apply-error" style="display:none;color:red;margin-bottom:12px;"></div>
+    <div id="apply-success" style="display:none;"></div>
+
+    <div id="apply-form">
+      <label style="display:block;margin-bottom:16px;">
+        <strong>Category of need</strong>
+        <select id="need-category" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-top:6px;font-size:15px;">
+          <option value="">Select a category...</option>
+          <option value="medical">Medical</option>
+          <option value="housing">Housing</option>
+          <option value="food">Food security</option>
+          <option value="utilities">Utilities</option>
+          <option value="emergency">Emergency</option>
+          <option value="other">Other genuine need</option>
+        </select>
+      </label>
+
+      <label style="display:block;margin-bottom:16px;">
+        <strong>Describe your need</strong>
+        <small style="display:block;color:var(--muted);margin:4px 0;">Be specific. The team reviews this privately. The community will see a verified summary.</small>
+        <textarea id="need-description" placeholder="Describe your situation and why you need help..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-top:6px;font-size:15px;min-height:140px;resize:vertical;"></textarea>
+      </label>
+
+      <label style="display:block;margin-bottom:16px;">
+        <strong>Amount needed ($)</strong>
+        <input type="number" id="amount-needed" placeholder="e.g. 1500" min="1" max="38000" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-top:6px;font-size:15px;">
+      </label>
+
+      <label style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;">
+        <input type="checkbox" id="is-family" style="width:18px;height:18px;">
+        <span><strong>This is a family application</strong></span>
+      </label>
+
+      <div id="family-size-row" style="display:none;margin-bottom:16px;">
+        <label style="display:block;">
+          <strong>Family size</strong>
+          <input type="number" id="family-size" placeholder="Number of people" min="2" max="20" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-top:6px;font-size:15px;">
+        </label>
+      </div>
+
+      <button onclick="submitApplication()" class="btn-primary btn-full" style="margin-top:8px;">Submit Application</button>
+    </div>
+  </div>
+
+  <div class="giving-disclaimer" style="margin-top:20px;background:#fff8e1;border-left:4px solid #f5a623;padding:16px 20px;border-radius:8px;">
+    <p style="margin:0;font-size:14px;line-height:1.7;"><strong>Privacy:</strong> Your application is reviewed privately by the team. Only verified applications go to community vote, and your personal details are never shared publicly.</p>
+  </div>
+</div>
+
+<script>
+document.getElementById('is-family').addEventListener('change', function() {
+  document.getElementById('family-size-row').style.display = this.checked ? 'block' : 'none';
+});
+
+async function submitApplication() {
+  const token = localStorage.getItem('token');
+  if (!token) { window.location.href = '/login'; return; }
+
+  const category = document.getElementById('need-category').value;
+  const description = document.getElementById('need-description').value.trim();
+  const amount = parseFloat(document.getElementById('amount-needed').value);
+  const isFamily = document.getElementById('is-family').checked;
+  const familySize = parseInt(document.getElementById('family-size').value) || 1;
+
+  const errEl = document.getElementById('apply-error');
+  errEl.style.display = 'none';
+
+  if (!category) { errEl.textContent = 'Please select a category.'; errEl.style.display = 'block'; return; }
+  if (!description || description.length < 20) { errEl.textContent = 'Please describe your need in more detail.'; errEl.style.display = 'block'; return; }
+  if (!amount || amount < 1) { errEl.textContent = 'Please enter an amount needed.'; errEl.style.display = 'block'; return; }
+
+  const form = new FormData();
+  form.append('need_category', category);
+  form.append('need_description', description);
+  form.append('amount_needed', amount);
+  form.append('is_family', isFamily);
+  form.append('family_size', familySize);
+
+  const res = await fetch('/api/blessing/apply', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+
+  if (data.ok) {
+    document.getElementById('apply-form').style.display = 'none';
+    const success = document.getElementById('apply-success');
+    success.style.display = 'block';
+    success.innerHTML = `
+      <div class="post-card" style="text-align:center;padding:32px;">
+        <div style="font-size:48px;margin-bottom:16px;">💛</div>
+        <h2>Application Submitted</h2>
+        <p>${data.message}</p>
+        <p style="color:var(--muted);font-size:13px;">${data.tax_note}</p>
+        <a href="/giving" class="btn-primary" style="display:inline-block;margin-top:16px;">Back to Mutual Aid</a>
+      </div>
+    `;
+  } else {
+    errEl.textContent = data.error || 'Could not submit. Please try again.';
+    errEl.style.display = 'block';
+  }
+}
+</script>
+{% endblock %}

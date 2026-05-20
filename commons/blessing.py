@@ -179,13 +179,45 @@ class BlessingManager:
         db.commit()
         db.refresh(application)
 
+        # Notify team
+        try:
+            from .config import config
+            import requests as _req
+            to = config.team_email or config.founder_email
+            if to:
+                _req.post(
+                    "https://api.resend.com/emails",
+                    headers={"Authorization": f"Bearer {config.resend_api_key}", "Content-Type": "application/json"},
+                    json={
+                        "from": "The Commons <noreply@thecommons.app>",
+                        "to": [to],
+                        "subject": f"New Mutual Aid Application — {month}",
+                        "text": f"""A new mutual aid application has been submitted.
+
+Applicant: @{applicant.username}
+Category: {need_category}
+Amount needed: ${amount_needed:,.2f} (capped at ${amount_capped:,.2f})
+Family: {"Yes, size " + str(family_size) if is_family else "No"}
+
+Need description:
+{need_description}
+
+Please review and verify at https://the-commons.onrender.com/sovereign/blessing
+
+Power to the People.
+— The Commons"""
+                    }
+                )
+        except Exception as e:
+            print(f"[BLESSING] Email error: {e}")
+
         return {
             "ok":          True,
             "application_id": application.id,
             "amount_capped": amount_capped,
             "message": (
                 "Your application has been submitted. "
-                "The Circle will verify your need and if approved, "
+                "The team will verify your need and if approved, "
                 "the community will vote. Thank you for trusting The Commons."
             ),
             "tax_note": f"Maximum Blessing is ${max_amount:,} per IRS gift tax exclusion rules."
