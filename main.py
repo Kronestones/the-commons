@@ -2016,10 +2016,19 @@ async def messages_page(request: Request):
 @app.get("/sovereign", response_class=HTMLResponse)
 async def sovereign_dashboard(
     request: Request,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    if current_user.role.value != "sovereign":
+    from commons.auth import decode_token
+    token = request.cookies.get("token", "")
+    if not token:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login")
+    payload = decode_token(token)
+    if not payload:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login")
+    current_user = db.query(User).filter(User.id == int(payload["sub"])).first()
+    if not current_user or current_user.role.value.upper() != "SOVEREIGN":
         raise HTTPException(403, "Sovereign access only.")
 
     from commons.database import CommunityVote
