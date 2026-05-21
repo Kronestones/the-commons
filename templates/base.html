@@ -87,9 +87,9 @@
   }
   // Show sovereign link if applicable
   (function() {
-    const role = localStorage.getItem('role');
+    const role = (localStorage.getItem('role') || '').toUpperCase();
     const link = document.getElementById('sovereign-link');
-    if (link && role === 'sovereign') link.style.display = 'block';
+    if (link && role === 'SOVEREIGN') link.style.display = 'block';
   })();
   function closeMenu() {
     document.getElementById('slide-menu').style.right = '-280px';
