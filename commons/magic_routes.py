@@ -54,6 +54,7 @@ async def verify_magic_link(token: str, db: Session = Depends(get_db)):
 <script>
   localStorage.setItem('token', '{jwt_token}');
   localStorage.setItem('username', '{user.username}');
+  localStorage.setItem('role', '{user.role.value}');
   window.location.href = '/';
 </script>
 <p>Signing you in...</p>
