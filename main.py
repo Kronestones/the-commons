@@ -871,6 +871,17 @@ async def api_blessing_history(db: Session = Depends(get_db)):
         "history": blessing_manager.get_public_record(db)
     })
 
+@app.get("/blessing/apply", response_class=HTMLResponse)
+async def blessing_apply_page(
+    request: Request,
+    current_user: User = Depends(get_current_user)
+):
+    return templates.TemplateResponse("blessing_apply.html", {
+        "request": request,
+        "current_user": current_user
+    })
+
+
 @app.post("/api/blessing/apply")
 async def api_blessing_apply(
     need_category:    str   = Form(...),
