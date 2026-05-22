@@ -897,8 +897,21 @@ async def api_blessing_history(db: Session = Depends(get_db)):
 @app.get("/blessing/apply", response_class=HTMLResponse)
 async def blessing_apply_page(
     request: Request,
-    current_user: User = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
+    from commons.auth import decode_token
+    token = request.cookies.get("token", "")
+    if not token:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login")
+    payload = decode_token(token)
+    if not payload:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login")
+    current_user = db.query(User).filter(User.id == int(payload["sub"])).first()
+    if not current_user:
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url="/login")
     return templates.TemplateResponse("blessing_apply.html", {
         "request": request,
         "current_user": current_user
