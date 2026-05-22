@@ -126,12 +126,44 @@ async function viewProduct(id) {
       <div style="font-size:1.4rem;font-weight:700;color:#1a4a2e;margin-bottom:8px;">$${p.price.toFixed(2)}</div>
       <p style="color:#888;margin-bottom:12px;">Sold by @${p.seller}</p>
       ${p.description ? `<p style="line-height:1.6;">${p.description}</p>` : ''}
+      ${p.seller !== username && token ? `
+        <div style="margin-top:16px;border-top:1px solid #eee;padding-top:16px;">
+          <p style="font-size:13px;color:#888;margin-bottom:8px;">Message the seller about this listing</p>
+          <textarea id="market-msg-${p.id}" placeholder="Hi, I'm interested in ${p.name}..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-height:80px;resize:vertical;"></textarea>
+          <button onclick="sendMarketMessage('${p.seller}', ${p.id}, '${p.name}')" class="btn-primary" style="width:100%;margin-top:8px;">Send Message</button>
+          <div id="market-msg-status-${p.id}" style="margin-top:6px;font-size:13px;"></div>
+        </div>` : ''}
     </div>
   `;
   document.getElementById('product-modal').style.display = 'flex';
 }
 
 function closeModal() { document.getElementById('product-modal').style.display = 'none'; }
+
+async function sendMarketMessage(seller, productId, productName) {
+  const content = document.getElementById('market-msg-' + productId).value.trim();
+  const status  = document.getElementById('market-msg-status-' + productId);
+  if (!content) { status.textContent = 'Please write a message.'; return; }
+
+  const form = new FormData();
+  form.append('username', seller);
+  form.append('content', '🛍️ Re: ' + productName + '\n\n' + content);
+
+  const res = await fetch('/api/messages/send', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.ok) {
+    status.style.color = 'green';
+    status.textContent = data.request ? 'Message request sent to @' + seller : 'Message sent to @' + seller;
+    document.getElementById('market-msg-' + productId).value = '';
+  } else {
+    status.style.color = 'red';
+    status.textContent = data.error || 'Could not send message.';
+  }
+}
 
 async function listProduct() {
   const form = new FormData();

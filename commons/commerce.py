@@ -119,13 +119,21 @@ class Commerce:
                        price: float, media_path: str = "") -> dict:
         """Create a product listing."""
 
+        # Any member can list — no seller profile required
         profile = db.query(SellerProfile).filter(
             SellerProfile.user_id == user.id
         ).first()
         if not profile:
-            return {"ok": False, "error": "You need a seller profile first."}
-        if not profile.is_verified:
-            return {"ok": False, "error": "Your seller profile is pending verification."}
+            # Auto-create a basic seller profile
+            profile = SellerProfile(
+                user_id       = user.id,
+                is_verified   = True,
+                business_name = user.username,
+                business_type = "individual",
+            )
+            db.add(profile)
+            db.commit()
+            db.refresh(profile)
 
         if price <= 0:
             return {"ok": False, "error": "Price must be greater than $0."}
