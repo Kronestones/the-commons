@@ -95,6 +95,14 @@
   </div>
   {% endif %}
 
+  <!-- Remove User -->
+  <div class="post-card" style="margin-bottom:16px;">
+    <h2 style="margin-bottom:12px;">Remove a Member</h2>
+    <input id="remove-username" type="text" placeholder="@username" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:15px;">
+    <button onclick="removeUser()" class="delete-btn" style="width:100%;">Remove from Platform</button>
+    <div id="remove-status" style="margin-top:8px;"></div>
+  </div>
+
   <!-- Message the Teams -->
   <div class="post-card" style="margin-bottom:16px;">
     <h2 style="margin-bottom:12px;">Message a Team</h2>
@@ -169,6 +177,34 @@ async function markReviewed(id) {
   });
   const data = await res.json();
   if (data.ok) location.reload();
+}
+
+async function removeUser() {
+  const username = document.getElementById('remove-username').value.replace('@','').trim();
+  const status   = document.getElementById('remove-status');
+  if (!username) { status.textContent = 'Enter a username.'; return; }
+  if (!confirm(`Remove @${username} from The Commons?`)) return;
+
+  // First look up the user ID
+  const profileRes = await fetch('/api/users/' + username + '/profile', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const profileData = await profileRes.json();
+  if (!profileData.ok) { status.textContent = 'User not found.'; return; }
+
+  const res = await fetch('/api/sovereign/remove-user/' + profileData.profile.id, {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  if (data.ok) {
+    status.style.color = 'var(--green-dark)';
+    status.textContent = data.message;
+    document.getElementById('remove-username').value = '';
+  } else {
+    status.style.color = 'red';
+    status.textContent = data.error || 'Could not remove user.';
+  }
 }
 
 async function sendTeamMessage() {

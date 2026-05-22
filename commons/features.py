@@ -233,9 +233,11 @@ class ProfileManager:
         followers_count = db.query(Follow).filter(Follow.following_id == user.id).count()
         following_count = db.query(Follow).filter(Follow.follower_id == user.id).count()
         is_following    = False
+        is_blocked      = False
 
         if viewer and viewer.id != user.id:
             is_following = follow_manager.is_following(db, viewer.id, user.id)
+            is_blocked   = block_manager.is_blocked(db, viewer.id, user.id)
 
         # Creator stats
         total_likes  = sum(
@@ -255,6 +257,7 @@ class ProfileManager:
             "following":       following_count,
             "post_count":      len(posts),
             "is_following":    is_following,
+            "is_blocked":      is_blocked,
             "avatar_path":     user.avatar_path or None,
             "banner_path":     user.banner_path or None,
             "posts": [

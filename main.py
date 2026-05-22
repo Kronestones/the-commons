@@ -1298,7 +1298,19 @@ async def api_maintenance_run(
 
 # ── Follow API ────────────────────────────────────────────────────────────────
 
-@app.post("/api/users/{user_id}/follow")
+@app.post("/api/users/{username}/follow")
+async def api_follow_by_username(
+    username:     str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    target = db.query(User).filter(User.username.ilike(username)).first()
+    if not target:
+        return JSONResponse({"ok": False, "error": "User not found."})
+    return JSONResponse(follow_manager.toggle_follow(db, current_user, target.id))
+
+
+@app.post("/api/users/{user_id}/follow_by_id")
 async def api_follow(
     user_id:      int,
     current_user: User = Depends(get_current_user),
@@ -2100,3 +2112,29 @@ async def api_mark_analysis_reviewed(
         raise HTTPException(403, "Sovereign access only.")
     from commons.circle_assistants import circle_assistants
     return JSONResponse(circle_assistants.mark_reviewed(db, analysis_id))
+
+
+@app.post("/api/sovereign/remove-user/{user_id}")
+async def api_sovereign_remove_user(
+    user_id:      int,
+    request:      Request,
+    db:           Session = Depends(get_db)
+):
+    from commons.auth import decode_token
+    token = request.cookies.get("token", "")
+    if not token:
+        raise HTTPException(403, "Not authorized.")
+    payload = decode_token(token)
+    if not payload:
+        raise HTTPException(403, "Not authorized.")
+    sovereign = db.query(User).filter(User.id == int(payload["sub"])).first()
+    if not sovereign or sovereign.role.value.upper() != "SOVEREIGN":
+        raise HTTPException(403, "Sovereign access only.")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return JSONResponse({"ok": False, "error": "User not found."})
+    if user.role.value.upper() == "SOVEREIGN":
+        return JSONResponse({"ok": False, "error": "Cannot remove Sovereign."})
+    user.is_active = False
+    db.commit()
+    return JSONResponse({"ok": True, "message": f"@{user.username} has been removed."})
