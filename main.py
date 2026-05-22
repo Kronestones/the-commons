@@ -1373,18 +1373,14 @@ async def api_upload_avatar(
     current_user: User = Depends(get_current_user),
     db:           Session = Depends(get_db)
 ):
-    import uuid, aiofiles
-    from pathlib import Path
-    ext = Path(media.filename).suffix.lower()
-    if ext not in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
-        return JSONResponse({"ok": False, "error": "Image files only."}, status_code=400)
-    filename = f"avatar_{current_user.id}_{uuid.uuid4().hex[:8]}{ext}"
-    path = config.media_dir / filename
-    async with aiofiles.open(path, "wb") as f:
-        await f.write(await media.read())
-    current_user.avatar_path = filename
+    from commons.media_upload import upload_image
+    file_bytes = await media.read()
+    upload = upload_image(file_bytes, folder="avatars")
+    if not upload["ok"]:
+        return JSONResponse({"ok": False, "error": "Image upload failed."}, status_code=400)
+    current_user.avatar_path = upload["url"]
     db.commit()
-    return JSONResponse({"ok": True, "avatar_path": filename})
+    return JSONResponse({"ok": True, "avatar_path": upload["url"]})
 
 
 @app.post("/api/profile/banner")
@@ -1393,18 +1389,14 @@ async def api_upload_banner(
     current_user: User = Depends(get_current_user),
     db:           Session = Depends(get_db)
 ):
-    import uuid, aiofiles
-    from pathlib import Path
-    ext = Path(media.filename).suffix.lower()
-    if ext not in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
-        return JSONResponse({"ok": False, "error": "Image files only."}, status_code=400)
-    filename = f"banner_{current_user.id}_{uuid.uuid4().hex[:8]}{ext}"
-    path = config.media_dir / filename
-    async with aiofiles.open(path, "wb") as f:
-        await f.write(await media.read())
-    current_user.banner_path = filename
+    from commons.media_upload import upload_image
+    file_bytes = await media.read()
+    upload = upload_image(file_bytes, folder="banners")
+    if not upload["ok"]:
+        return JSONResponse({"ok": False, "error": "Image upload failed."}, status_code=400)
+    current_user.banner_path = upload["url"]
     db.commit()
-    return JSONResponse({"ok": True, "banner_path": filename})
+    return JSONResponse({"ok": True, "banner_path": upload["url"]})
 
 
 @app.delete("/api/users/{user_id}")
@@ -1865,10 +1857,19 @@ async def api_list_product(
     name:        str   = Form(...),
     description: str   = Form(default=""),
     price:       float = Form(...),
+    media:       UploadFile = File(default=None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    result = commerce.create_product(db, current_user, name, description, price)
+    media_url = ""
+    if media and media.filename:
+        from commons.media_upload import upload_image
+        file_bytes = await media.read()
+        upload = upload_image(file_bytes, folder="marketplace")
+        if upload["ok"]:
+            media_url = upload["url"]
+
+    result = commerce.create_product(db, current_user, name, description, price, media_url)
     if not result["ok"]:
         return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
     return JSONResponse({"ok": True, "product_id": result["product"].id})

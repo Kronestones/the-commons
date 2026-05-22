@@ -104,7 +104,7 @@ function renderGrid(products) {
   grid.innerHTML = products.map(p => `
     <a class="listing-card" onclick="viewProduct(${p.id}); return false;" href="#">
       <div class="listing-img">
-        ${p.media_path ? `<img src="/media/${p.media_path}" alt="${p.name}">` : '<span class="listing-img-placeholder">🛍️</span>'}
+        ${p.media_path ? `<img src="${p.media_path.startsWith('http') ? p.media_path : '/media/' + p.media_path}" alt="${p.name}">` : '<span class="listing-img-placeholder">🛍️</span>'}
       </div>
       <div class="listing-body">
         <div class="listing-price">${p.price === 0 ? 'Free' : '$' + p.price.toFixed(2)}</div>
@@ -121,7 +121,7 @@ async function viewProduct(id) {
   const p    = await res.json();
   document.getElementById('modal-body').innerHTML = `
     <div style="padding:20px;">
-      ${p.media_path ? `<img src="/media/${p.media_path}" style="width:100%;max-height:300px;object-fit:cover;border-radius:8px;margin-bottom:16px;">` : ''}
+      ${p.media_path ? `<img src="${p.media_path.startsWith('http') ? p.media_path : '/media/' + p.media_path}" style="width:100%;max-height:300px;object-fit:cover;border-radius:8px;margin-bottom:16px;">` : ''}
       <h2 style="color:#1a4a2e;margin:0 0 4px;">${p.name}</h2>
       <div style="font-size:1.4rem;font-weight:700;color:#1a4a2e;margin-bottom:8px;">$${p.price.toFixed(2)}</div>
       <p style="color:#888;margin-bottom:12px;">Sold by @${p.seller}</p>

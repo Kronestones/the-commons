@@ -27,7 +27,10 @@ class Config:
         self.fingerprint_on   = os.getenv("FINGERPRINT_ENABLED", "true").lower() == "true"
         self.transaction_fee  = float(os.getenv("TRANSACTION_FEE", 1.00))
         self.min_circle_size  = int(os.getenv("MIN_CIRCLE_SIZE", 3))
-        self.resend_api_key   = os.getenv("RESEND_API_KEY", "")
+        self.resend_api_key      = os.getenv("RESEND_API_KEY", "")
+        self.cloudinary_cloud    = os.getenv("CLOUDINARY_CLOUD_NAME", "")
+        self.cloudinary_api_key  = os.getenv("CLOUDINARY_API_KEY", "")
+        self.cloudinary_api_secret = os.getenv("CLOUDINARY_API_SECRET", "")
         self.team_email       = os.getenv("TEAM_EMAIL", "")
         self.founder_email    = os.getenv("FOUNDER_EMAIL", "")
         self.base_url         = os.getenv("BASE_URL", "https://the-commons.onrender.com")
