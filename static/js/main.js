@@ -431,3 +431,17 @@ if (getToken()) {
   updateMessageBadge();
   setInterval(updateMessageBadge, 30000);
 }
+
+// ── Feed Info Card ────────────────────────────────────────────────────────────
+function dismissFeedInfo() {
+  const card = document.getElementById('feed-info-card');
+  if (card) card.style.display = 'none';
+  localStorage.setItem('feedInfoDismissed', 'true');
+}
+
+(function() {
+  if (localStorage.getItem('feedInfoDismissed')) {
+    const card = document.getElementById('feed-info-card');
+    if (card) card.style.display = 'none';
+  }
+})();
