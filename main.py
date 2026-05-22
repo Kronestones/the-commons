@@ -341,6 +341,29 @@ async def api_create_post(
         )
     })
 
+@app.get("/debug/token", response_class=HTMLResponse)
+async def debug_token(request: Request):
+    return HTMLResponse("""
+<html><body>
+<h2>Token Debug</h2>
+<p id="token"></p>
+<p id="username"></p>
+<p id="status"></p>
+<script>
+  const t = localStorage.getItem('token');
+  const u = localStorage.getItem('username');
+  document.getElementById('token').textContent = 'Token: ' + (t ? t.substring(0,50)+'...' : 'NONE');
+  document.getElementById('username').textContent = 'Username: ' + (u || 'NONE');
+  if(t) {
+    fetch('/api/test-auth', {headers:{'Authorization':'Bearer '+t}})
+      .then(r=>r.json())
+      .then(d=>document.getElementById('status').textContent = 'Server says: ' + JSON.stringify(d))
+      .catch(e=>document.getElementById('status').textContent = 'Error: ' + e);
+  }
+</script>
+</body></html>
+""")
+
 @app.get("/api/test-auth")
 async def test_auth(current_user: User = Depends(get_current_user)):
     return JSONResponse({"ok": True, "user": current_user.username, "role": current_user.role.value})
