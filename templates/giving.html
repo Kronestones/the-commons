@@ -23,10 +23,10 @@
   </div>
 
   <div class="blessing-how">
-    <p>To nominate yourself or someone you know, post on the feed with <strong>#blessing</strong> and describe the genuine need. The community votes with ❤️. The post with the most hearts at the end of the month receives The Blessing. The team verifies need before payment.</p>
+    <p>To nominate yourself or someone you know, post on the feed with <strong>#needblessing</strong> and describe the genuine need. The community votes with ❤️. The post with the most hearts at the end of the month receives The Blessing. The team verifies need before payment.</p>
   </div>
 
-  <!-- Live #blessing nominations -->
+  <!-- Live #needblessing nominations -->
   <div id="blessing-nominations">
     <p class="empty-feed">Loading nominations...</p>
   </div>
@@ -162,7 +162,7 @@ async function loadBlessingFeed() {
   const data = await res.json();
   const el   = document.getElementById('blessing-nominations');
   if (!data.posts || data.posts.length === 0) {
-    el.innerHTML = '<p class="empty-feed">No #blessing posts yet this month. Be the first to share a need.</p>';
+    el.innerHTML = '<p class="empty-feed">No #needblessing posts yet this month. Be the first to share a need.</p>';
     return;
   }
   el.innerHTML = data.posts.map(p => `

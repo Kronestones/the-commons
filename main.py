@@ -855,7 +855,7 @@ async def api_blessing_feed(db: Session = Depends(get_db)):
         db.query(Post)
         .filter(
             Post.status == PostStatus.PUBLISHED,
-            Post.content.ilike('%#blessing%')
+            Post.content.ilike('%#needblessing%')
         )
         .order_by(Post.community_score.desc())
         .limit(50)
