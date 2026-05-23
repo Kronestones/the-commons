@@ -240,11 +240,10 @@ class ProfileManager:
             is_blocked   = block_manager.is_blocked(db, viewer.id, user.id)
 
         # Creator stats
-        total_likes  = sum(
-            db.query(func.count()).select_from(__import__('commons.social',
-                fromlist=['Like']).Like).filter_by(post_id=p.id).scalar() or 0
-            for p in posts
-        )
+        from commons.database import CommunityVote
+        total_likes = db.query(func.count(CommunityVote.id)).filter(
+            CommunityVote.post_id.in_([p.id for p in posts])
+        ).scalar() or 0
 
         return {
             "id":              user.id,
