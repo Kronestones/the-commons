@@ -2175,3 +2175,46 @@ async def api_sovereign_remove_user(
     user.is_active = False
     db.commit()
     return JSONResponse({"ok": True, "message": f"@{user.username} has been removed."})
+
+
+# ── Sovereign Team Messaging ──────────────────────────────────────────────────
+
+@app.post("/api/sovereign/message/{member}")
+async def api_sovereign_message(
+    member:  str,
+    request: Request,
+    content: str = Form(...),
+    db:      Session = Depends(get_db)
+):
+    from commons.auth import decode_token
+    token = request.cookies.get("token", "")
+    if not token:
+        raise HTTPException(403, "Not authorized.")
+    payload = decode_token(token)
+    if not payload:
+        raise HTTPException(403, "Not authorized.")
+    sovereign = db.query(User).filter(User.id == int(payload["sub"])).first()
+    if not sovereign or sovereign.role.value.upper() != "SOVEREIGN":
+        raise HTTPException(403, "Sovereign access only.")
+    from commons.team_messaging import send_sovereign_message
+    return JSONResponse(send_sovereign_message(db, member, content))
+
+
+@app.get("/api/sovereign/message/{member}")
+async def api_sovereign_conversation(
+    member:  str,
+    request: Request,
+    db:      Session = Depends(get_db)
+):
+    from commons.auth import decode_token
+    token = request.cookies.get("token", "")
+    if not token:
+        raise HTTPException(403, "Not authorized.")
+    payload = decode_token(token)
+    if not payload:
+        raise HTTPException(403, "Not authorized.")
+    sovereign = db.query(User).filter(User.id == int(payload["sub"])).first()
+    if not sovereign or sovereign.role.value.upper() != "SOVEREIGN":
+        raise HTTPException(403, "Sovereign access only.")
+    from commons.team_messaging import get_conversation
+    return JSONResponse({"ok": True, "messages": get_conversation(db, member)})

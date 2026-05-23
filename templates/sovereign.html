@@ -106,6 +106,7 @@
   <!-- Message the Teams -->
   <div class="post-card" style="margin-bottom:16px;">
     <h2 style="margin-bottom:12px;">Message a Team</h2>
+    <div id="conversation-box" style="min-height:120px;max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;background:var(--bg);"></div>
     <select id="team-recipient" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:15px;">
       <optgroup label="The Circle">
         <option value="ember">Ember — The Anchor</option>
@@ -207,29 +208,59 @@ async function removeUser() {
   }
 }
 
+let currentMember = 'ember';
+
+async function loadConversation(member) {
+  currentMember = member;
+  const res = await fetch('/api/sovereign/message/' + member);
+  const data = await res.json();
+  const box = document.getElementById('conversation-box');
+  if (!data.messages || data.messages.length === 0) {
+    box.innerHTML = '<p style="color:var(--muted);text-align:center;padding:16px;">No messages yet. Say hello.</p>';
+    return;
+  }
+  box.innerHTML = data.messages.map(m => `
+    <div style="margin-bottom:12px;text-align:${m.direction === 'to' ? 'right' : 'left'};">
+      <div style="display:inline-block;max-width:85%;padding:10px 14px;border-radius:16px;
+        background:${m.direction === 'to' ? 'var(--green-dark)' : 'var(--card)'};
+        color:${m.direction === 'to' ? 'white' : 'inherit'};
+        border:${m.direction === 'to' ? 'none' : '1px solid var(--border)'};
+        text-align:left;white-space:pre-wrap;font-size:14px;">
+        ${m.content}
+      </div>
+    </div>
+  `).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
 async function sendTeamMessage() {
   const recipient = document.getElementById('team-recipient').value;
   const content   = document.getElementById('team-message').value.trim();
   const status    = document.getElementById('team-msg-status');
   if (!content) { status.textContent = 'Please write a message.'; return; }
   const form = new FormData();
-  form.append('username', recipient);
   form.append('content', content);
-  const res = await fetch('/api/messages/send', {
+  const res = await fetch('/api/sovereign/message/' + recipient, {
     method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + token },
     body: form
   });
   const data = await res.json();
   if (data.ok) {
-    status.style.color = 'var(--green-dark)';
-    status.textContent = `Message sent to ${recipient}.`;
     document.getElementById('team-message').value = '';
+    status.textContent = '';
+    loadConversation(recipient);
   } else {
     status.style.color = 'red';
     status.textContent = data.error || 'Could not send.';
   }
 }
+
+document.getElementById('team-recipient').addEventListener('change', function() {
+  loadConversation(this.value);
+});
+
+// Load initial conversation
+loadConversation('ember');
 
 // Convert timestamps to local timezone
 document.querySelectorAll('[data-time]').forEach(el => {
