@@ -40,7 +40,7 @@
   <div class="feed" id="feed">
     {% if posts %}
       {% for post in posts %}
-      <div class="post-card">
+      <div class="post-card" data-post-id="{{ post.id }}" id="post-{{ post.id }}">
         <div class="post-header">
           <span class="post-author">@{{ post.author.username if post.author else 'unknown' }}</span>
           <span class="post-time" data-time="{{ post.published_at.isoformat() if post.published_at else '' }}"></span>

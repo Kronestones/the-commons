@@ -120,6 +120,8 @@ async function loadMorePosts() {
     data.feed.forEach(post => {
       const card = document.createElement('div');
       card.className = 'post-card';
+      card.setAttribute('data-post-id', post.id);
+      card.id = 'post-' + post.id;
       card.innerHTML = `
         <div class="post-header">
           <span class="post-author">@${post.author}</span>
@@ -130,6 +132,7 @@ async function loadMorePosts() {
         <div class="post-actions">
           <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}">${post.user_voted ? '❤️' : '🤍'}</button>
           <span class="community-score">${Math.round(post.community_score)}</span>
+          <button onclick="toggleComments(${post.id})" class="vote-btn" style="background:none;color:var(--muted);font-size:13px;padding:4px 8px;">💬 Comment</button>
           ${post.author === getUsername() ? `<button onclick="deletePost(${post.id}, this)" class="delete-btn">Delete</button>` : ''}
         </div>
       `;
@@ -450,3 +453,95 @@ function dismissFeedInfo() {
     if (card) card.style.display = 'none';
   }
 })();
+
+// ── Comments ──────────────────────────────────────────────────────────────────
+async function toggleComments(postId) {
+  const existing = document.getElementById('comments-' + postId);
+  if (existing) { existing.remove(); return; }
+
+  const card = document.querySelector(`[data-post-id="${postId}"]`) ||
+    document.getElementById('post-' + postId);
+  if (!card) return;
+
+  const box = document.createElement('div');
+  box.id = 'comments-' + postId;
+  box.style.cssText = 'border-top:1px solid var(--border);margin-top:10px;padding-top:10px;';
+  box.innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading...</p>';
+  card.appendChild(box);
+
+  await loadComments(postId);
+}
+
+async function loadComments(postId) {
+  const token = getToken();
+  const box = document.getElementById('comments-' + postId);
+  if (!box) return;
+
+  const res = await fetch('/api/posts/' + postId + '/comments', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  const comments = data.comments || [];
+  const username = getUsername();
+
+  let html = '';
+  if (comments.length) {
+    html += comments.map(c => `
+      <div style="padding:8px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <strong style="font-size:13px;">@${c.author}</strong>
+          <span style="font-size:11px;color:var(--muted);">${formatTime(c.created_at)}</span>
+        </div>
+        <p style="margin:4px 0;font-size:14px;">${c.content}</p>
+        ${c.author === username ? `<button onclick="deleteComment(${c.id}, ${postId})" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:0;">Delete</button>` : ''}
+      </div>
+    `).join('');
+  } else {
+    html += '<p style="color:var(--muted);font-size:13px;text-align:center;padding:8px 0;">No comments yet. Be the first.</p>';
+  }
+
+  html += `
+    <div style="margin-top:10px;display:flex;gap:8px;">
+      <input id="comment-input-${postId}" type="text" placeholder="Write a comment..."
+        style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:20px;font-size:14px;"
+        onkeydown="if(event.key==='Enter'){submitComment(${postId})}">
+      <button onclick="submitComment(${postId})" class="vote-btn" style="padding:8px 14px;font-size:13px;">Post</button>
+    </div>
+  `;
+
+  box.innerHTML = html;
+}
+
+async function submitComment(postId) {
+  const token = getToken();
+  const input = document.getElementById('comment-input-' + postId);
+  const content = input.value.trim();
+  if (!content) return;
+  const form = new FormData();
+  form.append('content', content);
+  const res = await fetch('/api/posts/' + postId + '/comments', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.ok) {
+    input.value = '';
+    loadComments(postId);
+  } else {
+    showMessage(data.error || 'Could not post comment.', true);
+  }
+}
+
+async function deleteComment(commentId, postId) {
+  if (!confirm('Delete this comment?')) return;
+  const token = getToken();
+  const form = new FormData();
+  const res = await fetch('/api/comments/' + commentId, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.ok) loadComments(postId);
+}
