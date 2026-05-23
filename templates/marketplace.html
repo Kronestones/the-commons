@@ -190,13 +190,22 @@ async function listProduct() {
 
 async function deleteProduct(id, btn) {
   if (!confirm('Remove this listing?')) return;
-  const res  = await fetch('/api/marketplace/products/' + id, {
-    method: 'DELETE',
-    headers: { 'Authorization': 'Bearer ' + token }
-  });
-  const data = await res.json();
-  if (data.ok) btn.closest('.listing-card').remove();
-  else alert(data.error || 'Could not remove listing.');
+  try {
+    const res  = await fetch('/api/marketplace/products/' + id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { alert('Server error: ' + text.substring(0,100)); return; }
+    if (data.ok) {
+      btn.closest('.listing-card').remove();
+    } else {
+      alert('Error ' + res.status + ': ' + (data.error || data.detail || 'Could not remove listing.'));
+    }
+  } catch(e) {
+    alert('Network error: ' + e.message);
+  }
 }
 
 loadMarketplace();
