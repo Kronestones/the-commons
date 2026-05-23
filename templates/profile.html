@@ -56,7 +56,9 @@
 {% block scripts %}
 <script>
 const PAGE_USERNAME = {{ username | tojson }};
-document.getElementById('profile-posts').innerHTML = '<p style="padding:20px;color:green;">Script running, user: ' + PAGE_USERNAME + ', token: ' + (localStorage.getItem('token') ? 'yes' : 'NO TOKEN') + '</p>';
+window.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('profile-posts').innerHTML = '<p style="padding:20px;color:green;">Script running, user: ' + PAGE_USERNAME + ', token: ' + (localStorage.getItem('token') ? 'yes' : 'NO TOKEN') + '</p>';
+});
 let PROFILE_USER_ID = null;
 const currentUsername = localStorage.getItem('username') || '';
 const isOwn = currentUsername === PAGE_USERNAME;
