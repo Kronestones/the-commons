@@ -252,6 +252,15 @@ async function deletePost(postId, btn) {
   else showMessage(data.error || 'Could not delete post.', true);
 }
 
-setTimeout(loadProfile, 150);
+// Wait for auth guard to complete before loading profile
+function initProfile() {
+  const token = getProfileToken();
+  if (!token) {
+    setTimeout(initProfile, 200);
+    return;
+  }
+  loadProfile();
+}
+setTimeout(initProfile, 200);
 </script>
 {% endblock %}
