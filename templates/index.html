@@ -89,12 +89,13 @@ function runSearch(q) {
     });
     const data = await res.json();
     if (!data.ok) return;
+    const r = data.results || data;
 
     let html = '';
 
-    if (data.users && data.users.length) {
+    if (r.users && r.users.length) {
       html += '<div style="padding:8px 12px;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;">People</div>';
-      html += data.users.map(u => `
+      html += r.users.map(u => `
         <a href="/profile/${u.username}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;text-decoration:none;color:inherit;border-bottom:1px solid var(--border);">
           <div style="width:36px;height:36px;border-radius:50%;background:var(--green-mid);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;flex-shrink:0;">
             ${u.username[0].toUpperCase()}
@@ -107,9 +108,9 @@ function runSearch(q) {
       `).join('');
     }
 
-    if (data.posts && data.posts.length) {
+    if (r.posts && r.posts.length) {
       html += '<div style="padding:8px 12px;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;">Posts</div>';
-      html += data.posts.map(p => `
+      html += r.posts.map(p => `
         <div style="padding:10px 14px;border-bottom:1px solid var(--border);">
           <div style="font-size:12px;color:var(--muted);">@${p.author}</div>
           <div style="font-size:14px;">${p.content}</div>
