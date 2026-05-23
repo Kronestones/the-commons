@@ -128,7 +128,7 @@ async function loadMorePosts() {
           <span class="post-time">${formatTime(post.published_at)}</span>
         </div>
         ${post.reason ? `<p class="post-reason">${post.reason}</p>` : ''}
-        <div class="post-content">${escapeHtml(post.content)}</div>
+        <div class="post-content">${linkify(post.content)}</div>
         <div class="post-actions">
           <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}">${post.user_voted ? '❤️' : '🤍'}</button>
           <span class="community-score">${Math.round(post.community_score)}</span>
@@ -544,4 +544,10 @@ async function deleteComment(commentId, postId) {
   });
   const data = await res.json();
   if (data.ok) loadComments(postId);
+}
+
+// ── Linkify ───────────────────────────────────────────────────────────────────
+function linkify(text) {
+  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g;
+  return escapeHtml(text).replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--green-dark);word-break:break-all;">$1</a>');
 }
