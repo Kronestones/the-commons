@@ -56,9 +56,7 @@
 {% block scripts %}
 <script>
 const PAGE_USERNAME = {{ username | tojson }};
-window.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('profile-posts').innerHTML = '<p style="padding:20px;color:green;">Script running, user: ' + PAGE_USERNAME + ', token: ' + (localStorage.getItem('token') ? 'yes' : 'NO TOKEN') + '</p>';
-});
+
 let PROFILE_USER_ID = null;
 const currentUsername = localStorage.getItem('username') || '';
 const isOwn = currentUsername === PAGE_USERNAME;
@@ -262,15 +260,7 @@ async function deletePost(postId, btn) {
   else showMessage(data.error || 'Could not delete post.', true);
 }
 
-// Wait for auth guard to complete before loading profile
-function initProfile() {
-  const token = getProfileToken();
-  if (!token) {
-    setTimeout(initProfile, 200);
-    return;
-  }
-  loadProfile();
-}
-setTimeout(initProfile, 200);
+// Load profile after short delay
+setTimeout(loadProfile, 500);
 </script>
 {% endblock %}
