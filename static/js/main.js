@@ -388,9 +388,14 @@ const LANDING_PAGE = '/register';
     const path = window.location.pathname;
     const isPublic = PUBLIC_PATHS.some(p => path === p || path.startsWith(p + '/'));
     if (!isPublic && !getToken()) {
+      document.body.style.visibility = 'hidden';
       window.location.href = '/login';
+    } else {
+      document.body.style.visibility = 'visible';
     }
-  } catch(e) {}
+  } catch(e) {
+    document.body.style.visibility = 'visible';
+  }
 })();
 
 // ── Mobile Nav ────────────────────────────────────────────────────────────────
