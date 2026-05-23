@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 from typing import Optional, List
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, Float, func, desc
 from sqlalchemy.orm import Session, relationship
-from .database import Base, Post, User, PostStatus
+from .database import Base, Post, User, PostStatus, CommunityVote
 
 
 # ── Models ────────────────────────────────────────────────────────────────────
@@ -240,7 +240,6 @@ class ProfileManager:
             is_blocked   = block_manager.is_blocked(db, viewer.id, user.id)
 
         # Creator stats
-        from commons.database import CommunityVote
         total_likes = db.query(func.count(CommunityVote.id)).filter(
             CommunityVote.post_id.in_([p.id for p in posts])
         ).scalar() or 0
