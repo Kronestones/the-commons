@@ -63,8 +63,12 @@ let PROFILE_USER_ID = null;
 const currentUsername = localStorage.getItem('username') || '';
 const isOwn = currentUsername === PAGE_USERNAME;
 
+function getCookieVal(name) {
+  const v = document.cookie.match('(^|;)\s*' + name + '\s*=\s*([^;]+)');
+  return v ? v.pop() : '';
+}
 function getProfileToken() {
-  try { return localStorage.getItem('token') || ''; } catch(e) { return ''; }
+  try { return getCookieVal('token') || localStorage.getItem('token') || ''; } catch(e) { return ''; }
 }
 
 async function uploadAvatar(input) {

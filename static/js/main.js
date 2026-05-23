@@ -10,7 +10,13 @@
 
 // ── Auth State ────────────────────────────────────────────────────────────────
 
-function getToken()    { return localStorage.getItem('token'); }
+function getCookie(name) {
+  const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+function getToken() {
+  return getCookie('token') || localStorage.getItem('token') || '';
+}
 function getUsername() { return localStorage.getItem('username'); }
 function isLoggedIn()  { return !!getToken(); }
 
