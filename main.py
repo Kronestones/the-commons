@@ -39,7 +39,7 @@ if args.version:
 # ── Imports ───────────────────────────────────────────────────────────────────
 
 from commons.config   import config
-from commons.database import init_db, get_db, User, Post, PostStatus
+from commons.database import init_db, get_db, User, Post, PostStatus, Product
 from commons.codex    import TheCommonsCodex
 from commons.auth     import (register_user, login_user, get_current_user,
                                get_current_user_optional, create_token)
