@@ -326,3 +326,23 @@ function togglePassword(inputId, btn) {
     btn.textContent = 'Show';
   }
 }
+
+// ── Delete Post ───────────────────────────────────────────────────────────────
+
+async function deletePost(postId, btn) {
+  if (!confirm('Delete this post? This cannot be undone.')) return;
+  const token = getToken();
+  if (!token) { window.location = '/login'; return; }
+  const res = await fetch('/api/posts/' + postId, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  if (data.ok) {
+    const card = btn.closest('.post-card');
+    if (card) card.remove();
+    showMessage('Post deleted.');
+  } else {
+    showMessage(data.error || 'Could not delete post.', true);
+  }
+}
