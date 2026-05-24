@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from .database import get_db, User, UserRole
@@ -141,9 +141,13 @@ def get_current_user(token: str = Depends(oauth2_scheme),
         raise HTTPException(status_code=401, detail="User not found or inactive.")
     return user
 
-def get_current_user_optional(token: str = Depends(oauth2_scheme),
+def get_current_user_optional(request: Request,
                                db: Session = Depends(get_db)) -> Optional[User]:
     try:
+        auth = request.headers.get("Authorization", "")
+        if not auth.startswith("Bearer "):
+            return None
+        token = auth[7:]
         return get_current_user(token, db)
     except Exception:
         return None
