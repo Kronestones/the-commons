@@ -1937,6 +1937,8 @@ async def api_delete_post(
         return JSONResponse({"ok": False, "error": "Post not found."}, status_code=404)
     if post.author_id != current_user.id and current_user.role.value not in ("circle", "sovereign"):
         return JSONResponse({"ok": False, "error": "Not your post."}, status_code=403)
+    from commons.database import CommunityVote
+    db.query(CommunityVote).filter(CommunityVote.post_id == post_id).delete()
     db.delete(post)
     db.commit()
     return JSONResponse({"ok": True})
