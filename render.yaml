@@ -12,7 +12,7 @@ services:
       - key: DEBUG
         value: false
       - key: DATABASE_URL
-        sync: false
+        value: sqlite:///./the_commons.db
       - key: FINGERPRINT_ENABLED
         value: true
       - key: TRANSACTION_FEE

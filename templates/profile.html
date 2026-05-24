@@ -56,11 +56,17 @@
 {% block scripts %}
 <script>
 const PAGE_USERNAME = {{ username | tojson }};
+
+let PROFILE_USER_ID = null;
 const currentUsername = localStorage.getItem('username') || '';
 const isOwn = currentUsername === PAGE_USERNAME;
 
+function getCookieVal(name) {
+  const v = document.cookie.match('(^|;)\s*' + name + '\s*=\s*([^;]+)');
+  return v ? v.pop() : '';
+}
 function getProfileToken() {
-  try { return localStorage.getItem('token') || ''; } catch(e) { return ''; }
+  try { return getCookieVal('token') || localStorage.getItem('token') || ''; } catch(e) { return ''; }
 }
 
 async function uploadAvatar(input) {
@@ -95,8 +101,11 @@ async function loadProfile() {
     return;
   }
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     const res = await fetch('/api/users/' + PAGE_USERNAME + '/profile', {
-      headers: { 'Authorization': 'Bearer ' + token }
+      headers: { 'Authorization': 'Bearer ' + token },
+      signal: controller.signal
     });
     if (res.status === 401) {
       localStorage.removeItem('token');
@@ -110,15 +119,16 @@ async function loadProfile() {
       return;
     }
     const p = data.profile;
+    PROFILE_USER_ID = p.id;
     const avatarEl = document.getElementById('profile-avatar');
     if (p.avatar_path) {
-      avatarEl.innerHTML = '<img src="/media/' + p.avatar_path + '" style="width:100%;height:100%;object-fit:cover;">';
+      avatarEl.innerHTML = '<img src="' + (p.avatar_path.startsWith('http') ? p.avatar_path : '/media/' + p.avatar_path) + '" style="width:100%;height:100%;object-fit:cover;">';
     } else {
       avatarEl.textContent = p.username[0].toUpperCase();
     }
     if (p.banner_path) {
       const bannerImg = document.getElementById('banner-img');
-      bannerImg.src = '/media/' + p.banner_path;
+      bannerImg.src = p.banner_path.startsWith('http') ? p.banner_path : '/media/' + p.banner_path;
       bannerImg.style.display = '';
     }
     if (isOwn) {
@@ -127,7 +137,7 @@ async function loadProfile() {
       avatarUpload.style.display = 'flex';
     }
     document.getElementById('profile-username').textContent = '@' + p.username;
-    if (p.display_name) {
+    if (p.display_name && p.display_name !== p.username) {
       const dn = document.getElementById('profile-displayname');
       dn.textContent = p.display_name;
       dn.style.display = '';
@@ -147,7 +157,11 @@ async function loadProfile() {
       document.getElementById('profile-composer').style.display = '';
       actionsEl.innerHTML = '<a href="/profile/edit" class="btn-primary">Edit Profile</a>';
     } else if (token) {
-      actionsEl.innerHTML = '<button onclick="toggleFollow()" class="btn-primary">' + (p.is_following ? 'Unfollow' : 'Follow') + '</button>';
+      const isBlocked = p.is_blocked || false;
+      actionsEl.innerHTML =
+        '<button onclick="toggleFollow()" class="btn-primary" id="follow-btn">' + (p.is_following ? 'Unfollow' : 'Follow') + '</button> ' +
+        '<button onclick="toggleBlock()" class="delete-btn" id="block-btn" style="font-size:13px;padding:8px 14px;">' + (isBlocked ? 'Unblock' : 'Block') + '</button> ' +
+        '<button onclick="sendMessage()" class="btn-primary" style="font-size:13px;padding:8px 14px;background:var(--green-mid);">Message</button>';
     }
     if (!p.posts || p.posts.length === 0) {
       postsEl.innerHTML = '<p class="empty-feed">No posts yet.</p>';
@@ -161,9 +175,9 @@ async function loadProfile() {
         </div>
         <div class="post-content">${post.content}</div>
         <div class="post-actions">
-          <button onclick="vote(${post.id}, 1)" class="vote-btn">❤️</button>
+          <button onclick="vote(${post.id}, 1, this)" class="vote-btn">🤍</button>
           <span class="community-score">${Math.round(post.community_score)}</span>
-          ${isOwn ? `<button onclick="deletePost(${post.id}, this)" class="delete-btn">Delete</button>` : ''}
+          ${isOwn ? '<button onclick="deletePost(' + post.id + ', this)" class="delete-btn">Delete</button>' : ''}
         </div>
       </div>
     `).join('');
@@ -216,11 +230,24 @@ async function submitPost() {
 }
 
 async function toggleFollow() {
-  const res = await fetch('/api/users/' + PAGE_USERNAME + '/follow', {
+  const res = await fetch('/api/users/' + PROFILE_USER_ID + '/follow', {
     method: 'POST', headers: { 'Authorization': 'Bearer ' + getProfileToken() }
   });
   const data = await res.json();
   if (data.ok) loadProfile();
+}
+
+async function toggleBlock() {
+  if (!confirm('Are you sure?')) return;
+  const res = await fetch('/api/users/' + PROFILE_USER_ID + '/block', {
+    method: 'POST', headers: { 'Authorization': 'Bearer ' + getProfileToken() }
+  });
+  const data = await res.json();
+  if (data.ok) loadProfile();
+}
+
+async function sendMessage() {
+  window.location.href = '/messages?to=' + PAGE_USERNAME;
 }
 
 async function deletePost(postId, btn) {
@@ -233,6 +260,7 @@ async function deletePost(postId, btn) {
   else showMessage(data.error || 'Could not delete post.', true);
 }
 
-setTimeout(loadProfile, 150);
+// Load profile after short delay
+setTimeout(loadProfile, 500);
 </script>
 {% endblock %}
