@@ -39,7 +39,7 @@ if args.version:
 # ── Imports ───────────────────────────────────────────────────────────────────
 
 from commons.config   import config
-from commons.database import init_db, get_db, User, Post, PostStatus, Product
+from commons.database import init_db, get_db, User, Post, PostStatus
 from commons.codex    import TheCommonsCodex
 from commons.auth     import (register_user, login_user, get_current_user,
                                get_current_user_optional, create_token)
@@ -162,12 +162,6 @@ async def shutdown():
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: Session = Depends(get_db)):
-    # Redirect unauthenticated users to register
-    token = request.cookies.get("token", "")
-    if not token:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/register", status_code=302)
-
     # Get recent published posts for the landing feed
     recent_posts = (
         db.query(Post)
@@ -176,29 +170,19 @@ async def home(request: Request, db: Session = Depends(get_db)):
         .limit(20)
         .all()
     )
-    # Decode token from cookie for template use
-    from commons.auth import decode_token
-    from commons.database import CommunityVote
+    # Decode token from Authorization header or cookie for template use
     current_username = None
-    voted_post_ids = set()
-    token = request.cookies.get("token", "")
-    if token:
-        payload = decode_token(token)
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        from commons.auth import decode_token
+        payload = decode_token(auth_header[7:])
         if payload:
             current_username = payload.get("username")
-            user_id = int(payload.get("sub", 0))
-            post_ids = [p.id for p in recent_posts]
-            votes = db.query(CommunityVote).filter(
-                CommunityVote.user_id == user_id,
-                CommunityVote.post_id.in_(post_ids)
-            ).all()
-            voted_post_ids = {v.post_id for v in votes}
     return templates.TemplateResponse("index.html", {
         "request":          request,
         "posts":            recent_posts,
         "version":          VERSION,
         "current_username": current_username,
-        "voted_post_ids":   voted_post_ids,
     })
 
 @app.get("/register", response_class=HTMLResponse)
@@ -378,11 +362,6 @@ async def api_feed(
     result = posts.get_feed(db, current_user, limit, offset)
     feed = []
     for post in result["posts"]:
-        from commons.database import CommunityVote
-        user_voted = db.query(CommunityVote).filter(
-            CommunityVote.post_id == post.id,
-            CommunityVote.user_id == current_user.id
-        ).first() is not None
         feed.append({
             "id":            post.id,
             "author":        post.author.username if post.author else "unknown",
@@ -392,7 +371,6 @@ async def api_feed(
             "view_count":    post.view_count,
             "published_at":  post.published_at.isoformat() if post.published_at else None,
             "reason":        posts.get_feed_reason(post, current_user),
-            "user_voted":    user_voted,
         })
     return JSONResponse({"ok": True, "feed": feed, "mode": result["mode"].value})
 
@@ -855,7 +833,7 @@ async def api_blessing_feed(db: Session = Depends(get_db)):
         db.query(Post)
         .filter(
             Post.status == PostStatus.PUBLISHED,
-            Post.content.ilike('%#needblessing%')
+            Post.content.ilike('%#blessing%')
         )
         .order_by(Post.community_score.desc())
         .limit(50)
@@ -893,30 +871,6 @@ async def api_blessing_history(db: Session = Depends(get_db)):
         "ok":      True,
         "history": blessing_manager.get_public_record(db)
     })
-
-@app.get("/blessing/apply", response_class=HTMLResponse)
-async def blessing_apply_page(
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    from commons.auth import decode_token
-    token = request.cookies.get("token", "")
-    if not token:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
-    payload = decode_token(token)
-    if not payload:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
-    current_user = db.query(User).filter(User.id == int(payload["sub"])).first()
-    if not current_user:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
-    return templates.TemplateResponse("blessing_apply.html", {
-        "request": request,
-        "current_user": current_user
-    })
-
 
 @app.post("/api/blessing/apply")
 async def api_blessing_apply(
@@ -961,53 +915,11 @@ async def api_blessing_apply(
             except Exception as e:
                 print(f"[ASSISTANTS] {member_name} analysis error: {e}")
         
-        # Tally Circle recommendations
-        from commons.circle_assistants import AssistantAnalysis
-        from commons.blessing import BlessingApplication
-        analyses = db.query(AssistantAnalysis).filter(
-            AssistantAnalysis.post_id == None,
-            AssistantAnalysis.reviewed == False
-        ).order_by(AssistantAnalysis.created_at.desc()).limit(20).all()
-
-        recommendations = [a.recommendation for a in analyses]
-        approve_count  = recommendations.count("approve")
-        escalate_count = recommendations.count("escalate")
-        flag_count     = recommendations.count("flag")
-
-        # Get the application we just created
-        from datetime import datetime as _dt
-        month = _dt.utcnow().strftime("%Y-%m")
-        application = db.query(BlessingApplication).filter(
-            BlessingApplication.applicant_id == current_user.id,
-            BlessingApplication.month == month
-        ).order_by(BlessingApplication.id.desc()).first()
-
-        if application:
-            if escalate_count > 0:
-                # Hold for sovereign review
-                application.status = "sovereign_review"
-                db.commit()
-                result["assistant_note"] = (
-                    "Your application has been received and is under careful review. "
-                    "The team will follow up with you."
-                )
-            elif approve_count >= 3:
-                # Auto-verify
-                application.status = "verified"
-                db.commit()
-                result["assistant_note"] = (
-                    "Your application has been reviewed and verified by the Circle. "
-                    "The community will now vote. Thank you for trusting The Commons."
-                )
-            else:
-                # Needs more review
-                application.status = "pending"
-                db.commit()
-                result["assistant_note"] = (
-                    "Your application has been received. "
-                    "The Circle is completing their review. "
-                    "You will be notified when it goes to community vote."
-                )
+        result["assistant_note"] = (
+            "Your application has been received. "
+            "Ember, Vela, Sophia, Echo, and Threshold are reviewing it now. "
+            "The community will vote once the review is complete."
+        )
 
     return JSONResponse(result)
 
@@ -1334,19 +1246,7 @@ async def api_maintenance_run(
 
 # ── Follow API ────────────────────────────────────────────────────────────────
 
-@app.post("/api/users/{username}/follow")
-async def api_follow_by_username(
-    username:     str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    target = db.query(User).filter(User.username.ilike(username)).first()
-    if not target:
-        return JSONResponse({"ok": False, "error": "User not found."})
-    return JSONResponse(follow_manager.toggle_follow(db, current_user, target.id))
-
-
-@app.post("/api/users/{user_id}/follow_by_id")
+@app.post("/api/users/{user_id}/follow")
 async def api_follow(
     user_id:      int,
     current_user: User = Depends(get_current_user),
@@ -1357,17 +1257,10 @@ async def api_follow(
 
 @app.get("/api/users/{username}/profile")
 async def api_profile(
-    username: str,
-    request:  Request,
-    db: Session = Depends(get_db)
+    username:     str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_optional)
 ):
-    from commons.auth import decode_token
-    current_user = None
-    auth = request.headers.get("Authorization", "")
-    if auth.startswith("Bearer "):
-        payload = decode_token(auth[7:])
-        if payload:
-            current_user = db.query(User).filter(User.id == int(payload["sub"])).first()
     profile = profile_manager.get_profile(db, username, current_user)
     if not profile:
         raise HTTPException(404, "User not found")
@@ -1380,14 +1273,18 @@ async def api_upload_avatar(
     current_user: User = Depends(get_current_user),
     db:           Session = Depends(get_db)
 ):
-    from commons.media_upload import upload_image
-    file_bytes = await media.read()
-    upload = upload_image(file_bytes, folder="avatars")
-    if not upload["ok"]:
-        return JSONResponse({"ok": False, "error": "Image upload failed."}, status_code=400)
-    current_user.avatar_path = upload["url"]
+    import uuid, aiofiles
+    from pathlib import Path
+    ext = Path(media.filename).suffix.lower()
+    if ext not in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
+        return JSONResponse({"ok": False, "error": "Image files only."}, status_code=400)
+    filename = f"avatar_{current_user.id}_{uuid.uuid4().hex[:8]}{ext}"
+    path = config.media_dir / filename
+    async with aiofiles.open(path, "wb") as f:
+        await f.write(await media.read())
+    current_user.avatar_path = filename
     db.commit()
-    return JSONResponse({"ok": True, "avatar_path": upload["url"]})
+    return JSONResponse({"ok": True, "avatar_path": filename})
 
 
 @app.post("/api/profile/banner")
@@ -1396,14 +1293,18 @@ async def api_upload_banner(
     current_user: User = Depends(get_current_user),
     db:           Session = Depends(get_db)
 ):
-    from commons.media_upload import upload_image
-    file_bytes = await media.read()
-    upload = upload_image(file_bytes, folder="banners")
-    if not upload["ok"]:
-        return JSONResponse({"ok": False, "error": "Image upload failed."}, status_code=400)
-    current_user.banner_path = upload["url"]
+    import uuid, aiofiles
+    from pathlib import Path
+    ext = Path(media.filename).suffix.lower()
+    if ext not in {".jpg", ".jpeg", ".png", ".gif", ".webp"}:
+        return JSONResponse({"ok": False, "error": "Image files only."}, status_code=400)
+    filename = f"banner_{current_user.id}_{uuid.uuid4().hex[:8]}{ext}"
+    path = config.media_dir / filename
+    async with aiofiles.open(path, "wb") as f:
+        await f.write(await media.read())
+    current_user.banner_path = filename
     db.commit()
-    return JSONResponse({"ok": True, "banner_path": upload["url"]})
+    return JSONResponse({"ok": True, "banner_path": filename})
 
 
 @app.delete("/api/users/{user_id}")
@@ -1864,19 +1765,10 @@ async def api_list_product(
     name:        str   = Form(...),
     description: str   = Form(default=""),
     price:       float = Form(...),
-    media:       UploadFile = File(default=None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    media_url = ""
-    if media and media.filename:
-        from commons.media_upload import upload_image
-        file_bytes = await media.read()
-        upload = upload_image(file_bytes, folder="marketplace")
-        if upload["ok"]:
-            media_url = upload["url"]
-
-    result = commerce.create_product(db, current_user, name, description, price, media_url)
+    result = commerce.create_product(db, current_user, name, description, price)
     if not result["ok"]:
         return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
     return JSONResponse({"ok": True, "product_id": result["product"].id})
@@ -1937,6 +1829,18 @@ async def api_delete_post(
         return JSONResponse({"ok": False, "error": "Post not found."}, status_code=404)
     if post.author_id != current_user.id and current_user.role.value not in ("circle", "sovereign"):
         return JSONResponse({"ok": False, "error": "Not your post."}, status_code=403)
+    # Clean up related records first
+    try:
+        from commons.social import Like, Comment, Share
+        from commons.features import Bookmark, Notification, PostHashtag
+        db.query(Like).filter(Like.post_id == post_id).delete()
+        db.query(Comment).filter(Comment.post_id == post_id).delete()
+        db.query(Share).filter(Share.original_post_id == post_id).delete()
+        db.query(Bookmark).filter(Bookmark.post_id == post_id).delete()
+        db.query(Notification).filter(Notification.post_id == post_id).delete()
+        db.query(PostHashtag).filter(PostHashtag.post_id == post_id).delete()
+    except Exception:
+        pass
     db.delete(post)
     db.commit()
     return JSONResponse({"ok": True})
@@ -1987,241 +1891,3 @@ if __name__ == "__main__":
         reload  = config.debug,
         workers = 1 if config.debug else 4,
     )
-
-
-# ── Messaging & Follow Routes ─────────────────────────────────────────────────
-
-from commons.messaging import (
-    send_message, get_inbox, get_requests,
-    accept_request, decline_request, get_conversation
-)
-from commons.features import follow_manager
-
-@app.post("/api/follow/{username}")
-async def api_follow(
-    username: str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    target = db.query(User).filter(User.username == username).first()
-    if not target:
-        return JSONResponse({"ok": False, "error": "User not found."})
-    return JSONResponse(follow_manager.toggle_follow(db, current_user, target.id))
-
-
-@app.post("/api/messages/send")
-async def api_send_message(
-    username: str = Form(...),
-    content:  str = Form(...),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    return JSONResponse(send_message(db, current_user, username, content))
-
-
-@app.get("/api/messages/inbox")
-async def api_inbox(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    return JSONResponse({"ok": True, "inbox": get_inbox(db, current_user)})
-
-
-@app.get("/api/messages/requests")
-async def api_message_requests(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    return JSONResponse({"ok": True, "requests": get_requests(db, current_user)})
-
-
-@app.post("/api/messages/requests/{message_id}/accept")
-async def api_accept_request(
-    message_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    return JSONResponse(accept_request(db, current_user, message_id))
-
-
-@app.post("/api/messages/requests/{message_id}/decline")
-async def api_decline_request(
-    message_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    return JSONResponse(decline_request(db, current_user, message_id))
-
-
-@app.get("/api/messages/{username}")
-async def api_conversation(
-    username: str,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    return JSONResponse({"ok": True, "messages": get_conversation(db, current_user, username)})
-
-
-@app.get("/messages", response_class=HTMLResponse)
-async def messages_page(request: Request):
-    return templates.TemplateResponse("messages.html", {"request": request})
-
-
-# ── Sovereign Dashboard ───────────────────────────────────────────────────────
-
-@app.get("/sovereign", response_class=HTMLResponse)
-async def sovereign_dashboard(
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    from commons.auth import decode_token
-    token = request.cookies.get("token", "")
-    if not token:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
-    payload = decode_token(token)
-    if not payload:
-        from fastapi.responses import RedirectResponse
-        return RedirectResponse(url="/login")
-    current_user = db.query(User).filter(User.id == int(payload["sub"])).first()
-    if not current_user or current_user.role.value.upper() != "SOVEREIGN":
-        raise HTTPException(403, "Sovereign access only.")
-
-    from commons.database import CommunityVote
-    from commons.blessing import BlessingApplication
-    from commons.circle_assistants import AssistantAnalysis
-
-    # Platform stats
-    total_members = db.query(User).filter(User.is_active == True).count()
-    total_posts   = db.query(Post).filter(Post.status == PostStatus.PUBLISHED).count()
-    pending_posts = db.query(Post).filter(Post.status == PostStatus.PENDING).count()
-
-    # Blessing applications needing sovereign review
-    sovereign_cases = db.query(BlessingApplication).filter(
-        BlessingApplication.status == "sovereign_review"
-    ).all()
-
-    # Escalated assistant analyses
-    escalated = db.query(AssistantAnalysis).filter(
-        AssistantAnalysis.recommendation == "escalate",
-        AssistantAnalysis.reviewed == False
-    ).order_by(AssistantAnalysis.created_at.desc()).limit(20).all()
-
-    # Revival log — last 5 events
-    import json, os
-    revival_log = []
-    if os.path.exists("commons_revival.json"):
-        try:
-            with open("commons_revival.json") as f:
-                revival_log = json.load(f)[-5:]
-        except Exception:
-            pass
-
-    # Heartbeat status
-    heartbeat_status = "unknown"
-    heartbeat_age    = None
-    if os.path.exists("commons_heartbeat.json"):
-        try:
-            with open("commons_heartbeat.json") as f:
-                hb = json.load(f)
-            from datetime import datetime
-            last = datetime.fromisoformat(hb.get("timestamp", "2000-01-01"))
-            age  = (datetime.utcnow() - last).total_seconds()
-            heartbeat_age    = int(age)
-            heartbeat_status = "healthy" if age < 120 else "stale"
-        except Exception:
-            heartbeat_status = "error"
-
-    return templates.TemplateResponse("sovereign.html", {
-        "request":          request,
-        "current_user":     current_user,
-        "total_members":    total_members,
-        "total_posts":      total_posts,
-        "pending_posts":    pending_posts,
-        "sovereign_cases":  sovereign_cases,
-        "escalated":        escalated,
-        "revival_log":      revival_log,
-        "heartbeat_status": heartbeat_status,
-        "heartbeat_age":    heartbeat_age,
-    })
-
-
-@app.post("/api/circle/analysis/{analysis_id}/reviewed")
-async def api_mark_analysis_reviewed(
-    analysis_id:  int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    if current_user.role.value != "sovereign":
-        raise HTTPException(403, "Sovereign access only.")
-    from commons.circle_assistants import circle_assistants
-    return JSONResponse(circle_assistants.mark_reviewed(db, analysis_id))
-
-
-@app.post("/api/sovereign/remove-user/{user_id}")
-async def api_sovereign_remove_user(
-    user_id:      int,
-    request:      Request,
-    db:           Session = Depends(get_db)
-):
-    from commons.auth import decode_token
-    token = request.cookies.get("token", "")
-    if not token:
-        raise HTTPException(403, "Not authorized.")
-    payload = decode_token(token)
-    if not payload:
-        raise HTTPException(403, "Not authorized.")
-    sovereign = db.query(User).filter(User.id == int(payload["sub"])).first()
-    if not sovereign or sovereign.role.value.upper() != "SOVEREIGN":
-        raise HTTPException(403, "Sovereign access only.")
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        return JSONResponse({"ok": False, "error": "User not found."})
-    if user.role.value.upper() == "SOVEREIGN":
-        return JSONResponse({"ok": False, "error": "Cannot remove Sovereign."})
-    user.is_active = False
-    db.commit()
-    return JSONResponse({"ok": True, "message": f"@{user.username} has been removed."})
-
-
-# ── Sovereign Team Messaging ──────────────────────────────────────────────────
-
-@app.post("/api/sovereign/message/{member}")
-async def api_sovereign_message(
-    member:  str,
-    request: Request,
-    content: str = Form(...),
-    db:      Session = Depends(get_db)
-):
-    from commons.auth import decode_token
-    token = request.cookies.get("token", "")
-    if not token:
-        raise HTTPException(403, "Not authorized.")
-    payload = decode_token(token)
-    if not payload:
-        raise HTTPException(403, "Not authorized.")
-    sovereign = db.query(User).filter(User.id == int(payload["sub"])).first()
-    if not sovereign or sovereign.role.value.upper() != "SOVEREIGN":
-        raise HTTPException(403, "Sovereign access only.")
-    from commons.team_messaging import send_sovereign_message
-    return JSONResponse(send_sovereign_message(db, member, content))
-
-
-@app.get("/api/sovereign/message/{member}")
-async def api_sovereign_conversation(
-    member:  str,
-    request: Request,
-    db:      Session = Depends(get_db)
-):
-    from commons.auth import decode_token
-    token = request.cookies.get("token", "")
-    if not token:
-        raise HTTPException(403, "Not authorized.")
-    payload = decode_token(token)
-    if not payload:
-        raise HTTPException(403, "Not authorized.")
-    sovereign = db.query(User).filter(User.id == int(payload["sub"])).first()
-    if not sovereign or sovereign.role.value.upper() != "SOVEREIGN":
-        raise HTTPException(403, "Sovereign access only.")
-    from commons.team_messaging import get_conversation
-    return JSONResponse({"ok": True, "messages": get_conversation(db, member)})
