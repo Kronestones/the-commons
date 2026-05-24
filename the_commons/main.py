@@ -1829,6 +1829,18 @@ async def api_delete_post(
         return JSONResponse({"ok": False, "error": "Post not found."}, status_code=404)
     if post.author_id != current_user.id and current_user.role.value not in ("circle", "sovereign"):
         return JSONResponse({"ok": False, "error": "Not your post."}, status_code=403)
+    # Clean up related records first
+    try:
+        from commons.social import Like, Comment, Share
+        from commons.features import Bookmark, Notification, PostHashtag
+        db.query(Like).filter(Like.post_id == post_id).delete()
+        db.query(Comment).filter(Comment.post_id == post_id).delete()
+        db.query(Share).filter(Share.original_post_id == post_id).delete()
+        db.query(Bookmark).filter(Bookmark.post_id == post_id).delete()
+        db.query(Notification).filter(Notification.post_id == post_id).delete()
+        db.query(PostHashtag).filter(PostHashtag.post_id == post_id).delete()
+    except Exception:
+        pass
     db.delete(post)
     db.commit()
     return JSONResponse({"ok": True})
