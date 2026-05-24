@@ -1938,7 +1938,11 @@ async def api_delete_post(
     if post.author_id != current_user.id and current_user.role.value not in ("circle", "sovereign"):
         return JSONResponse({"ok": False, "error": "Not your post."}, status_code=403)
     from commons.database import CommunityVote
+    from commons.social import Comment, Like, Share
     db.query(CommunityVote).filter(CommunityVote.post_id == post_id).delete()
+    db.query(Comment).filter(Comment.post_id == post_id).delete()
+    db.query(Like).filter(Like.post_id == post_id).delete()
+    db.query(Share).filter(Share.original_post_id == post_id).delete()
     db.delete(post)
     db.commit()
     return JSONResponse({"ok": True})
