@@ -346,3 +346,106 @@ async function deletePost(postId, btn) {
     showMessage(data.error || 'Could not delete post.', true);
   }
 }
+
+// ── Comments ──────────────────────────────────────────────────────────────────
+
+async function toggleComments(postId) {
+  const section = document.getElementById('comments-' + postId);
+  const btn = document.getElementById('comments-btn-' + postId);
+  if (section.style.display === 'none') {
+    section.style.display = 'block';
+    btn.textContent = '💬 Hide Comments';
+    await loadComments(postId);
+  } else {
+    section.style.display = 'none';
+    btn.textContent = '💬 Comments';
+  }
+}
+
+async function loadComments(postId) {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  const res = await fetch('/api/posts/' + postId + '/comments', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  if (!data.ok) return;
+  const list = document.getElementById('comments-list-' + postId);
+  if (!data.comments || data.comments.length === 0) {
+    list.innerHTML = '<p class="no-comments">No comments yet. Be the first.</p>';
+    return;
+  }
+  list.innerHTML = data.comments.map(c => renderComment(c, postId)).join('');
+}
+
+function renderComment(c, postId) {
+  const me = localStorage.getItem('username') || '';
+  const canDelete = me && (me.toUpperCase() === c.author.toUpperCase() || me.toUpperCase() === 'KRONE');
+  const replies = (c.replies || []).map(r => `
+    <div class="comment-reply" id="comment-${r.id}">
+      <span class="comment-author">@${r.author}</span>
+      <span class="comment-content">${escapeHtml(r.content)}</span>
+      ${canDelete ? `<button onclick="deleteComment(${r.id}, ${postId})" class="comment-delete">✕</button>` : ''}
+    </div>
+  `).join('');
+  return `
+    <div class="comment-item" id="comment-${c.id}">
+      <div class="comment-main">
+        <span class="comment-author">@${c.author}</span>
+        <span class="comment-content">${escapeHtml(c.content)}</span>
+        <div class="comment-actions">
+          <button onclick="showReplyInput(${c.id}, ${postId})" class="comment-reply-btn">Reply</button>
+          ${canDelete ? `<button onclick="deleteComment(${c.id}, ${postId})" class="comment-delete">✕</button>` : ''}
+        </div>
+      </div>
+      <div class="comment-replies">${replies}</div>
+      <div class="reply-input-row" id="reply-row-${c.id}" style="display:none;">
+        <input type="text" id="reply-input-${c.id}" placeholder="Write a reply..." maxlength="1000" class="comment-input" onkeydown="if(event.key==='Enter'){submitComment(${postId}, ${c.id});}">
+        <button onclick="submitComment(${postId}, ${c.id})" class="comment-submit-btn">Reply</button>
+      </div>
+    </div>
+  `;
+}
+
+function showReplyInput(commentId, postId) {
+  const row = document.getElementById('reply-row-' + commentId);
+  row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+  if (row.style.display === 'flex') document.getElementById('reply-input-' + commentId).focus();
+}
+
+async function submitComment(postId, parentId) {
+  const token = localStorage.getItem('token');
+  if (!token) { window.location = '/login'; return; }
+  const inputId = parentId ? 'reply-input-' + parentId : 'comment-input-' + postId;
+  const input = document.getElementById(inputId);
+  const content = input ? input.value.trim() : '';
+  if (!content) return;
+  const form = new FormData();
+  form.append('content', content);
+  if (parentId) form.append('parent_id', parentId);
+  const res = await fetch('/api/posts/' + postId + '/comments', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.ok) {
+    if (input) input.value = '';
+    await loadComments(postId);
+  } else {
+    showMessage(data.error || 'Could not post comment.', true);
+  }
+}
+
+async function deleteComment(commentId, postId) {
+  if (!confirm('Delete this comment?')) return;
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api/comments/' + commentId, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: new FormData()
+  });
+  const data = await res.json();
+  if (data.ok) document.getElementById('comment-' + commentId)?.remove();
+  else showMessage(data.error || 'Could not delete comment.', true);
+}

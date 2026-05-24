@@ -33,6 +33,14 @@
           <button onclick="deletePost({{ post.id }}, this)" class="delete-btn">Delete</button>
           {% endif %}
         </div>
+        <button onclick="toggleComments({{ post.id }})" class="comments-toggle-btn" id="comments-btn-{{ post.id }}">💬 Comments</button>
+        <div class="post-comments" id="comments-{{ post.id }}" style="display:none;">
+          <div class="comments-list" id="comments-list-{{ post.id }}"></div>
+          <div class="comment-input-row">
+            <input type="text" id="comment-input-{{ post.id }}" placeholder="Write a comment..." maxlength="1000" class="comment-input" onkeydown="if(event.key==='Enter'){submitComment({{ post.id }}, null);}">
+            <button onclick="submitComment({{ post.id }}, null)" class="comment-submit-btn">Post</button>
+          </div>
+        </div>
       </div>
       {% endfor %}
     {% else %}
