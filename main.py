@@ -1357,10 +1357,17 @@ async def api_follow(
 
 @app.get("/api/users/{username}/profile")
 async def api_profile(
-    username:     str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user_optional)
+    username: str,
+    request:  Request,
+    db: Session = Depends(get_db)
 ):
+    from commons.auth import decode_token
+    current_user = None
+    auth = request.headers.get("Authorization", "")
+    if auth.startswith("Bearer "):
+        payload = decode_token(auth[7:])
+        if payload:
+            current_user = db.query(User).filter(User.id == int(payload["sub"])).first()
     profile = profile_manager.get_profile(db, username, current_user)
     if not profile:
         raise HTTPException(404, "User not found")

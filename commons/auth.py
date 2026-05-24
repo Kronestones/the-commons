@@ -141,13 +141,11 @@ def get_current_user(token: str = Depends(oauth2_scheme),
         raise HTTPException(status_code=401, detail="User not found or inactive.")
     return user
 
-def get_current_user_optional(request: Request,
+def get_current_user_optional(token: str = None,
                                db: Session = Depends(get_db)) -> Optional[User]:
     try:
-        auth = request.headers.get("Authorization", "")
-        if not auth.startswith("Bearer "):
+        if not token:
             return None
-        token = auth[7:]
         return get_current_user(token, db)
     except Exception:
         return None
