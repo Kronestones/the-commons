@@ -127,7 +127,7 @@ async function loadProfile() {
       avatarUpload.style.display = 'flex';
     }
     document.getElementById('profile-username').textContent = '@' + p.username;
-    if (p.display_name && p.display_name !== p.username) {
+    if (p.display_name) {
       const dn = document.getElementById('profile-displayname');
       dn.textContent = p.display_name;
       dn.style.display = '';
