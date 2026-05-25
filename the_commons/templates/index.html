@@ -4,17 +4,6 @@
 
 <div class="feed-layout">
 
-  <!-- Search -->
-  <div id="search-container" style="margin-bottom:12px;">
-    <div style="display:flex;gap:8px;">
-      <input id="search-input" type="text" placeholder="🔍 Search people or posts..." 
-        style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:24px;font-size:15px;outline:none;"
-        oninput="runSearch(this.value)" onkeydown="if(event.key==='Escape'){clearSearch()}">
-      <button onclick="clearSearch()" id="search-clear" style="display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
-    </div>
-    <div id="search-results" style="display:none;background:white;border:1px solid var(--border);border-radius:12px;margin-top:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
-  </div>
-
   <div class="post-composer" id="composer" style="display:none">
     <h3>Share something</h3>
     <textarea id="post-content" placeholder="What's on your mind?" maxlength="10000"></textarea>
@@ -28,32 +17,29 @@
     <p class="composer-note" style="display:none">Political and news content is verified before publishing. This usually takes seconds.</p>
   </div>
 
-  <div id="feed-info-card" class="post-card" style="background:var(--green-light);border:1px solid var(--green-mid);margin-bottom:12px;padding:14px 16px;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <strong style="color:var(--green-dark);font-size:14px;">ℹ️ How The Commons works</strong>
-      <button onclick="dismissFeedInfo()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0;line-height:1;">✕</button>
-    </div>
-    <p style="margin:8px 0 4px;font-size:14px;">❤️ Hearts push content to more people</p>
-    <p style="margin:4px 0;font-size:14px;">💰 Tip creators you love directly</p>
-  </div>
-
   <div class="feed" id="feed">
     {% if posts %}
       {% for post in posts %}
-      <div class="post-card" data-post-id="{{ post.id }}" id="post-{{ post.id }}">
+      <div class="post-card">
         <div class="post-header">
           <span class="post-author">@{{ post.author.username if post.author else 'unknown' }}</span>
-          <span class="post-time" data-time="{{ post.published_at.isoformat() if post.published_at else '' }}"></span>
+          <span class="post-time">{{ post.published_at.strftime('%b %d') if post.published_at else '' }}</span>
         </div>
-        <div class="post-content">{{ post.content | replace("\n", "<br>") }}</div>
+        <div class="post-content">{{ post.content }}</div>
         <div class="post-actions">
-          <button onclick="vote({{ post.id }}, 1, this)" class="vote-btn {% if post.id in voted_post_ids %}voted{% endif %}">{% if post.id in voted_post_ids %}❤️{% else %}🤍{% endif %}</button>
-          <span class="community-score" id="score-{{ post.id }}">{{ post.community_score | int }}</span>
-          <button onclick="toggleComments({{ post.id }})" class="comments-toggle-btn" id="comments-btn-{{ post.id }}">💬 <span id="comment-count-{{ post.id }}">0</span> Comments</button>
+          <button onclick="vote({{ post.id }}, 1)" class="vote-btn">❤️</button>
           <span class="community-score">{{ post.community_score | int }}</span>
           {% if current_username and current_username == (post.author.username if post.author else '') %}
           <button onclick="deletePost({{ post.id }}, this)" class="delete-btn">Delete</button>
           {% endif %}
+        </div>
+        <button onclick="toggleComments({{ post.id }})" class="comments-toggle-btn" id="comments-btn-{{ post.id }}">💬 Comments</button>
+        <div class="post-comments" id="comments-{{ post.id }}" style="display:none;">
+          <div class="comments-list" id="comments-list-{{ post.id }}"></div>
+          <div class="comment-input-row">
+            <input type="text" id="comment-input-{{ post.id }}" placeholder="Write a comment..." maxlength="1000" class="comment-input" onkeydown="if(event.key==='Enter'){submitComment({{ post.id }}, null);}">
+            <button onclick="submitComment({{ post.id }}, null)" class="comment-submit-btn">Post</button>
+          </div>
         </div>
       </div>
       {% endfor %}
@@ -70,76 +56,6 @@
 
 {% endblock %}
 {% block scripts %}
-<script>
-// ── Search ────────────────────────────────────────────────────────────────────
-let searchTimer = null;
-
-function runSearch(q) {
-  clearTimeout(searchTimer);
-  const results = document.getElementById('search-results');
-  const clear   = document.getElementById('search-clear');
-  if (!q || q.length < 2) {
-    results.style.display = 'none';
-    clear.style.display = 'none';
-    return;
-  }
-  clear.style.display = 'block';
-  searchTimer = setTimeout(async () => {
-    const token = localStorage.getItem('token');
-    const res = await fetch('/api/search?q=' + encodeURIComponent(q) + '&type=all', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const data = await res.json();
-    if (!data.ok) return;
-    const r = data.results || data;
-
-    let html = '';
-
-    if (r.users && r.users.length) {
-      html += '<div style="padding:8px 12px;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;">People</div>';
-      html += r.users.map(u => `
-        <a href="/profile/${u.username}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;text-decoration:none;color:inherit;border-bottom:1px solid var(--border);">
-          <div style="width:36px;height:36px;border-radius:50%;background:var(--green-mid);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;flex-shrink:0;">
-            ${u.username[0].toUpperCase()}
-          </div>
-          <div>
-            <div style="font-weight:600;">@${u.username}</div>
-            ${u.display_name !== u.username ? `<div style="font-size:13px;color:var(--muted);">${u.display_name}</div>` : ''}
-          </div>
-        </a>
-      `).join('');
-    }
-
-    if (r.posts && r.posts.length) {
-      html += '<div style="padding:8px 12px;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;">Posts</div>';
-      html += r.posts.map(p => `
-        <div style="padding:10px 14px;border-bottom:1px solid var(--border);">
-          <div style="font-size:12px;color:var(--muted);">@${p.author}</div>
-          <div style="font-size:14px;">${p.content}</div>
-        </div>
-      `).join('');
-    }
-
-    if (!html) html = '<div style="padding:16px;text-align:center;color:var(--muted);">No results found.</div>';
-
-    results.innerHTML = html;
-    results.style.display = 'block';
-  }, 300);
-}
-
-function clearSearch() {
-  document.getElementById('search-input').value = '';
-  document.getElementById('search-results').style.display = 'none';
-  document.getElementById('search-clear').style.display = 'none';
-}
-
-// ── Timestamps ────────────────────────────────────────────────────────────────
-// Convert all server-rendered timestamps to local timezone
-document.querySelectorAll('[data-time]').forEach(el => {
-  const iso = el.getAttribute('data-time');
-  if (iso) el.textContent = formatTime(iso);
-});
-</script>
 <script>
 async function createPost() {
   const token = localStorage.getItem('token');
