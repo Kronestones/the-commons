@@ -178,9 +178,12 @@ async function loadProfile() {
           <button onclick="vote(${post.id}, 1, this)" class="vote-btn">🤍</button>
           <span class="community-score">${Math.round(post.community_score)}</span>
           ${isOwn ? '<button onclick="deletePost(' + post.id + ', this)" class="delete-btn">Delete</button>' : ''}
+        <div class="post-comments-inline" id="comments-inline-${post.id}"></div>
+        <div class="comment-input-row" style="margin-top:8px;"><input type="text" id="comment-input-${post.id}" placeholder="Write a comment..." maxlength="1000" class="comment-input" onkeydown="if(event.key==='Enter'){submitComment(${post.id}, null);}"><button onclick="submitComment(${post.id}, null)" class="comment-submit-btn">Post</button></div>
         </div>
       </div>
     `).join('');
+    p.posts.forEach(post => loadInlineComments(post.id));
   } catch(e) {
     document.getElementById('profile-posts').innerHTML = '<p style="padding:20px;color:#c00;">Error: ' + e.message + '</p>';
   }
