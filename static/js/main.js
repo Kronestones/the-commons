@@ -136,9 +136,7 @@ async function loadMorePosts() {
         ${post.reason ? `<p class="post-reason">${post.reason}</p>` : ''}
         <div class="post-content">${linkify(post.content)}</div>
         <div class="post-actions">
-          <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}">${post.user_voted ? '❤️' : '🤍'}</button>
-          <span class="community-score">${Math.round(post.community_score)}</span>
-          <button onclick="toggleComments(${post.id})" class="vote-btn" style="background:none;color:var(--muted);font-size:13px;padding:4px 8px;">Comment</button>
+          <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}" style="font-size:15px;">${post.user_voted ? '❤️' : '🤍'} <span id="score-${post.id}">${Math.round(post.community_score)}</span></button>
         </div>
         <div id="comments-${post.id}" style="margin-top:8px;">
           <div id="comment-list-${post.id}" style="margin-bottom:8px;"></div>
@@ -237,7 +235,7 @@ async function vote(postId, value, btn) {
       if (btn) {
         btn.textContent = data.voted ? '❤️' : '🤍';
         btn.classList.toggle('voted', data.voted);
-        const scoreEl = btn.parentElement.querySelector('.community-score');
+        const scoreEl = btn.querySelector('span') || btn.parentElement.querySelector('[id^="score-"]');
         if (scoreEl) {
           const current = parseInt(scoreEl.textContent) || 0;
           scoreEl.textContent = data.voted ? current + 1 : current - 1;

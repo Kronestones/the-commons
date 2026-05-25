@@ -47,9 +47,7 @@
         </div>
         <div class="post-content">{{ post.content | replace("\n", "<br>") }}</div>
         <div class="post-actions">
-          <button onclick="vote({{ post.id }}, 1, this)" class="vote-btn {% if post.id in voted_post_ids %}voted{% endif %}">{% if post.id in voted_post_ids %}❤️{% else %}🤍{% endif %}</button>
-          <span class="community-score" id="score-{{ post.id }}">{{ post.community_score | int }}</span>
-          <button onclick="toggleComments({{ post.id }})" class="vote-btn" style="background:none;color:var(--muted);font-size:13px;padding:4px 8px;">Comment</button>
+          <button onclick="vote({{ post.id }}, 1, this)" class="vote-btn {% if post.id in voted_post_ids %}voted{% endif %}" style="font-size:15px;">{% if post.id in voted_post_ids %}❤️{% else %}🤍{% endif %} <span id="score-{{ post.id }}">{{ post.community_score | int }}</span></button>
         </div>
         <div id="comments-{{ post.id }}" style="margin-top:8px;">
           <div id="comment-list-{{ post.id }}" style="margin-bottom:8px;"></div>
