@@ -202,9 +202,10 @@ setInterval(() => {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   updateNav();
   addFeedReasons();
+  loadCommentCounts();
 });
 
 // ── Watch Time Tracking ───────────────────────────────────────────────────────
@@ -351,18 +352,15 @@ async function deletePost(postId, btn) {
 
 async function toggleComments(postId) {
   const section = document.getElementById('comments-' + postId);
-  const btn = document.getElementById('comments-btn-' + postId);
   if (section.style.display === 'none') {
     section.style.display = 'block';
-    btn.textContent = '💬 Hide Comments';
-    await loadComments(postId);
+    await loadComments(postId, false);
   } else {
     section.style.display = 'none';
-    btn.textContent = '💬 Comments';
   }
 }
 
-async function loadComments(postId) {
+async function loadComments(postId, showAll = false) {
   const token = localStorage.getItem('token');
   if (!token) return;
   const res = await fetch('/api/posts/' + postId + '/comments', {
@@ -370,12 +368,32 @@ async function loadComments(postId) {
   });
   const data = await res.json();
   if (!data.ok) return;
+  const comments = data.comments || [];
+  const countEl = document.getElementById('comment-count-' + postId);
+  if (countEl) countEl.textContent = comments.length;
   const list = document.getElementById('comments-list-' + postId);
-  if (!data.comments || data.comments.length === 0) {
+  if (!list) return;
+  if (comments.length === 0) {
     list.innerHTML = '<p class="no-comments">No comments yet. Be the first.</p>';
     return;
   }
-  list.innerHTML = data.comments.map(c => renderComment(c, postId)).join('');
+  const preview = showAll ? comments : comments.slice(0, 2);
+  const hasMore = !showAll && comments.length > 2;
+  list.innerHTML = preview.map(c => renderComment(c, postId)).join('') +
+    (hasMore ? '<p onclick="loadComments(' + postId + ', true)" style="font-size:12px;color:var(--green-mid);cursor:pointer;margin:4px 0;">View all ' + comments.length + ' comments</p>' : '');
+}
+
+async function loadCommentCounts() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  document.querySelectorAll('[id^="comment-count-"]').forEach(async el => {
+    const postId = el.id.replace('comment-count-', '');
+    const res = await fetch('/api/posts/' + postId + '/comments', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (data.ok) el.textContent = (data.comments || []).length;
+  });
 }
 
 function renderComment(c, postId) {
