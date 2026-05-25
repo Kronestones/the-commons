@@ -5,28 +5,19 @@
  * No tracking. No analytics. No dark patterns.
  * Clean and purposeful.
  *
- * — Architect Founder Krone · The Commons · 2026
+ * — Sovereign Human T.L. Powers · The Commons · 2026
  */
 
 // ── Auth State ────────────────────────────────────────────────────────────────
 
-function getCookie(name) {
-  const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
-  return v ? v.pop() : '';
-}
-function getToken() {
-  return getCookie('token') || localStorage.getItem('token') || '';
-}
+function getToken()    { return localStorage.getItem('token'); }
 function getUsername() { return localStorage.getItem('username'); }
 function isLoggedIn()  { return !!getToken(); }
 
 function logout() {
-  try {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    localStorage.clear();
-  } catch(e) {}
-  window.location.href = '/login';
+  localStorage.removeItem('token');
+  localStorage.removeItem('username');
+  window.location = '/';
 }
 
 // ── Nav ───────────────────────────────────────────────────────────────────────
@@ -37,7 +28,7 @@ function updateNav() {
 
   if (isLoggedIn()) {
     navUser.innerHTML = `
-      <a href="/profile/${getUsername()}" class="nav-username">@${getUsername()}</a>
+      <span class="nav-username">@${getUsername()}</span>
       <button onclick="logout()" class="nav-logout">Sign out</button>
     `;
     // Show composer if on home page
@@ -126,20 +117,17 @@ async function loadMorePosts() {
     data.feed.forEach(post => {
       const card = document.createElement('div');
       card.className = 'post-card';
-      card.setAttribute('data-post-id', post.id);
-      card.id = 'post-' + post.id;
       card.innerHTML = `
         <div class="post-header">
           <span class="post-author">@${post.author}</span>
           <span class="post-time">${formatTime(post.published_at)}</span>
         </div>
         ${post.reason ? `<p class="post-reason">${post.reason}</p>` : ''}
-        <div class="post-content">${linkify(post.content)}</div>
+        <div class="post-content">${escapeHtml(post.content)}</div>
         <div class="post-actions">
-          <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}">${post.user_voted ? '❤️' : '🤍'}</button>
+          <button onclick="vote(${post.id}, 1)" class="vote-btn">↑ Valuable</button>
           <span class="community-score">${Math.round(post.community_score)}</span>
-          <button onclick="toggleComments(${post.id})" class="vote-btn" style="background:none;color:var(--muted);font-size:13px;padding:4px 8px;">Comment</button>
-          ${post.author === getUsername() ? `<button onclick="deletePost(${post.id}, this)" class="delete-btn">Delete</button>` : ''}
+          <button onclick="vote(${post.id}, -1)" class="vote-btn">↓</button>
         </div>
       `;
       feed.appendChild(card);
@@ -178,66 +166,18 @@ function formatTime(isoString) {
 
 // ── Post Actions ──────────────────────────────────────────────────────────────
 
-async function deletePost(postId, btn) {
-  if (!confirm('Delete this post?')) return;
+async function vote(postId, value) {
   const token = getToken();
-  const res   = await fetch(`/api/posts/${postId}`, {
-    method:  'DELETE',
-    headers: { 'Authorization': 'Bearer ' + token }
-  });
-  const data = await res.json();
-  if (data.ok) {
-    btn.closest('.post-card').remove();
-  } else {
-    showMessage(data.error || 'Could not delete post.', true);
-  }
-}
-
-async function deleteProduct(productId, btn) {
-  if (!confirm('Remove this listing?')) return;
-  const token = getToken();
-  const res   = await fetch(`/api/marketplace/products/${productId}`, {
-    method:  'DELETE',
-    headers: { 'Authorization': 'Bearer ' + token }
-  });
-  const data = await res.json();
-  if (data.ok) {
-    btn.closest('.product-card').remove();
-  } else {
-    showMessage(data.error || 'Could not remove listing.', true);
-  }
-}
-
-async function vote(postId, value, btn) {
-  const token = getToken();
-  if (!token) { showMessage('Not logged in', true); return; }
+  if (!token) { window.location = '/login'; return; }
   const form = new FormData();
   form.append('value', value);
-  try {
-    const res  = await fetch(`/api/posts/${postId}/vote`, {
-      method:  'POST',
-      headers: { 'Authorization': 'Bearer ' + token },
-      body: form
-    });
-    if (res.status === 401) { showMessage('Session expired — please sign in again', true); return; }
-    if (res.status === 422) { showMessage('Invalid request (422)', true); return; }
-    const data = await res.json();
-    if (data.ok) {
-      if (btn) {
-        btn.textContent = data.voted ? '❤️' : '🤍';
-        btn.classList.toggle('voted', data.voted);
-        const scoreEl = btn.parentElement.querySelector('.community-score');
-        if (scoreEl) {
-          const current = parseInt(scoreEl.textContent) || 0;
-          scoreEl.textContent = data.voted ? current + 1 : current - 1;
-        }
-      }
-    } else {
-      showMessage(data.error || 'Could not vote', true);
-    }
-  } catch(e) {
-    showMessage('Network error: ' + e.message, true);
-  }
+  const res  = await fetch(`/api/posts/${postId}/vote`, {
+    method:  'POST',
+    headers: { 'Authorization': 'Bearer ' + token },
+    body: form
+  });
+  const data = await res.json();
+  if (data.ok) showMessage(value === 1 ? 'Marked as valuable' : 'Noted');
 }
 
 // ── Session Wellbeing Nudge ───────────────────────────────────────────────────
@@ -305,8 +245,8 @@ async function sendWatchEvent(postId, watchPercent) {
 // When you vote on a post, it also updates your preference profile.
 
 const originalVote = window.vote;
-window.vote = async function(postId, value, btn) {
-  await originalVote(postId, value, btn);
+window.vote = async function(postId, value) {
+  await originalVote(postId, value);
   // Voting is already handled — preference engine picks it up server-side
 };
 
@@ -387,143 +327,102 @@ function togglePassword(inputId, btn) {
   }
 }
 
-// ── Auth Guard ────────────────────────────────────────────────────────────────
-// Pages that don't require a token
-const PUBLIC_PATHS = ['/login', '/register', '/codex', '/kinto'];
-const LANDING_PAGE = '/register';
+// ── Delete Post ───────────────────────────────────────────────────────────────
 
-(function authGuard() {
-  try {
-    const path = window.location.pathname;
-    const isPublic = PUBLIC_PATHS.some(p => path === p || path.startsWith(p + '/'));
-    if (!isPublic && !getToken()) {
-      document.body.style.visibility = 'hidden';
-      window.location.href = '/login';
-    } else {
-      document.body.style.visibility = 'visible';
-    }
-  } catch(e) {
-    document.body.style.visibility = 'visible';
-  }
-})();
-
-// ── Mobile Nav ────────────────────────────────────────────────────────────────
-function toggleNav() {
-  const nav   = document.getElementById('nav-links');
-  const btn   = document.getElementById('hamburger');
-  const open  = nav.classList.toggle('nav-open');
-  btn.textContent = open ? '✕' : '☰';
-}
-
-// ── Message Badge ─────────────────────────────────────────────────────────────
-async function updateMessageBadge() {
+async function deletePost(postId, btn) {
+  if (!confirm('Delete this post? This cannot be undone.')) return;
   const token = getToken();
-  if (!token) return;
-  try {
-    const [inboxRes, reqRes] = await Promise.all([
-      fetch('/api/messages/inbox',    { headers: { 'Authorization': 'Bearer ' + token } }),
-      fetch('/api/messages/requests', { headers: { 'Authorization': 'Bearer ' + token } })
-    ]);
-    const inbox = await inboxRes.json();
-    const reqs  = await reqRes.json();
-    const unread = (inbox.inbox  || []).filter(m => m.unread).length;
-    const pending = (reqs.requests || []).length;
-    const total = unread + pending;
-    const badge = document.getElementById('msg-badge');
-    if (badge) {
-      if (total > 0) {
-        badge.textContent = total > 9 ? '9+' : total;
-        badge.style.display = 'block';
-      } else {
-        badge.style.display = 'none';
-      }
-    }
-  } catch(e) {}
-}
-
-if (getToken()) {
-  updateMessageBadge();
-  setInterval(updateMessageBadge, 30000);
-}
-
-// ── Feed Info Card ────────────────────────────────────────────────────────────
-function dismissFeedInfo() {
-  const card = document.getElementById('feed-info-card');
-  if (card) card.style.display = 'none';
-  localStorage.setItem('feedInfoDismissed', 'true');
-}
-
-(function() {
-  if (localStorage.getItem('feedInfoDismissed')) {
-    const card = document.getElementById('feed-info-card');
-    if (card) card.style.display = 'none';
+  if (!token) { window.location = '/login'; return; }
+  const res = await fetch('/api/posts/' + postId, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  if (data.ok) {
+    const card = btn.closest('.post-card');
+    if (card) card.remove();
+    showMessage('Post deleted.');
+  } else {
+    showMessage(data.error || 'Could not delete post.', true);
   }
-})();
+}
 
 // ── Comments ──────────────────────────────────────────────────────────────────
-async function toggleComments(postId) {
-  const card = document.querySelector(`[data-post-id="${postId}"]`) ||
-    document.getElementById('post-' + postId);
-  if (!card) return;
 
-  let box = document.getElementById('comments-' + postId);
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'comments-' + postId;
-    box.style.cssText = 'border-top:1px solid var(--border);margin-top:10px;padding-top:10px;';
-    box.innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading...</p>';
-    card.appendChild(box);
+async function toggleComments(postId) {
+  const section = document.getElementById('comments-' + postId);
+  const btn = document.getElementById('comments-btn-' + postId);
+  if (section.style.display === 'none') {
+    section.style.display = 'block';
+    btn.textContent = '💬 Hide Comments';
     await loadComments(postId);
+  } else {
+    section.style.display = 'none';
+    btn.textContent = '💬 Comments';
   }
 }
 
 async function loadComments(postId) {
-  const token = getToken();
-  const box = document.getElementById('comments-' + postId);
-  if (!box) return;
-
+  const token = localStorage.getItem('token');
+  if (!token) return;
   const res = await fetch('/api/posts/' + postId + '/comments', {
     headers: { 'Authorization': 'Bearer ' + token }
   });
   const data = await res.json();
-  const comments = data.comments || [];
-  const username = getUsername();
-
-  let html = '';
-  if (comments.length) {
-    html += comments.map(c => `
-      <div style="padding:8px 0;border-bottom:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <strong style="font-size:13px;">@${c.author}</strong>
-          <span style="font-size:11px;color:var(--muted);">${formatTime(c.created_at)}</span>
-        </div>
-        <p style="margin:4px 0;font-size:14px;">${c.content}</p>
-        ${c.author === username ? `<button onclick="deleteComment(${c.id}, ${postId})" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:0;">Delete</button>` : ''}
-      </div>
-    `).join('');
-  } else {
-    html += '<p style="color:var(--muted);font-size:13px;text-align:center;padding:8px 0;">No comments yet. Be the first.</p>';
+  if (!data.ok) return;
+  const list = document.getElementById('comments-list-' + postId);
+  if (!data.comments || data.comments.length === 0) {
+    list.innerHTML = '<p class="no-comments">No comments yet. Be the first.</p>';
+    return;
   }
-
-  html += `
-    <div style="margin-top:10px;display:flex;gap:8px;">
-      <input id="comment-input-${postId}" type="text" placeholder="Write a comment..."
-        style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:20px;font-size:14px;"
-        onkeydown="if(event.key==='Enter'){submitComment(${postId})}">
-      <button onclick="submitComment(${postId})" class="vote-btn" style="padding:8px 14px;font-size:13px;">Post</button>
-    </div>
-  `;
-
-  box.innerHTML = html;
+  list.innerHTML = data.comments.map(c => renderComment(c, postId)).join('');
 }
 
-async function submitComment(postId) {
-  const token = getToken();
-  const input = document.getElementById('comment-input-' + postId);
-  const content = input.value.trim();
+function renderComment(c, postId) {
+  const me = localStorage.getItem('username') || '';
+  const canDelete = me && (me.toUpperCase() === c.author.toUpperCase() || me.toUpperCase() === 'KRONE');
+  const replies = (c.replies || []).map(r => `
+    <div class="comment-reply" id="comment-${r.id}">
+      <span class="comment-author">@${r.author}</span>
+      <span class="comment-content">${escapeHtml(r.content)}</span>
+      ${canDelete ? `<button onclick="deleteComment(${r.id}, ${postId})" class="comment-delete">✕</button>` : ''}
+    </div>
+  `).join('');
+  return `
+    <div class="comment-item" id="comment-${c.id}">
+      <div class="comment-main">
+        <span class="comment-author">@${c.author}</span>
+        <span class="comment-content">${escapeHtml(c.content)}</span>
+        <div class="comment-actions">
+          <button onclick="showReplyInput(${c.id}, ${postId})" class="comment-reply-btn">Reply</button>
+          ${canDelete ? `<button onclick="deleteComment(${c.id}, ${postId})" class="comment-delete">✕</button>` : ''}
+        </div>
+      </div>
+      <div class="comment-replies">${replies}</div>
+      <div class="reply-input-row" id="reply-row-${c.id}" style="display:none;">
+        <input type="text" id="reply-input-${c.id}" placeholder="Write a reply..." maxlength="1000" class="comment-input" onkeydown="if(event.key==='Enter'){submitComment(${postId}, ${c.id});}">
+        <button onclick="submitComment(${postId}, ${c.id})" class="comment-submit-btn">Reply</button>
+      </div>
+    </div>
+  `;
+}
+
+function showReplyInput(commentId, postId) {
+  const row = document.getElementById('reply-row-' + commentId);
+  row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+  if (row.style.display === 'flex') document.getElementById('reply-input-' + commentId).focus();
+}
+
+async function submitComment(postId, parentId) {
+  const token = localStorage.getItem('token');
+  if (!token) { window.location = '/login'; return; }
+  const inputId = parentId ? 'reply-input-' + parentId : 'comment-input-' + postId;
+  const input = document.getElementById(inputId);
+  const content = input ? input.value.trim() : '';
   if (!content) return;
   const form = new FormData();
   form.append('content', content);
+  if (parentId) form.append('parent_id', parentId);
   const res = await fetch('/api/posts/' + postId + '/comments', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + token },
@@ -531,8 +430,8 @@ async function submitComment(postId) {
   });
   const data = await res.json();
   if (data.ok) {
-    input.value = '';
-    loadComments(postId);
+    if (input) input.value = '';
+    await loadComments(postId);
   } else {
     showMessage(data.error || 'Could not post comment.', true);
   }
@@ -540,19 +439,13 @@ async function submitComment(postId) {
 
 async function deleteComment(commentId, postId) {
   if (!confirm('Delete this comment?')) return;
-  const token = getToken();
-  const form = new FormData();
+  const token = localStorage.getItem('token');
   const res = await fetch('/api/comments/' + commentId, {
     method: 'DELETE',
     headers: { 'Authorization': 'Bearer ' + token },
-    body: form
+    body: new FormData()
   });
   const data = await res.json();
-  if (data.ok) loadComments(postId);
-}
-
-// ── Linkify ───────────────────────────────────────────────────────────────────
-function linkify(text) {
-  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g;
-  return escapeHtml(text).replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--green-dark);word-break:break-all;">$1</a>');
+  if (data.ok) document.getElementById('comment-' + commentId)?.remove();
+  else showMessage(data.error || 'Could not delete comment.', true);
 }
