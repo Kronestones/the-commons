@@ -138,7 +138,7 @@ async function loadMorePosts() {
         <div class="post-actions">
           <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}">${post.user_voted ? '❤️' : '🤍'}</button>
           <span class="community-score">${Math.round(post.community_score)}</span>
-          <button onclick="toggleComments(${post.id})" class="vote-btn" style="background:none;color:var(--muted);font-size:13px;padding:4px 8px;">💬 Comment</button>
+          <button onclick="toggleComments(${post.id})" class="vote-btn" style="background:none;color:var(--muted);font-size:13px;padding:4px 8px;">Comment</button>
           ${post.author === getUsername() ? `<button onclick="deletePost(${post.id}, this)" class="delete-btn">Delete</button>` : ''}
         </div>
       `;
@@ -462,20 +462,19 @@ function dismissFeedInfo() {
 
 // ── Comments ──────────────────────────────────────────────────────────────────
 async function toggleComments(postId) {
-  const existing = document.getElementById('comments-' + postId);
-  if (existing) { existing.remove(); return; }
-
   const card = document.querySelector(`[data-post-id="${postId}"]`) ||
     document.getElementById('post-' + postId);
   if (!card) return;
 
-  const box = document.createElement('div');
-  box.id = 'comments-' + postId;
-  box.style.cssText = 'border-top:1px solid var(--border);margin-top:10px;padding-top:10px;';
-  box.innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading...</p>';
-  card.appendChild(box);
-
-  await loadComments(postId);
+  let box = document.getElementById('comments-' + postId);
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'comments-' + postId;
+    box.style.cssText = 'border-top:1px solid var(--border);margin-top:10px;padding-top:10px;';
+    box.innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading...</p>';
+    card.appendChild(box);
+    await loadComments(postId);
+  }
 }
 
 async function loadComments(postId) {
