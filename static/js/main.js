@@ -139,6 +139,17 @@ async function loadMorePosts() {
           <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}">${post.user_voted ? '❤️' : '🤍'}</button>
           <span class="community-score">${Math.round(post.community_score)}</span>
           <button onclick="toggleComments(${post.id})" class="vote-btn" style="background:none;color:var(--muted);font-size:13px;padding:4px 8px;">Comment</button>
+        </div>
+        <div id="comments-${post.id}" style="margin-top:8px;">
+          <div id="comment-list-${post.id}" style="margin-bottom:8px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input id="comment-input-${post.id}" type="text" placeholder="Write a comment..."
+              style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:20px;font-size:14px;"
+              onkeydown="if(event.key==='Enter'){submitComment(${post.id})}">
+            <button onclick="submitComment(${post.id})" class="vote-btn" style="padding:8px 14px;font-size:13px;">Post</button>
+          </div>
+        </div>
+        <div style="display:none">
           ${post.author === getUsername() ? `<button onclick="deletePost(${post.id}, this)" class="delete-btn">Delete</button>` : ''}
         </div>
       `;
@@ -462,19 +473,63 @@ function dismissFeedInfo() {
 
 // ── Comments ──────────────────────────────────────────────────────────────────
 async function toggleComments(postId) {
-  const card = document.querySelector(`[data-post-id="${postId}"]`) ||
-    document.getElementById('post-' + postId);
-  if (!card) return;
+  // Comments are always shown — this now focuses the comment input
+  const input = document.getElementById('comment-input-' + postId);
+  if (input) input.focus();
+}
 
-  let box = document.getElementById('comments-' + postId);
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'comments-' + postId;
-    box.style.cssText = 'border-top:1px solid var(--border);margin-top:10px;padding-top:10px;';
-    box.innerHTML = '<p style="color:var(--muted);font-size:13px;">Loading...</p>';
-    card.appendChild(box);
-    await loadComments(postId);
+async function loadInlineComments(postId) {
+  const token = getToken();
+  const box = document.getElementById('comments-' + postId);
+  if (!box) return;
+
+  const res = await fetch('/api/posts/' + postId + '/comments', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  const comments = data.comments || [];
+  const username = getUsername();
+  const commentList = document.getElementById('comment-list-' + postId);
+  if (!commentList) return;
+
+  if (comments.length === 0) {
+    commentList.innerHTML = '';
+    return;
   }
+
+  // Show last 2 comments inline
+  const shown = comments.slice(-2);
+  commentList.innerHTML = comments.length > 2
+    ? `<p style="font-size:12px;color:var(--muted);margin-bottom:6px;cursor:pointer;" onclick="loadAllComments(${postId})">View all ${comments.length} comments</p>`
+    : '';
+
+  commentList.innerHTML += shown.map(c => `
+    <div style="padding:4px 0;font-size:14px;">
+      <strong style="font-size:13px;">@${c.author}</strong>
+      <span style="margin-left:6px;">${c.content}</span>
+      ${c.author === username ? `<span onclick="deleteComment(${c.id}, ${postId})" style="color:var(--muted);font-size:11px;cursor:pointer;margin-left:8px;">✕</span>` : ''}
+    </div>
+  `).join('');
+}
+
+async function loadAllComments(postId) {
+  const token = getToken();
+  const res = await fetch('/api/posts/' + postId + '/comments', {
+    headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  const comments = data.comments || [];
+  const username = getUsername();
+  const commentList = document.getElementById('comment-list-' + postId);
+  if (!commentList) return;
+
+  commentList.innerHTML = comments.map(c => `
+    <div style="padding:4px 0;font-size:14px;">
+      <strong style="font-size:13px;">@${c.author}</strong>
+      <span style="margin-left:6px;">${c.content}</span>
+      ${c.author === username ? `<span onclick="deleteComment(${c.id}, ${postId})" style="color:var(--muted);font-size:11px;cursor:pointer;margin-left:8px;">✕</span>` : ''}
+    </div>
+  `).join('');
 }
 
 async function loadComments(postId) {
@@ -532,7 +587,7 @@ async function submitComment(postId) {
   const data = await res.json();
   if (data.ok) {
     input.value = '';
-    loadComments(postId);
+    loadInlineComments(postId);
   } else {
     showMessage(data.error || 'Could not post comment.', true);
   }
@@ -548,7 +603,7 @@ async function deleteComment(commentId, postId) {
     body: form
   });
   const data = await res.json();
-  if (data.ok) loadComments(postId);
+  if (data.ok) loadInlineComments(postId);
 }
 
 // ── Linkify ───────────────────────────────────────────────────────────────────

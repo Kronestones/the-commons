@@ -50,6 +50,17 @@
           <button onclick="vote({{ post.id }}, 1, this)" class="vote-btn {% if post.id in voted_post_ids %}voted{% endif %}">{% if post.id in voted_post_ids %}❤️{% else %}🤍{% endif %}</button>
           <span class="community-score" id="score-{{ post.id }}">{{ post.community_score | int }}</span>
           <button onclick="toggleComments({{ post.id }})" class="vote-btn" style="background:none;color:var(--muted);font-size:13px;padding:4px 8px;">Comment</button>
+        </div>
+        <div id="comments-{{ post.id }}" style="margin-top:8px;">
+          <div id="comment-list-{{ post.id }}" style="margin-bottom:8px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input id="comment-input-{{ post.id }}" type="text" placeholder="Write a comment..."
+              style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:20px;font-size:14px;"
+              onkeydown="if(event.key==='Enter'){submitComment({{ post.id }})}">
+            <button onclick="submitComment({{ post.id }})" class="vote-btn" style="padding:8px 14px;font-size:13px;">Post</button>
+          </div>
+        </div>
+        <div style="display:none">
           <span class="community-score">{{ post.community_score | int }}</span>
           {% if current_username and current_username == (post.author.username if post.author else '') %}
           <button onclick="deletePost({{ post.id }}, this)" class="delete-btn">Delete</button>
