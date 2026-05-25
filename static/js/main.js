@@ -478,7 +478,7 @@ async function toggleComments(postId) {
   await loadComments(postId);
 }
 
-async function loadComments(postId, showAll = false) {
+async function loadComments(postId) {
   const token = getToken();
   const box = document.getElementById('comments-' + postId);
   if (!box) return;
@@ -490,16 +490,9 @@ async function loadComments(postId, showAll = false) {
   const comments = data.comments || [];
   const username = getUsername();
 
-  // Update count on button
-  const btn = document.getElementById('comments-btn-' + postId);
-  if (btn) btn.textContent = '💬 ' + comments.length + ' Comment' + (comments.length !== 1 ? 's' : '');
-
-  const preview = showAll ? comments : comments.slice(0, 2);
-  const hasMore = !showAll && comments.length > 2;
-
   let html = '';
   if (comments.length) {
-    html += preview.map(c => `
+    html += comments.map(c => `
       <div style="padding:8px 0;border-bottom:1px solid var(--border);">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <strong style="font-size:13px;">@${c.author}</strong>
@@ -509,24 +502,9 @@ async function loadComments(postId, showAll = false) {
         ${c.author === username ? `<button onclick="deleteComment(${c.id}, ${postId})" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:0;">Delete</button>` : ''}
       </div>
     `).join('');
-    if (hasMore) {
-      html += `<p onclick="loadComments(${postId}, true)" style="font-size:12px;color:var(--green-mid);cursor:pointer;margin:6px 0;">View all ${comments.length} comments</p>`;
-    }
   } else {
     html += '<p style="color:var(--muted);font-size:13px;text-align:center;padding:8px 0;">No comments yet. Be the first.</p>';
   }
-
-  html += `
-    <div style="margin-top:10px;display:flex;gap:8px;">
-      <input id="comment-input-${postId}" type="text" placeholder="Write a comment..."
-        style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:20px;font-size:14px;"
-        onkeydown="if(event.key==='Enter'){submitComment(${postId})}">
-      <button onclick="submitComment(${postId})" class="vote-btn" style="padding:8px 14px;font-size:13px;">Post</button>
-    </div>
-  `;
-
-  box.innerHTML = html;
-}
 
   html += `
     <div style="margin-top:10px;display:flex;gap:8px;">
