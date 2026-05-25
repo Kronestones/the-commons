@@ -185,7 +185,7 @@ async function loadProfile() {
           <button onclick="submitComment(${post.id}, null)" class="comment-submit-btn">Post</button>
         </div>
       </div>
-    \`).join('');
+    `).join('');
     p.posts.forEach(post => loadInlineComments(post.id));
   } catch(e) {
     document.getElementById('profile-posts').innerHTML = '<p style="padding:20px;color:#c00;">Error: ' + e.message + '</p>';
