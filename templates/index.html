@@ -49,7 +49,7 @@
         <div class="post-actions">
           <button onclick="vote({{ post.id }}, 1, this)" class="vote-btn {% if post.id in voted_post_ids %}voted{% endif %}">{% if post.id in voted_post_ids %}❤️{% else %}🤍{% endif %}</button>
           <span class="community-score" id="score-{{ post.id }}">{{ post.community_score | int }}</span>
-          <button onclick="toggleComments({{ post.id }})" class="vote-btn" style="background:none;color:var(--muted);font-size:13px;padding:4px 8px;">💬 Comment</button>
+          <button onclick="toggleComments({{ post.id }})" id="comments-btn-{{ post.id }}" class="vote-btn" style="background:none;color:var(--muted);font-size:13px;padding:4px 8px;">💬 Comments</button>
           <span class="community-score">{{ post.community_score | int }}</span>
           {% if current_username and current_username == (post.author.username if post.author else '') %}
           <button onclick="deletePost({{ post.id }}, this)" class="delete-btn">Delete</button>
