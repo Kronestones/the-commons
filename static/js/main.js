@@ -487,6 +487,19 @@ async function loadInlineComments(postId) {
   const data = await res.json();
   const comments = data.comments || [];
   const username = getUsername();
+  // Update comment count
+  const countEl = document.getElementById('comment-count-' + postId);
+  if (countEl) countEl.textContent = comments.length;
+
+  // Mark as loaded
+  const card = document.querySelector('[data-post-id="' + postId + '"]');
+  if (card) {
+    const marker = document.createElement('span');
+    marker.id = 'comments-loaded-' + postId;
+    marker.style.display = 'none';
+    card.appendChild(marker);
+  }
+
   const commentList = document.getElementById('comment-list-' + postId);
   if (!commentList) return;
 
@@ -609,3 +622,16 @@ function linkify(text) {
   const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g;
   return escapeHtml(text).replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--green-dark);word-break:break-all;">$1</a>');
 }
+
+// ── Auto-load comments on page load ─────────────────────────────────────────
+function autoLoadComments() {
+  document.querySelectorAll('[data-post-id]').forEach(card => {
+    const postId = card.getAttribute('data-post-id');
+    if (postId && !document.getElementById('comments-loaded-' + postId)) {
+      loadInlineComments(postId);
+    }
+  });
+}
+
+// Run after feed loads
+setTimeout(autoLoadComments, 1000);
