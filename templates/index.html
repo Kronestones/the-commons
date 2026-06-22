@@ -46,6 +46,9 @@
           <span class="post-time" data-time="{{ post.published_at.isoformat() if post.published_at else '' }}"></span>
         </div>
         <div class="post-content">{{ post.content | replace("\n", "<br>") }}</div>
+        {% if post.media_path %}
+        <img src="{{ post.media_path if post.media_path.startswith('http') else '/media/' + post.media_path }}" style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;object-fit:cover;">
+        {% endif %}
         <div class="post-actions">
           <button onclick="vote({{ post.id }}, 1, this)" class="vote-btn {% if post.id in voted_post_ids %}voted{% endif %}" style="font-size:15px;background:none;border:none;color:var(--muted);">{% if post.id in voted_post_ids %}❤️{% else %}🤍{% endif %} <span id="score-{{ post.id }}">{{ post.community_score | int }}</span></button>
           <span style="font-size:14px;color:var(--muted);">💬 <span id="comment-count-{{ post.id }}">0</span></span>

@@ -307,6 +307,7 @@ async def api_create_post(
     post_type:    str  = Form(default="text"),
     is_news:      bool = Form(default=False),
     is_political: bool = Form(default=False),
+    media:        UploadFile = File(default=None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -323,10 +324,19 @@ async def api_create_post(
     if post_type not in allowed_types:
         return JSONResponse({"ok": False, "error": "Invalid post type."}, status_code=400)
 
+    media_url = ""
+    if media and media.filename:
+        from commons.media_upload import upload_image
+        file_bytes = await media.read()
+        upload = upload_image(file_bytes, folder="posts")
+        if upload["ok"]:
+            media_url = upload["url"]
+
     result = posts.create(db, current_user, post_type,
                           content=c["value"],
                           is_news=is_news,
-                          is_political=is_political)
+                          is_political=is_political,
+                          media_path=media_url)
     if not result["ok"]:
         return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
 
@@ -388,6 +398,7 @@ async def api_feed(
             "author":        post.author.username if post.author else "unknown",
             "content":       post.content,
             "post_type":     post.post_type.value,
+            "media_path":    post.media_path,
             "community_score": post.community_score,
             "view_count":    post.view_count,
             "published_at":  post.published_at.isoformat() if post.published_at else None,

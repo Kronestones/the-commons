@@ -135,6 +135,7 @@ async function loadMorePosts() {
         </div>
         ${post.reason ? `<p class="post-reason">${post.reason}</p>` : ''}
         <div class="post-content">${linkify(post.content)}</div>
+        ${post.media_path ? `<img src="${post.media_path.startsWith('http') ? post.media_path : '/media/' + post.media_path}" style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;object-fit:cover;">` : ''}
         <div class="post-actions">
           <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}" style="font-size:15px;">${post.user_voted ? '❤️' : '🤍'} <span id="score-${post.id}">${Math.round(post.community_score)}</span></button>
         </div>
