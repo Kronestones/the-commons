@@ -287,7 +287,6 @@ document.querySelectorAll('[data-time]').forEach(el => {
 
 {% endblock %}
 
-{% block scripts %}
 <script>
 function toggleMemberList() {
   const dropdown = document.getElementById('member-list-dropdown');
@@ -297,4 +296,3 @@ function toggleMemberList() {
   arrow.textContent = isOpen ? '▼' : '▲';
 }
 </script>
-{% endblock %}
