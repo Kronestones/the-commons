@@ -19,17 +19,9 @@
           {% if heartbeat_status == 'healthy' %}● Live{% elif heartbeat_status == 'stale' %}⚠ Stale ({{ heartbeat_age }}s ago){% else %}? Unknown{% endif %}
         </span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleMemberList()">
+      <div style="display:flex;justify-content:space-between;">
         <span>Active members</span>
-        <strong>{{ total_members }} <span id="member-list-arrow" style="font-size:12px;">▼</span></strong>
-      </div>
-      <div id="member-list-dropdown" style="display:none;max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-top:4px;">
-        {% for m in member_list %}
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);font-size:14px;">
-          <span>@{{ m.username }}{% if m.role.value == 'sovereign' %} 👑{% elif m.role.value == 'circle' %} ⭐{% endif %}</span>
-          <span style="font-size:12px;color:var(--muted);">{{ m.created_at.strftime("%b %Y") }}</span>
-        </div>
-        {% endfor %}
+        <strong>{{ total_members }}</strong>
       </div>
       <div style="display:flex;justify-content:space-between;">
         <span>Published posts</span>
@@ -286,13 +278,3 @@ document.querySelectorAll('[data-time]').forEach(el => {
 </script>
 
 {% endblock %}
-
-<script>
-function toggleMemberList() {
-  const dropdown = document.getElementById('member-list-dropdown');
-  const arrow = document.getElementById('member-list-arrow');
-  const isOpen = dropdown.style.display === 'block';
-  dropdown.style.display = isOpen ? 'none' : 'block';
-  arrow.textContent = isOpen ? '▼' : '▲';
-}
-</script>

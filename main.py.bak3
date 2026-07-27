@@ -2109,13 +2109,7 @@ async def sovereign_dashboard(
     from commons.circle_assistants import AssistantAnalysis
 
     # Platform stats
-    member_list = (
-        db.query(User)
-        .filter(User.is_active == True)
-        .order_by(User.created_at.desc())
-        .all()
-    )
-    total_members = len(member_list)
+    total_members = db.query(User).filter(User.is_active == True).count()
     total_posts   = db.query(Post).filter(Post.status == PostStatus.PUBLISHED).count()
     pending_posts = db.query(Post).filter(Post.status == PostStatus.PENDING).count()
 
@@ -2159,7 +2153,6 @@ async def sovereign_dashboard(
         "request":          request,
         "current_user":     current_user,
         "total_members":    total_members,
-        "member_list":      member_list,
         "total_posts":      total_posts,
         "pending_posts":    pending_posts,
         "sovereign_cases":  sovereign_cases,
