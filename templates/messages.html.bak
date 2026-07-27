@@ -20,18 +20,14 @@
   <main class="container" style="max-width:600px;margin:0 auto;padding:16px;">
 
     <!-- Tabs -->
-    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
       <button onclick="showTab('inbox')" id="tab-inbox" class="vote-btn">Inbox</button>
-      <button onclick="showTab('market')" id="tab-market" class="vote-btn">🛍️ Market</button>
       <button onclick="showTab('requests')" id="tab-requests" class="vote-btn">Requests <span id="req-count"></span></button>
       <button onclick="showTab('new')" id="tab-new" class="vote-btn">+ New</button>
     </div>
 
     <!-- Inbox -->
     <div id="pane-inbox"></div>
-
-    <!-- Market -->
-    <div id="pane-market" style="display:none"></div>
 
     <!-- Requests -->
     <div id="pane-requests" style="display:none"></div>
@@ -69,7 +65,7 @@
     let currentConvo = null;
 
     function showTab(tab) {
-      ['inbox','market','requests','new','conversation'].forEach(t => {
+      ['inbox','requests','new','conversation'].forEach(t => {
         document.getElementById('pane-' + t).style.display = 'none';
         const btn = document.getElementById('tab-' + t);
         if (btn) btn.style.opacity = '0.6';
@@ -78,12 +74,7 @@
       const btn = document.getElementById('tab-' + tab);
       if (btn) btn.style.opacity = '1';
       if (tab === 'inbox') loadInbox();
-      if (tab === 'market') loadMarket();
       if (tab === 'requests') loadRequests();
-    }
-
-    function isMarketMessage(m) {
-      return (m.last_message || '').startsWith('🛍️');
     }
 
     async function loadInbox() {
@@ -92,38 +83,14 @@
       });
       const data = await res.json();
       const pane = document.getElementById('pane-inbox');
-      const regular = (data.inbox || []).filter(m => !isMarketMessage(m));
-      if (regular.length === 0) {
+      if (!data.inbox || data.inbox.length === 0) {
         pane.innerHTML = '<p style="color:var(--muted);text-align:center;padding:32px;">No messages yet.</p>';
         return;
       }
-      pane.innerHTML = regular.map(m => `
+      pane.innerHTML = data.inbox.map(m => `
         <div class="post-card" onclick="openConvo('${m.username}')" style="cursor:pointer;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <strong>@${m.username}</strong>
-            <span style="font-size:12px;color:var(--muted);">${formatTime(m.time)}</span>
-          </div>
-          <p style="margin:4px 0 0;color:var(--muted);font-size:14px;">${m.last_message.substring(0,80)}${m.last_message.length>80?'...':''}</p>
-          ${m.unread ? '<span style="color:var(--green-dark);font-size:12px;font-weight:600;">● New</span>' : ''}
-        </div>
-      `).join('');
-    }
-
-    async function loadMarket() {
-      const res = await fetch('/api/messages/inbox', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      const data = await res.json();
-      const pane = document.getElementById('pane-market');
-      const market = (data.inbox || []).filter(m => isMarketMessage(m));
-      if (market.length === 0) {
-        pane.innerHTML = '<p style="color:var(--muted);text-align:center;padding:32px;">No marketplace messages yet.</p>';
-        return;
-      }
-      pane.innerHTML = market.map(m => `
-        <div class="post-card" onclick="openConvo('${m.username}')" style="cursor:pointer;">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <strong>🛍️ @${m.username}</strong>
             <span style="font-size:12px;color:var(--muted);">${formatTime(m.time)}</span>
           </div>
           <p style="margin:4px 0 0;color:var(--muted);font-size:14px;">${m.last_message.substring(0,80)}${m.last_message.length>80?'...':''}</p>
