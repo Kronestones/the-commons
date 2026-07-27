@@ -8,10 +8,10 @@ A public platform for the people.
 - No advertising. No data selling. No biometrics. No AI buttons.
 - Truth protected. Misinformation never published.
 - Local small businesses and creators only.
-- Flat $1 transaction fee. Operating costs only. No profit.
+- Anything above operating cost is donated.
 
 ## Founding Authority
-Sovereign Human T.L. Powers
+Architect Krone
 
 ## Stack
 - Python + FastAPI
