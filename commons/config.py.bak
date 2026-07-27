@@ -28,8 +28,6 @@ class Config:
         self.transaction_fee  = float(os.getenv("TRANSACTION_FEE", 1.00))
         self.min_circle_size  = int(os.getenv("MIN_CIRCLE_SIZE", 3))
         self.resend_api_key      = os.getenv("RESEND_API_KEY", "")
-        self.anthropic_api_key   = os.getenv("ANTHROPIC_API_KEY", "")
-        self.anthropic_model     = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
         self.cloudinary_cloud    = os.getenv("CLOUDINARY_CLOUD_NAME", "")
         self.cloudinary_api_key  = os.getenv("CLOUDINARY_API_KEY", "")
         self.cloudinary_api_secret = os.getenv("CLOUDINARY_API_SECRET", "")
