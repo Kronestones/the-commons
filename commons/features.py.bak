@@ -244,15 +244,6 @@ class ProfileManager:
             CommunityVote.post_id.in_([p.id for p in posts])
         ).scalar() or 0
 
-        # Which of these posts has the viewer already voted/liked?
-        voted_post_ids = set()
-        if viewer:
-            votes = db.query(CommunityVote).filter(
-                CommunityVote.user_id == viewer.id,
-                CommunityVote.post_id.in_([p.id for p in posts])
-            ).all()
-            voted_post_ids = {v.post_id for v in votes}
-
         return {
             "id":              user.id,
             "username":        user.username,
@@ -270,13 +261,11 @@ class ProfileManager:
             "posts": [
                 {
                     "id":              p.id,
-                    "content":         p.content,
+                    "content":         p.content[:100],
                     "post_type":       p.post_type.value,
-                    "media_path":      p.media_path,
                     "community_score": p.community_score,
                     "view_count":      p.view_count,
                     "published_at":    p.published_at.isoformat() if p.published_at else None,
-                    "user_voted":      p.id in voted_post_ids,
                 }
                 for p in posts
             ]

@@ -168,33 +168,19 @@ async function loadProfile() {
       return;
     }
     postsEl.innerHTML = p.posts.map(post => `
-      <div class="post-card" data-post-id="${post.id}" id="post-${post.id}">
+      <div class="post-card" id="post-${post.id}">
         <div class="post-header">
           <span class="post-author">@${p.username}</span>
           <span class="post-time">${post.published_at ? new Date(post.published_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}</span>
         </div>
-        <div class="post-content">${typeof linkify === 'function' ? linkify(post.content) : post.content}</div>
-        ${post.media_path ? `<img src="${post.media_path.startsWith('http') ? post.media_path : '/media/' + post.media_path}" style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;object-fit:cover;">` : ''}
+        <div class="post-content">${post.content}</div>
         <div class="post-actions">
-          <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}">${post.user_voted ? '❤️' : '🤍'} <span id="score-${post.id}">${Math.round(post.community_score)}</span></button>
+          <button onclick="vote(${post.id}, 1, this)" class="vote-btn">🤍</button>
+          <span class="community-score">${Math.round(post.community_score)}</span>
           ${isOwn ? '<button onclick="deletePost(' + post.id + ', this)" class="delete-btn">Delete</button>' : ''}
-        </div>
-        <div id="comments-${post.id}" style="margin-top:8px;">
-          <div id="comment-list-${post.id}" style="margin-bottom:8px;"></div>
-          <div style="display:flex;gap:8px;">
-            <input id="comment-input-${post.id}" type="text" placeholder="Write a comment..."
-              style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:20px;font-size:14px;"
-              onkeydown="if(event.key==='Enter'){submitComment(${post.id})}">
-            <button onclick="submitComment(${post.id})" class="vote-btn" style="padding:8px 14px;font-size:13px;">Post</button>
-          </div>
         </div>
       </div>
     `).join('');
-
-    // Load comments for the freshly-rendered profile posts
-    if (typeof autoLoadComments === 'function') {
-      setTimeout(autoLoadComments, 100);
-    }
   } catch(e) {
     document.getElementById('profile-posts').innerHTML = '<p style="padding:20px;color:#c00;">Error: ' + e.message + '</p>';
   }
