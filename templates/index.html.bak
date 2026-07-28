@@ -91,10 +91,7 @@ function runSearch(q) {
   clearTimeout(searchTimer);
   const results = document.getElementById('search-results');
   const clear   = document.getElementById('search-clear');
-  // Strip a leading @ so "@username" and "username" both search correctly —
-  // stored usernames in the database never include the @ symbol.
-  const cleanQ = q.replace(/^@+/, '');
-  if (!cleanQ || cleanQ.length < 2) {
+  if (!q || q.length < 2) {
     results.style.display = 'none';
     clear.style.display = 'none';
     return;
@@ -102,7 +99,7 @@ function runSearch(q) {
   clear.style.display = 'block';
   searchTimer = setTimeout(async () => {
     const token = localStorage.getItem('token');
-    const res = await fetch('/api/search?q=' + encodeURIComponent(cleanQ) + '&type=all', {
+    const res = await fetch('/api/search?q=' + encodeURIComponent(q) + '&type=all', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     const data = await res.json();
