@@ -7,9 +7,14 @@
   <link rel="stylesheet" href="/static/css/main.css">
 </head>
 <body>
-  <header style="background:var(--green-dark, #1a4a2e);color:white;padding:14px 16px;display:flex;align-items:center;gap:12px;">
-    <a href="/" style="color:white;text-decoration:none;font-size:22px;line-height:1;display:flex;align-items:center;" aria-label="Close messages">✕</a>
-    <span style="font-weight:600;font-size:17px;">Messages</span>
+  <header class="site-header">
+    <div class="header-inner">
+      <span class="site-title">The Commons</span>
+      <nav class="nav-links" id="nav-links">
+        <a href="/">Feed</a>
+        <a href="/messages" class="active">Messages</a>
+      </nav>
+    </div>
   </header>
 
   <main class="container" style="max-width:600px;margin:0 auto;padding:16px;">
