@@ -246,15 +246,11 @@ async function submitPost() {
 }
 
 async function toggleFollow() {
-  const res = await fetch('/api/users/' + PROFILE_USER_ID + '/follow_by_id', {
+  const res = await fetch('/api/users/' + PROFILE_USER_ID + '/follow', {
     method: 'POST', headers: { 'Authorization': 'Bearer ' + getProfileToken() }
   });
   const data = await res.json();
-  if (data.ok) {
-    loadProfile();
-  } else {
-    showMessage(data.error || 'Could not follow user.', true);
-  }
+  if (data.ok) loadProfile();
 }
 
 async function toggleBlock() {
