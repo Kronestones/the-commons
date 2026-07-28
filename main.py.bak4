@@ -1572,15 +1572,6 @@ async def api_inbox(
 ):
     return JSONResponse({"ok": True, "conversations": dm_manager.get_inbox(db, current_user)})
 
-@app.post("/api/messages/send")
-async def api_send_message_by_username(
-    username: str = Form(...),
-    content:  str = Form(...),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    return JSONResponse(send_message(db, current_user, username, content))
-
 @app.post("/api/messages/{recipient_id}")
 async def api_send_message(
     recipient_id: int,
@@ -2033,6 +2024,16 @@ async def api_follow(
     if not target:
         return JSONResponse({"ok": False, "error": "User not found."})
     return JSONResponse(follow_manager.toggle_follow(db, current_user, target.id))
+
+
+@app.post("/api/messages/send")
+async def api_send_message(
+    username: str = Form(...),
+    content:  str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(send_message(db, current_user, username, content))
 
 
 @app.get("/api/messages/inbox")
