@@ -54,7 +54,7 @@ def send_magic_link(email: str, token: str) -> bool:
                 "Content-Type": "application/json"
             },
             json={
-                "from": "The Commons <noreply@commonscommunity.org>",
+                "from": "The Commons <onboarding@resend.dev>",
                 "to": [email],
                 "subject": "Your sign-in link for The Commons",
                 "text": f"""Hello,
