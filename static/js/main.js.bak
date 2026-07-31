@@ -519,7 +519,6 @@ async function loadInlineComments(postId) {
     <div style="padding:4px 0;font-size:14px;">
       <strong style="font-size:13px;">@${c.author}</strong>
       <span style="margin-left:6px;">${c.content}</span>
-      <span style="margin-left:6px;font-size:11px;color:var(--muted);">${formatTime(c.created_at)}</span>
       ${c.author === username ? `<span onclick="deleteComment(${c.id}, ${postId})" style="color:var(--muted);font-size:11px;cursor:pointer;margin-left:8px;">✕</span>` : ''}
     </div>
   `).join('');
@@ -540,7 +539,6 @@ async function loadAllComments(postId) {
     <div style="padding:4px 0;font-size:14px;">
       <strong style="font-size:13px;">@${c.author}</strong>
       <span style="margin-left:6px;">${c.content}</span>
-      <span style="margin-left:6px;font-size:11px;color:var(--muted);">${formatTime(c.created_at)}</span>
       ${c.author === username ? `<span onclick="deleteComment(${c.id}, ${postId})" style="color:var(--muted);font-size:11px;cursor:pointer;margin-left:8px;">✕</span>` : ''}
     </div>
   `).join('');
