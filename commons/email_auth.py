@@ -46,9 +46,6 @@ def verify_magic_token(token: str, db: Session) -> str | None:
 
 def send_magic_link(email: str, token: str) -> bool:
     link = f"{config.base_url}/auth/magic?token={token}"
-    print(f"[EMAIL DEBUG] Starting send to {email}")
-    print(f"[EMAIL DEBUG] API key present: {bool(config.resend_api_key)}, length: {len(config.resend_api_key) if config.resend_api_key else 0}")
-    print(f"[EMAIL DEBUG] API key prefix: {config.resend_api_key[:8] if config.resend_api_key else 'EMPTY'}...")
     try:
         response = requests.post(
             "https://api.resend.com/emails",
@@ -71,16 +68,12 @@ If you didn't request this, ignore this email.
 
 Power to the People.
 — The Commons"""
-            },
-            timeout=15
+            }
         )
-        print(f"[EMAIL DEBUG] Resend status code: {response.status_code}")
-        print(f"[EMAIL DEBUG] Resend response body: {response.text}")
         if response.status_code == 200:
             return True
         print(f"[EMAIL] Resend error: {response.text}")
         return False
     except Exception as e:
-        print(f"[EMAIL DEBUG] Exception type: {type(e).__name__}")
         print(f"[EMAIL] Failed to send: {e}")
         return False
