@@ -34,21 +34,8 @@ def upload_image(file_bytes: bytes, folder: str = "the_commons",
         if not is_video:
             upload_kwargs["quality"] = "auto"
             upload_kwargs["fetch_format"] = "auto"
-        else:
-            # Force H.264 — many phones (especially iPhone) record in HEVC
-            # (hvc1), which most browsers cannot play natively in <video>.
-            # Transcoding to H.264 here guarantees universal playback.
-            upload_kwargs["eager"] = [
-                {"video_codec": "h264", "quality": "auto"}
-            ]
-            upload_kwargs["eager_async"] = False
 
         result = cloudinary.uploader.upload(file_bytes, **upload_kwargs)
-
-        # If we requested an eager H.264 transformation, use that URL —
-        # it's guaranteed browser-playable, unlike the raw uploaded file.
-        if is_video and result.get("eager"):
-            result["secure_url"] = result["eager"][0]["secure_url"]
         return {
             "ok":        True,
             "url":       result["secure_url"],
