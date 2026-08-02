@@ -17,25 +17,17 @@ def init_cloudinary():
     )
 
 
-def upload_image(file_bytes: bytes, folder: str = "the_commons",
-                 is_video: bool = False) -> dict:
-    """
-    Upload media to Cloudinary. Returns url and public_id.
-    Set is_video=True for video files — Cloudinary requires a different
-    resource_type for video vs image uploads, and this was previously
-    hardcoded to "image", which silently broke video uploads.
-    """
+def upload_image(file_bytes: bytes, folder: str = "the_commons") -> dict:
+    """Upload image to Cloudinary. Returns url and public_id."""
     init_cloudinary()
     try:
-        upload_kwargs = {
-            "folder": folder,
-            "resource_type": "video" if is_video else "image",
-        }
-        if not is_video:
-            upload_kwargs["quality"] = "auto"
-            upload_kwargs["fetch_format"] = "auto"
-
-        result = cloudinary.uploader.upload(file_bytes, **upload_kwargs)
+        result = cloudinary.uploader.upload(
+            file_bytes,
+            folder       = folder,
+            resource_type = "image",
+            quality      = "auto",
+            fetch_format = "auto",
+        )
         return {
             "ok":        True,
             "url":       result["secure_url"],
