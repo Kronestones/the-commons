@@ -47,11 +47,7 @@
         </div>
         <div class="post-content">{{ post.content | replace("\n", "<br>") }}</div>
         {% if post.media_path %}
-          {% if post.post_type.value == 'video' %}
-        <video src="{{ post.media_path if post.media_path.startswith('http') else '/media/' + post.media_path }}" controls playsinline style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;background:#000;"></video>
-          {% else %}
         <img src="{{ post.media_path if post.media_path.startswith('http') else '/media/' + post.media_path }}" style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;object-fit:cover;">
-          {% endif %}
         {% endif %}
         <div class="post-actions">
           <button onclick="vote({{ post.id }}, 1, this)" class="vote-btn {% if post.id in voted_post_ids %}voted{% endif %}" style="font-size:15px;background:none;border:none;color:var(--muted);">{% if post.id in voted_post_ids %}❤️{% else %}🤍{% endif %} <span id="score-{{ post.id }}">{{ post.community_score | int }}</span></button>
