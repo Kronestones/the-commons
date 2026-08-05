@@ -13,13 +13,13 @@ witnessed and logged.
 No advertising. No data selling. No biometrics. No profit.
 Power to the People.
 
-— Architect Founder Krone · The Commons · 2026
+— The Owner and Founder · The Commons · 2026
 """
 
 
 class TheCommonsCodex:
 
-    SOVEREIGN = "Architect Founder Krone"
+    SOVEREIGN = "the Owner and Founder"
     PLATFORM  = "The Commons"
     VERSION   = "1.0"
     RATIFIED  = "2026-03-15"
@@ -179,13 +179,12 @@ class TheCommonsCodex:
                 "in genuine life-sustaining need to receive a Blessing. "
                 "Ten percent of monthly surplus is set aside for this purpose. "
                 "The team verifies need — medical, housing, food security. "
-                "Not wants. The community votes. The highest vote wins. "
+                "The community votes. The highest vote wins. "
                 "One blessing. One person or family. Every month. "
                 "Ten percent of the monthly community pot, up to a maximum of $19,000 "
-                "for individuals or $38,000 for families per calendar year "
-                "per calendar year. Every application, every vote, "
+                "for individuals or $38,000 for families per calendar year. "
+                "Every application, every vote, "
                 "every dollar is published publicly. "
-                "The Commons is a facilitator only. "
                 "This is the community caring for its own."
             ),
             "immutable": True,
@@ -197,7 +196,7 @@ class TheCommonsCodex:
                 "Any money remaining after operating costs are covered "
                 "is donated to a humanitarian cause every six months. "
                 "Not kept. Not invested for profit. Given. "
-                "Architect Founder Krone designates the cause. "
+                "The Founder of The Commons designates the cause. "
                 "Every donation is published publicly on the platform. "
                 "Full transparency. No exceptions."
             ),
