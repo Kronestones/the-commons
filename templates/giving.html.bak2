@@ -7,17 +7,19 @@
   <!-- 1. Page Header -->
   <div class="page-header">
     <h1>Mutual Aid & Wealth Redistribution 💛</h1>
+    <p>Codex Laws 16 & 17 — The Monthly Blessing · Surplus to the World</p>
   </div>
 
   <!-- 2. Monthly Blessing -->
   <div class="page-header" style="margin-top:32px;">
     <h2>The Monthly Blessing</h2>
+    <p>One person. One month. Community chosen.</p>
   </div>
 
   <div class="blessing-statement">
     <p>Each month, The Commons community selects one member in genuine life-sustaining need to receive a Blessing. The team verifies need. The community votes. One person or family receives the Blessing.</p>
-    <p>Medical. Housing. Food security. Genuine life-sustaining need only.</p>
-    <p>Ten percent of the monthly community pot, up to a maximum of $19,000 for individuals or $38,000 for families per calendar year. Every dollar transparent.</p>
+    <p>Medical. Housing. Food security. Genuine life-sustaining need only. Not wants.</p>
+    <p>Ten percent of the monthly community pot, up to a maximum of $19,000 for individuals or $38,000 for families per calendar year. Every dollar transparent. The Commons is a facilitator only.</p>
   </div>
 
   <div class="blessing-how">
@@ -104,8 +106,8 @@
 
   <!-- 4. Surplus / Giving + Buy Me a Coffee -->
   <div class="giving-statement">
-    <p>Any money remaining after operating costs are covered is donated to a humanitarian cause. Not kept. Not invested for profit. Given.</p>
-    <p>The Founder of The Commons designates the cause. Every donation is published here. Full transparency. No exceptions.
+    <p>Any money remaining after operating costs are covered is donated to a humanitarian cause every six months. Not kept. Not invested for profit. Given.</p>
+    <p>Architect Founder Krone designates the cause. Every donation is published here. Full transparency. No exceptions.
     <p style="margin-top:10px;">Have a humanitarian cause you'd like to suggest? Post it on the feed with <strong>#suggestacause</strong> — your voice matters here.</p></p>
     <div style="text-align:center; margin:24px 0;">
       <p style="color:var(--text-muted);font-size:14px;margin-bottom:12px;">Support The Commons — every contribution helps keep the platform running and the mission alive.</p>
@@ -126,7 +128,7 @@
 
   <div class="transparency-statement">
     <p>The Commons operates at cost. No profit. No shareholders. No hidden fees.</p>
-    <p>Every dollar collected in platform fees is accounted for here. Operating costs are published monthly. Any surplus goes to humanitarian causes.</p>
+    <p>Every dollar collected in platform fees is accounted for here. Operating costs are published monthly. Any surplus goes to humanitarian causes every six months.</p>
   </div>
 
   {% if reports %}
