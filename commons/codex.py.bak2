@@ -113,7 +113,7 @@ class TheCommonsCodex:
                 "Harassment, dehumanization, and targeted abuse "
                 "are incompatible with this platform."
             ),
-            "immutable": True,
+            "immutable": False,
         },
         {
             "number": 8,
@@ -167,7 +167,7 @@ class TheCommonsCodex:
                 "Session nudges, content pattern awareness, youth protections — "
                 "these are not restrictions. They are care."
             ),
-            "immutable": True,
+            "immutable": False,
         },
 
 
