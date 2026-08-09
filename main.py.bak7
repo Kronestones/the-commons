@@ -54,7 +54,6 @@ from commons.social      import social, Like, Comment, Share
 from commons.parental    import parental, ParentalControl
 from commons.maintenance    import maintenance
 from commons.circle_assistants import circle_assistants, AssistantAnalysis
-from commons.engineering_teams   import engineering_consultation, EngineeringConsultation, ENGINEERING_TEAMS
 from commons.payments        import payment_manager, UserCurrencyPreference, LiveGift, CreatorWallet
 from commons.support         import support_manager, SupportTicket, SupportMessage
 from commons.blessing        import blessing_manager, BlessingApplication, BlessingVote, MonthlyBlessingRecord
@@ -120,7 +119,6 @@ async def startup():
     from commons.features import Follow, Notification, Hashtag, PostHashtag, Bookmark, DirectMessage, UserBlock, ContentReport, VideoResponse
     from commons.captions import Caption
     from commons.circle_assistants import AssistantAnalysis
-    from commons.engineering_teams import EngineeringConsultation
     from commons.payments import UserCurrencyPreference, LiveGift, CreatorWallet
     from commons.support import SupportTicket, SupportMessage
     from commons.blessing import BlessingApplication, BlessingVote, MonthlyBlessingRecord
@@ -1298,67 +1296,7 @@ async def api_assistant_profiles(
         raise HTTPException(403, "Circle access required.")
     return JSONResponse(circle_assistants.get_assistant_profiles(circle_member))
 
-# ── Engineering Teams API (Keel & Ballast) ────────────────────────────────────
-
-@app.get("/api/engineering/teams")
-async def api_engineering_teams(
-    current_user: User = Depends(get_current_user),
-):
-    """List Team Keel and Team Ballast."""
-    if current_user.role.value not in ("circle", "sovereign"):
-        raise HTTPException(403, "Circle or Sovereign access required.")
-    return JSONResponse({"ok": True, "teams": ENGINEERING_TEAMS})
-
-@app.post("/api/engineering/consult/{team_key}")
-async def api_engineering_consult(
-    team_key:     str,
-    problem:      str = Form(...),
-    code_context: str = Form(default=""),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Consult one engineering team (keel or ballast) on a real problem."""
-    if current_user.role.value != "sovereign":
-        raise HTTPException(403, "Sovereign access required.")
-    result = engineering_consultation.consult_team(db, team_key, problem, code_context)
-    return JSONResponse(result)
-
-@app.post("/api/engineering/consult-both")
-async def api_engineering_consult_both(
-    problem:      str = Form(...),
-    code_context: str = Form(default=""),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Consult BOTH Team Keel and Team Ballast together on a real problem."""
-    if current_user.role.value != "sovereign":
-        raise HTTPException(403, "Sovereign access required.")
-    result = engineering_consultation.consult_both_teams(db, problem, code_context)
-    return JSONResponse(result)
-
-@app.get("/api/engineering/pending")
-async def api_engineering_pending(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Get pending (unreviewed) engineering consultations."""
-    if current_user.role.value != "sovereign":
-        raise HTTPException(403, "Sovereign access required.")
-    return JSONResponse({"ok": True, "pending": engineering_consultation.get_pending(db)})
-
-@app.post("/api/engineering/reviewed/{consultation_id}")
-async def api_engineering_reviewed(
-    consultation_id: int,
-    current_user:    User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Mark an engineering consultation as reviewed."""
-    if current_user.role.value != "sovereign":
-        raise HTTPException(403, "Sovereign access required.")
-    return JSONResponse(engineering_consultation.mark_reviewed(db, consultation_id))
-
-
-# ── Translation API ───────────────────────────────────────────────────────────────
+# ── Translation API ───────────────────────────────────────────────────────────
 
 @app.post("/api/translate")
 async def api_translate(
