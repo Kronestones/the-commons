@@ -81,6 +81,7 @@ class User(Base):
     is_verified     = Column(Boolean, default=False)  # Blue checkmark at 10k followers
     created_at      = Column(DateTime, default=datetime.utcnow)
     last_seen       = Column(DateTime, default=datetime.utcnow)
+    connections     = Column(Text, default="{}")
 
     # No biometrics — ever
     # No phone number required

@@ -20,6 +20,7 @@ Codex Law 5: Transparency
 
 import hashlib
 import secrets
+from commons.connections import get_profile_embeds
 from datetime import datetime, timedelta
 from typing import Optional, List
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, Float, func, desc
@@ -201,8 +202,10 @@ class FollowManager:
             return []
         return (
             db.query(Post)
+            .join(User, User.id == Post.author_id)
             .filter(Post.author_id.in_(following_ids))
             .filter(Post.status == PostStatus.PUBLISHED)
+            .filter(User.is_active == True)
             .order_by(desc(Post.published_at))
             .offset(offset)
             .limit(limit)
@@ -219,6 +222,8 @@ class ProfileManager:
         """Get a user's public profile."""
         user = db.query(User).filter(User.username.ilike(username)).first()
         if not user:
+            return None
+        if not user.is_active:
             return None
 
         posts = (
@@ -267,6 +272,7 @@ class ProfileManager:
             "is_blocked":      is_blocked,
             "avatar_path":     user.avatar_path or None,
             "banner_path":     user.banner_path or None,
+            "connections":     get_profile_embeds(user, "commonscommunity.org"),
             "posts": [
                 {
                     "id":              p.id,
@@ -296,6 +302,26 @@ class ProfileManager:
         user.display_name = display_name
         db.commit()
         return {"ok": True}
+
+    def update_twitch(self, db: Session, user: User, raw_input: str) -> dict:
+        from commons.connections import set_twitch_connection, remove_connection
+        if not raw_input.strip():
+            result = remove_connection(user, "twitch")
+        else:
+            result = set_twitch_connection(user, raw_input)
+        if result.get("ok"):
+            db.commit()
+        return result
+
+    def update_spotify(self, db: Session, user: User, raw_input: str) -> dict:
+        from commons.connections import set_spotify_connection, remove_connection
+        if not raw_input.strip():
+            result = remove_connection(user, "spotify")
+        else:
+            result = set_spotify_connection(user, raw_input)
+        if result.get("ok"):
+            db.commit()
+        return result
 
 
 # ── Notification Manager ──────────────────────────────────────────────────────

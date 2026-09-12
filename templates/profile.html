@@ -175,7 +175,7 @@ async function loadProfile() {
           <span class="post-author">@${p.username}</span>
           <span class="post-time">${post.published_at ? new Date(post.published_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}</span>
         </div>
-        <div class="post-content">${typeof linkify === 'function' ? linkify(post.content) : post.content}</div>
+        <div class="post-content" id="post-content-${post.id}">${typeof linkify === 'function' ? linkify(post.content) : post.content}</div>
         ${post.media_path ? (
           post.post_type === 'video'
             ? `<video src="${post.media_path.startsWith('http') ? post.media_path : '/media/' + post.media_path}" controls playsinline style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;background:#000;"></video>`
@@ -183,6 +183,7 @@ async function loadProfile() {
         ) : ''}
         <div class="post-actions">
           <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}">${post.user_voted ? '❤️' : '🤍'} <span id="score-${post.id}">${Math.round(post.community_score)}</span></button>
+          <button onclick="translatePost(${post.id}, ${JSON.stringify(typeof linkify === 'function' ? linkify(post.content) : post.content)}, ${JSON.stringify(post.content)})" class="vote-btn" style="background:none;">🌐 Translate</button>
           ${isOwn ? '<button onclick="deletePost(' + post.id + ', this)" class="delete-btn">Delete</button>' : ''}
         </div>
         <div id="comments-${post.id}" style="margin-top:8px;">

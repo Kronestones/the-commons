@@ -1,0 +1,43 @@
+<!--
+  Connections section — drop into templates/profile.html wherever you
+  want Twitch/Spotify to appear (e.g. below the bio, above the posts).
+
+  Expects the route to pass `embeds` from connections.get_profile_embeds(),
+  e.g.:
+      from commons.connections import get_profile_embeds
+      embeds = get_profile_embeds(profile_user, "commonscommunity.org")
+      return templates.TemplateResponse("profile.html", {..., "embeds": embeds})
+-->
+
+{% if embeds.twitch_url or embeds.spotify_url %}
+<section class="profile-connections">
+  <h3>Connections</h3>
+
+  {% if embeds.twitch_url %}
+  <div class="connection-embed connection-twitch">
+    <iframe
+      src="{{ embeds.twitch_url }}"
+      height="378"
+      width="100%"
+      allowfullscreen
+      frameborder="0"
+      scrolling="no">
+    </iframe>
+  </div>
+  {% endif %}
+
+  {% if embeds.spotify_url %}
+  <div class="connection-embed connection-spotify">
+    <iframe
+      src="{{ embeds.spotify_url }}"
+      width="100%"
+      height="152"
+      frameborder="0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      style="border-radius: 12px;">
+    </iframe>
+  </div>
+  {% endif %}
+
+</section>
+{% endif %}

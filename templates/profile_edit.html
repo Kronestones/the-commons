@@ -14,6 +14,14 @@
       <textarea id="bio" maxlength="300" rows="4" placeholder="Tell The Commons who you are..."></textarea>
     </label>
 
+    <label>Twitch <small>(channel name or link — leave blank to remove)</small>
+      <input type="text" id="twitch" placeholder="e.g. yourchannel or https://twitch.tv/yourchannel">
+    </label>
+
+    <label>Spotify <small>(track, artist, album, or playlist link — leave blank to remove)</small>
+      <input type="text" id="spotify" placeholder="Paste a Spotify share link">
+    </label>
+
     <div id="edit-msg" class="form-error" style="display:none;"></div>
 
     <button class="btn-primary btn-full" onclick="saveProfile()">Save Changes</button>
@@ -41,6 +49,10 @@ async function loadCurrent() {
     const p = data.profile;
     document.getElementById('display-name').value = p.display_name !== p.username ? p.display_name : '';
     document.getElementById('bio').value           = p.bio || '';
+    if (p.connections) {
+      document.getElementById('twitch').value  = p.connections.twitch_url ? p.connections.twitch_url : '';
+      document.getElementById('spotify').value = p.connections.spotify_url ? p.connections.spotify_url : '';
+    }
   }
 }
 
@@ -65,6 +77,29 @@ async function saveProfile() {
     const f = new FormData();
     f.append('bio', bio);
     const r = await fetch('/api/profile/bio', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
+    });
+    const d = await r.json();
+    if (!d.ok) { ok = false; msgEl.textContent = d.error; msgEl.style.display = ''; }
+  }
+
+  const twitch  = document.getElementById('twitch').value.trim();
+  const spotify = document.getElementById('spotify').value.trim();
+
+  if (ok) {
+    const f = new FormData();
+    f.append('twitch', twitch);
+    const r = await fetch('/api/profile/twitch', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
+    });
+    const d = await r.json();
+    if (!d.ok) { ok = false; msgEl.textContent = d.error; msgEl.style.display = ''; }
+  }
+
+  if (ok) {
+    const f = new FormData();
+    f.append('spotify', spotify);
+    const r = await fetch('/api/profile/spotify', {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
     });
     const d = await r.json();

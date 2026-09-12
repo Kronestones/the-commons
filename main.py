@@ -1523,6 +1523,22 @@ async def api_update_bio(
 ):
     return JSONResponse(profile_manager.update_bio(db, current_user, bio))
 
+@app.post("/api/profile/twitch")
+async def api_update_twitch(
+    twitch:       str = Form(""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(profile_manager.update_twitch(db, current_user, twitch))
+
+@app.post("/api/profile/spotify")
+async def api_update_spotify(
+    spotify:      str = Form(""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(profile_manager.update_spotify(db, current_user, spotify))
+
 @app.post("/api/profile/display-name")
 async def api_update_display_name(
     display_name: str = Form(...),
