@@ -323,6 +323,16 @@ class ProfileManager:
             db.commit()
         return result
 
+    def update_youtube(self, db: Session, user: User, raw_input: str) -> dict:
+        from commons.connections import set_youtube_connection, remove_connection
+        if not raw_input.strip():
+            result = remove_connection(user, "youtube")
+        else:
+            result = set_youtube_connection(user, raw_input)
+        if result.get("ok"):
+            db.commit()
+        return result
+
 
 # ── Notification Manager ──────────────────────────────────────────────────────
 

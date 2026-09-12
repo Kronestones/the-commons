@@ -668,6 +668,45 @@ function linkify(text) {
   return escapeHtml(text).replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--green-dark);word-break:break-all;">$1</a>');
 }
 
+// ── Media embeds in post content (Twitch / Spotify / YouTube) ──────────────────
+function extractMediaEmbeds(text) {
+  if (!text) return '';
+  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g;
+  const urls = text.match(urlRegex) || [];
+  let html = '';
+  const seen = new Set();
+
+  for (const url of urls) {
+    if (seen.has(url)) continue;
+
+    // Twitch channel: https://twitch.tv/channelname
+    let m = url.match(/twitch\.tv\/([a-zA-Z0-9_]{3,25})(?:[/?]|$)/);
+    if (m) {
+      seen.add(url);
+      html += '<div style="margin-top:10px;"><iframe src="https://player.twitch.tv/?channel=' + m[1] + '&parent=commonscommunity.org&autoplay=false" height="280" width="100%" allowfullscreen frameborder="0" scrolling="no"></iframe></div>';
+      continue;
+    }
+
+    // Spotify: https://open.spotify.com/{type}/{id}
+    m = url.match(/open\.spotify\.com\/(track|album|artist|playlist|episode|show)\/([a-zA-Z0-9]{22})/);
+    if (m) {
+      seen.add(url);
+      html += '<div style="margin-top:10px;"><iframe src="https://open.spotify.com/embed/' + m[1] + '/' + m[2] + '" width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" style="border-radius:12px;"></iframe></div>';
+      continue;
+    }
+
+    // YouTube: youtube.com/watch?v=, youtu.be/, youtube.com/shorts/, youtube.com/embed/
+    m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+    if (m) {
+      seen.add(url);
+      html += '<div style="margin-top:10px;position:relative;padding-bottom:56.25%;height:0;overflow:hidden;"><iframe src="https://www.youtube.com/embed/' + m[1] + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen frameborder="0"></iframe></div>';
+      continue;
+    }
+  }
+
+  return html;
+}
+
 // ── Auto-load comments on page load ─────────────────────────────────────────
 function autoLoadComments() {
   document.querySelectorAll('[data-post-id]').forEach(card => {

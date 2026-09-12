@@ -119,6 +119,64 @@ def spotify_embed_url(spotify_type: str, spotify_id: str) -> str:
     return f"https://open.spotify.com/embed/{spotify_type}/{spotify_id}"
 
 
+# YouTube video IDs are 11 characters, base64url-ish charset.
+_YOUTUBE_VIDEO_ID_RE = re.compile(r"^[a-zA-Z0-9_-]{11}$")
+
+
+def parse_youtube_input(raw: str) -> Optional[dict]:
+    """
+    Accepts a YouTube video URL (watch, youtu.be, shorts, embed) or a
+    channel URL (/channel/, /c/, /@handle). Returns:
+      {"type": "video", "id": VIDEO_ID}
+      {"type": "channel", "url": full channel URL}
+    or None if it doesn't look like YouTube at all.
+    """
+    raw = raw.strip()
+    if not raw:
+        return None
+
+    if "youtube.com" not in raw and "youtu.be" not in raw:
+        return None
+
+    parsed = urlparse(raw if "://" in raw else f"https://{raw}")
+
+    # youtu.be/VIDEO_ID short links
+    if "youtu.be" in parsed.netloc:
+        video_id = parsed.path.strip("/").split("/")[0]
+        if _YOUTUBE_VIDEO_ID_RE.match(video_id):
+            return {"type": "video", "id": video_id}
+        return None
+
+    # youtube.com/watch?v=VIDEO_ID
+    if parsed.path == "/watch":
+        qs = parse_qs(parsed.query)
+        video_id = qs.get("v", [None])[0]
+        if video_id and _YOUTUBE_VIDEO_ID_RE.match(video_id):
+            return {"type": "video", "id": video_id}
+        return None
+
+    parts = [p for p in parsed.path.split("/") if p]
+    if not parts:
+        return None
+
+    # youtube.com/embed/VIDEO_ID or /shorts/VIDEO_ID
+    if parts[0] in ("embed", "shorts") and len(parts) >= 2:
+        video_id = parts[1]
+        if _YOUTUBE_VIDEO_ID_RE.match(video_id):
+            return {"type": "video", "id": video_id}
+        return None
+
+    # youtube.com/channel/UC..., /c/Name, /@handle
+    if parts[0] in ("channel", "c") or parts[0].startswith("@"):
+        return {"type": "channel", "url": f"https://www.youtube.com/{'/'.join(parts)}"}
+
+    return None
+
+
+def youtube_video_embed_url(video_id: str) -> str:
+    return f"https://www.youtube.com/embed/{video_id}"
+
+
 # ── Read/write helpers for the User.connections JSON column ─────────────
 
 def load_connections(user) -> dict:
@@ -163,6 +221,28 @@ def set_spotify_connection(user, raw_input: str) -> dict:
     return {"ok": True, **parsed}
 
 
+def set_youtube_connection(user, raw_input: str) -> dict:
+    """
+    Validates and stores a YouTube connection (video or channel) on the
+    user object (caller is responsible for db.commit()).
+    """
+    parsed = parse_youtube_input(raw_input)
+    if not parsed:
+        return {"ok": False, "error": "That doesn't look like a valid YouTube link."}
+
+    data = load_connections(user)
+    if parsed["type"] == "video":
+        data["youtube_type"] = "video"
+        data["youtube_id"] = parsed["id"]
+        data.pop("youtube_channel_url", None)
+    else:
+        data["youtube_type"] = "channel"
+        data["youtube_channel_url"] = parsed["url"]
+        data.pop("youtube_id", None)
+    user.connections = json.dumps(data)
+    return {"ok": True, **parsed}
+
+
 def remove_connection(user, kind: str) -> dict:
     """kind is 'twitch' or 'spotify'."""
     data = load_connections(user)
@@ -171,6 +251,10 @@ def remove_connection(user, kind: str) -> dict:
     elif kind == "spotify":
         data.pop("spotify_type", None)
         data.pop("spotify_id", None)
+    elif kind == "youtube":
+        data.pop("youtube_type", None)
+        data.pop("youtube_id", None)
+        data.pop("youtube_channel_url", None)
     else:
         return {"ok": False, "error": f"Unknown connection kind: {kind}"}
     user.connections = json.dumps(data)
@@ -184,12 +268,22 @@ def get_profile_embeds(user, parent_domain: str) -> dict:
         embeds = get_profile_embeds(user, "commonscommunity.org")
     """
     data = load_connections(user)
-    result = {"twitch_url": None, "spotify_url": None}
+    result = {
+        "twitch_url": None,
+        "spotify_url": None,
+        "youtube_video_url": None,
+        "youtube_channel_url": None,
+    }
 
     if data.get("twitch_channel"):
         result["twitch_url"] = twitch_embed_url(data["twitch_channel"], parent_domain)
 
     if data.get("spotify_type") and data.get("spotify_id"):
         result["spotify_url"] = spotify_embed_url(data["spotify_type"], data["spotify_id"])
+
+    if data.get("youtube_type") == "video" and data.get("youtube_id"):
+        result["youtube_video_url"] = youtube_video_embed_url(data["youtube_id"])
+    elif data.get("youtube_type") == "channel" and data.get("youtube_channel_url"):
+        result["youtube_channel_url"] = data["youtube_channel_url"]
 
     return result

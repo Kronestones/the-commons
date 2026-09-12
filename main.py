@@ -1539,6 +1539,14 @@ async def api_update_spotify(
 ):
     return JSONResponse(profile_manager.update_spotify(db, current_user, spotify))
 
+@app.post("/api/profile/youtube")
+async def api_update_youtube(
+    youtube:      str = Form(""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(profile_manager.update_youtube(db, current_user, youtube))
+
 @app.post("/api/profile/display-name")
 async def api_update_display_name(
     display_name: str = Form(...),
