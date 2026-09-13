@@ -37,10 +37,29 @@ NEWS_OUTLETS = [
     {"username": "MotherJones",     "rss_url": "https://www.motherjones.com/feed/"},  # VERIFIED
     {"username": "MsMagazine",      "rss_url": "https://msmagazine.com/feed/"},  # VERIFIED
     {"username": "AmnestyIntl",     "rss_url": "https://www.amnesty.org/en/feed/"},  # VERIFIED
+    {"username": "France24",        "rss_url": "https://www.france24.com/en/rss"},  # VERIFIED
+    {"username": "DW",              "rss_url": "https://rss.dw.com/rdf/rss-en-all"},  # VERIFIED
+    {"username": "Politico",        "rss_url": "https://www.politico.com/rss/politicopicks.xml"},  # VERIFIED
+    {"username": "PewResearch",     "rss_url": "https://www.pewresearch.org/feed/"},  # VERIFIED
+    {"username": "TheConversation", "rss_url": "https://theconversation.com/us/articles.atom"},  # VERIFIED
+    {"username": "RealNewsNetwork", "rss_url": "https://therealnews.com/feed"},  # VERIFIED
+    {"username": "AlterNet",        "rss_url": "https://www.alternet.org/feeds/feed.rss"},  # VERIFIED
+    {"username": "AllSides",        "rss_url": "https://www.allsides.com/rss/news"},  # VERIFIED
+    {"username": "NewsNation",      "rss_url": "https://www.newsnationnow.com/feed/"},  # VERIFIED
+    {"username": "Truthout",        "rss_url": "https://truthout.org/latest/feed/"},  # VERIFIED
+    {"username": "HongKongFP",      "rss_url": "https://hongkongfp.com/feed/"},  # VERIFIED
+    {"username": "PBSNewsHour",     "rss_url": "https://www.pbs.org/newshour/feeds/rss/nation"},  # VERIFIED
+    {"username": "TheHill",         "rss_url": "https://thehill.com/feed/"},  # VERIFIED
+    {"username": "AtlasNews",       "rss_url": "https://www.theatlasnews.co/feed"},  # VERIFIED
+    {"username": "Axios",           "rss_url": "https://www.axios.com/feeds/feed.rss"},  # VERIFIED
     # AP and Reuters intentionally omitted — neither offers a reliable
-    # official public RSS feed anymore. Both could be added later via a
-    # feed-generation service (e.g. rss.app) if you're comfortable
-    # depending on a third party for that specific outlet.
+    # official public RSS feed anymore. NHK World Japan, C-SPAN, The
+    # Bureau of Investigative Journalism, and The Impartial Reporter
+    # also had no confirmed official direct feed found. Paywalled
+    # outlets (The Economist, Foreign Affairs, The Atlantic, Washington
+    # Post, CNN, WSJ, USA Today, LA Times, Bloomberg Asia, NBC News,
+    # Forbes, Financial Times, Epoch Times) were excluded by choice —
+    # this platform only auto-posts from freely-accessible sources.
 ]
 
 # How often to check feeds, in seconds. 30 minutes is a reasonable

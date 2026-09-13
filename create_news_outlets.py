@@ -28,6 +28,21 @@ DISPLAY_NAMES = {
     "MotherJones": "Mother Jones",
     "MsMagazine":  "Ms. Magazine",
     "AmnestyIntl": "Amnesty International",
+    "France24":        "France 24",
+    "DW":              "DW",
+    "Politico":        "Politico",
+    "PewResearch":     "Pew Research Center",
+    "TheConversation": "The Conversation",
+    "RealNewsNetwork": "The Real News Network",
+    "AlterNet":        "AlterNet",
+    "AllSides":        "AllSides",
+    "NewsNation":      "NewsNation",
+    "Truthout":        "Truthout",
+    "HongKongFP":      "Hong Kong Free Press",
+    "PBSNewsHour":     "PBS NewsHour",
+    "TheHill":         "The Hill",
+    "AtlasNews":       "Atlas News",
+    "Axios":           "Axios",
 }
 
 
