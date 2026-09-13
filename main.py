@@ -53,6 +53,7 @@ from commons.surplus     import surplus_manager
 from commons.social      import social, Like, Comment, Share
 from commons.parental    import parental, ParentalControl
 from commons.maintenance    import maintenance
+from commons.news_feed       import news_feed
 from commons.circle_assistants import circle_assistants, AssistantAnalysis
 from commons.engineering_teams   import engineering_consultation, EngineeringConsultation, ENGINEERING_TEAMS
 from commons.payments        import payment_manager, UserCurrencyPreference, LiveGift, CreatorWallet
@@ -136,6 +137,7 @@ async def startup():
         try:
             revival.startup_check()
             heartbeat.start()
+            news_feed.start()
         except Exception as e:
             print(f"[STARTUP] Background startup warning: {e}")
 
