@@ -535,7 +535,7 @@ const commentOriginals = {};
 
 async function translateComment(commentId, originalText) {
   const textEl = document.getElementById('comment-text-' + commentId);
-  if (!textEl) return;
+  if (!textEl) { alert("DEBUG: textEl not found"); return; }
 
   if (commentOriginals[commentId]) {
     textEl.textContent = commentOriginals[commentId];
