@@ -17,6 +17,8 @@ from .database import (
     Post, User, CommunityVote, FingerprintRecord,
     PostStatus, PostType, AlgorithmMode
 )
+from .features import Follow
+from sqlalchemy import or_
 from .fingerprint import fingerprint
 from .config import config
 
@@ -93,6 +95,7 @@ class PostManager:
             db.query(Post)
             .filter(Post.status == PostStatus.PUBLISHED)
             .filter(self._youth_filter(user))
+            .filter(self._news_visibility_filter(db, user))
             .order_by(desc(Post.published_at))
             .offset(offset)
             .limit(limit)
@@ -106,6 +109,7 @@ class PostManager:
             db.query(Post)
             .filter(Post.status == PostStatus.PUBLISHED)
             .filter(self._youth_filter(user))
+            .filter(self._news_visibility_filter(db, user))
             .order_by(desc(Post.community_score), desc(Post.published_at))
             .offset(offset)
             .limit(limit)
@@ -122,6 +126,7 @@ class PostManager:
             db.query(Post)
             .filter(Post.status == PostStatus.PUBLISHED)
             .filter(self._youth_filter(user))
+            .filter(self._news_visibility_filter(db, user))
             .order_by(
                 desc(Post.community_score * 0.6 + Post.view_count * 0.001),
                 desc(Post.published_at)
@@ -138,6 +143,21 @@ class PostManager:
             # More protective content filtering applied
             return Post.is_political == False
         return True
+
+    def _news_visibility_filter(self, db: Session, user: User):
+        """
+        News posts only show in the general feed to people who follow
+        that outlet. Everyone else's feed stays free of headlines they
+        never asked for — the outlet's own profile page is unaffected.
+        """
+        followed_ids = [
+            f.following_id for f in
+            db.query(Follow).filter(Follow.follower_id == user.id).all()
+        ]
+        return or_(
+            Post.is_news == False,
+            Post.author_id.in_(followed_ids) if followed_ids else False,
+        )
 
     def get_feed_reason(self, post: Post, user: User) -> str:
         """
