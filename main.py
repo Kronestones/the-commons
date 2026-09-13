@@ -172,24 +172,44 @@ async def home(request: Request, db: Session = Depends(get_db)):
         from fastapi.responses import RedirectResponse
         return RedirectResponse(url="/register", status_code=302)
 
-    # Get recent published posts for the landing feed
-    recent_posts = (
-        db.query(Post)
-        .filter(Post.status == PostStatus.PUBLISHED)
-        .order_by(Post.published_at.desc())
-        .limit(20)
-        .all()
-    )
     # Decode token from cookie for template use
     from commons.auth import decode_token
-    from commons.database import CommunityVote
+    from commons.database import CommunityVote, User
     current_username = None
     voted_post_ids = set()
+    home_user = None
     token = request.cookies.get("token", "")
     if token:
         payload = decode_token(token)
         if payload:
             current_username = payload.get("username")
+            user_id = int(payload.get("sub", 0))
+            home_user = db.query(User).filter(User.id == user_id).first()
+
+    # Get recent published posts for the landing feed — same news
+    # visibility rule as the main feed: news posts only show here if
+    # the viewer follows that outlet.
+    recent_posts_query = (
+        db.query(Post)
+        .filter(Post.status == PostStatus.PUBLISHED)
+    )
+    if home_user:
+        recent_posts_query = recent_posts_query.filter(
+            posts._news_visibility_filter(db, home_user)
+        )
+    else:
+        recent_posts_query = recent_posts_query.filter(Post.is_news == False)
+
+    recent_posts = (
+        recent_posts_query
+        .order_by(Post.published_at.desc())
+        .limit(20)
+        .all()
+    )
+
+    if token:
+        payload = decode_token(token)
+        if payload:
             user_id = int(payload.get("sub", 0))
             post_ids = [p.id for p in recent_posts]
             votes = db.query(CommunityVote).filter(
