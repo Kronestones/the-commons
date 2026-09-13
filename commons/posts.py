@@ -150,10 +150,12 @@ class PostManager:
         that outlet. Everyone else's feed stays free of headlines they
         never asked for — the outlet's own profile page is unaffected.
         """
+        print(f"[NEWS_DEBUG] Checking news filter for user {user.id} ({user.username})")
         followed_ids = [
             f.following_id for f in
             db.query(Follow).filter(Follow.follower_id == user.id).all()
         ]
+        print(f"[NEWS_DEBUG] followed_ids = {followed_ids}")
         return or_(
             Post.is_news == False,
             Post.author_id.in_(followed_ids) if followed_ids else False,
