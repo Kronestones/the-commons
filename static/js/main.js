@@ -560,10 +560,10 @@ async function translateComment(commentId, originalText) {
       commentOriginals[commentId] = originalText;
       textEl.textContent = data.translated_text;
     } else {
-      showMessage(data.error || 'Could not translate.', true);
+      alert('DEBUG: API said not-ok. Error: ' + (data.error || 'no error message'));
     }
   } catch(e) {
-    showMessage('Translation unavailable right now.', true);
+    alert('DEBUG: fetch failed entirely: ' + e.message);
   }
 }
 
