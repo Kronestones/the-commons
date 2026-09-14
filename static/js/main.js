@@ -534,6 +534,7 @@ async function loadInlineComments(postId) {
 const commentOriginals = {};
 
 async function translateComment(commentId, originalText) {
+  alert("DEBUG: function was called");
   const textEl = document.getElementById('comment-text-' + commentId);
   if (!textEl) { alert("DEBUG: textEl not found"); return; }
 
