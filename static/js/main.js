@@ -1,3 +1,4 @@
+alert("DEBUG: main.js loaded");
 /**
  * main.js — The Commons
  *
