@@ -1,5 +1,4 @@
-alert("DEBUG: main.js loaded");
-/**
+/*
  * main.js — The Commons
  *
  * Handles auth state, nav updates, toasts, and shared UI.
@@ -524,7 +523,7 @@ async function loadInlineComments(postId) {
     <div style="padding:4px 0;font-size:14px;">
       <strong style="font-size:13px;"><a href="/profile/${c.author}" style="color:inherit;text-decoration:none;">@${c.author}</a></strong>
       <span id="comment-text-${c.id}" style="margin-left:6px;">${c.content}</span>
-      <span onclick="translateComment(${c.id}, ${JSON.stringify(c.content)})" style="margin-left:6px;font-size:11px;color:var(--green-dark);cursor:pointer;text-decoration:underline;">Translate</span>
+      <span onclick='translateComment(${c.id}, ${JSON.stringify(c.content)})' style="margin-left:6px;font-size:11px;color:var(--green-dark);cursor:pointer;text-decoration:underline;">Translate</span>
       <span style="margin-left:6px;font-size:11px;color:var(--muted);">${formatTime(c.created_at)}</span>
       ${c.author === username ? `<span onclick="deleteComment(${c.id}, ${postId})" style="color:var(--muted);font-size:11px;cursor:pointer;margin-left:8px;">✕</span>` : ''}
     </div>
