@@ -521,7 +521,7 @@ async function loadInlineComments(postId) {
 
   commentList.innerHTML += shown.map(c => `
     <div style="padding:4px 0;font-size:14px;">
-      <strong style="font-size:13px;">@${c.author}</strong>
+      <strong style="font-size:13px;"><a href="/profile/${c.author}" style="color:inherit;text-decoration:none;">@${c.author}</a></strong>
       <span id="comment-text-${c.id}" style="margin-left:6px;">${c.content}</span>
       <span onclick="translateComment(${c.id}, ${JSON.stringify(c.content)})" style="margin-left:6px;font-size:11px;color:var(--green-dark);cursor:pointer;text-decoration:underline;">Translate</span>
       <span style="margin-left:6px;font-size:11px;color:var(--muted);">${formatTime(c.created_at)}</span>
@@ -580,7 +580,7 @@ async function loadAllComments(postId) {
 
   commentList.innerHTML = comments.map(c => `
     <div style="padding:4px 0;font-size:14px;">
-      <strong style="font-size:13px;">@${c.author}</strong>
+      <strong style="font-size:13px;"><a href="/profile/${c.author}" style="color:inherit;text-decoration:none;">@${c.author}</a></strong>
       <span style="margin-left:6px;">${c.content}</span>
       <span style="margin-left:6px;font-size:11px;color:var(--muted);">${formatTime(c.created_at)}</span>
       ${c.author === username ? `<span onclick="deleteComment(${c.id}, ${postId})" style="color:var(--muted);font-size:11px;cursor:pointer;margin-left:8px;">✕</span>` : ''}
@@ -605,7 +605,7 @@ async function loadComments(postId) {
     html += comments.map(c => `
       <div style="padding:8px 0;border-bottom:1px solid var(--border);">
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <strong style="font-size:13px;">@${c.author}</strong>
+          <strong style="font-size:13px;"><a href="/profile/${c.author}" style="color:inherit;text-decoration:none;">@${c.author}</a></strong>
           <span style="font-size:11px;color:var(--muted);">${formatTime(c.created_at)}</span>
         </div>
         <p style="margin:4px 0;font-size:14px;">${c.content}</p>

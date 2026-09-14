@@ -194,7 +194,7 @@ async function loadProfile() {
     postsEl.innerHTML = p.posts.map(post => `
       <div class="post-card" data-post-id="${post.id}" id="post-${post.id}">
         <div class="post-header">
-          <span class="post-author">@${p.username}</span>
+          <span class="post-author"><a href="/profile/${p.username}" style="color:inherit;text-decoration:none;">@${p.username}</a></span>
           <span class="post-time">${post.published_at ? new Date(post.published_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}</span>
         </div>
         <div class="post-content" id="post-content-${post.id}">${typeof linkify === 'function' ? linkify(post.content) : post.content}</div>
