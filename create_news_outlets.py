@@ -43,6 +43,18 @@ DISPLAY_NAMES = {
     "TheHill":         "The Hill",
     "AtlasNews":       "Atlas News",
     "Axios":           "Axios",
+    "TheTrace":         "The Trace",
+    "TheMarkup":        "The Markup",
+    "ProPublica":       "ProPublica",
+    "RevealNews":       "Reveal News",
+    "Grist":            "Grist",
+    "InsideClimateNews": "Inside Climate News",
+    "KFFHealthNews":    "KFF Health News",
+    "The19th":          "The 19th",
+    "HechingerReport":  "The Hechinger Report",
+    "TheGuardian":      "The Guardian",
+    "Salon":            "Salon",
+    "CSMonitor":        "Christian Science Monitor",
 }
 
 

@@ -52,6 +52,18 @@ NEWS_OUTLETS = [
     {"username": "TheHill",         "rss_url": "https://thehill.com/feed/"},  # VERIFIED
     {"username": "AtlasNews",       "rss_url": "https://www.theatlasnews.co/feed"},  # VERIFIED
     {"username": "Axios",           "rss_url": "https://www.axios.com/feeds/feed.rss"},  # VERIFIED
+    {"username": "TheTrace",        "rss_url": "https://www.thetrace.org/feed/"},  # VERIFIED
+    {"username": "TheMarkup",       "rss_url": "https://themarkup.org/feeds/rss.xml"},  # VERIFIED
+    {"username": "ProPublica",      "rss_url": "https://feeds.propublica.org/propublica/main"},  # VERIFIED
+    {"username": "RevealNews",      "rss_url": "https://revealnews.org/feed/"},  # VERIFIED
+    {"username": "Grist",           "rss_url": "https://grist.org/feed/"},  # VERIFIED
+    {"username": "InsideClimateNews", "rss_url": "https://insideclimatenews.org/feed/"},  # VERIFIED
+    {"username": "KFFHealthNews",   "rss_url": "https://kffhealthnews.org/feed/"},  # VERIFIED
+    {"username": "The19th",         "rss_url": "https://19thnews.org/feed/"},  # VERIFIED
+    {"username": "HechingerReport", "rss_url": "https://hechingerreport.org/feed/"},  # VERIFIED
+    {"username": "TheGuardian",     "rss_url": "https://www.theguardian.com/world/rss"},  # VERIFIED
+    {"username": "Salon",           "rss_url": "https://www.salon.com/feed/"},  # VERIFIED
+    {"username": "CSMonitor",       "rss_url": "https://rss.csmonitor.com/feeds/all"},  # VERIFIED
     # AP and Reuters intentionally omitted — neither offers a reliable
     # official public RSS feed anymore. NHK World Japan, C-SPAN, The
     # Bureau of Investigative Journalism, and The Impartial Reporter
