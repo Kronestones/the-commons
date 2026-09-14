@@ -1451,6 +1451,41 @@ async def api_follow(
     result = follow_manager.toggle_follow(db, current_user, user_id)
     return JSONResponse(result)
 
+@app.get("/explore", response_class=HTMLResponse)
+async def explore_page(request: Request):
+    return templates.TemplateResponse("explore.html", {"request": request})
+
+@app.get("/api/explore/outlets")
+async def api_explore_outlets(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    from commons.news_feed import NEWS_OUTLETS
+    from sqlalchemy import desc
+    outlets_data = []
+    for outlet in NEWS_OUTLETS:
+        outlet_user = db.query(User).filter(
+            User.username.ilike(outlet["username"])
+        ).first()
+        if not outlet_user or not outlet_user.is_active:
+            continue
+
+        latest = (
+            db.query(Post)
+            .filter(Post.author_id == outlet_user.id, Post.status == PostStatus.PUBLISHED)
+            .order_by(desc(Post.published_at))
+            .first()
+        )
+
+        outlets_data.append({
+            "id":           outlet_user.id,
+            "username":     outlet_user.username,
+            "is_following": follow_manager.is_following(db, current_user.id, outlet_user.id),
+            "latest_post":  (latest.content[:200] if latest else None),
+        })
+
+    return JSONResponse({"ok": True, "outlets": outlets_data})
+
 @app.get("/api/users/{username}/profile")
 async def api_profile(
     username: str,

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Explore — The Commons{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <h1>Explore</h1>
+  <p style="color:var(--muted);margin-bottom:20px;">Credible news sources from across the spectrum. Follow the ones you want in your feed.</p>
+
+  <div id="explore-list">
+    <p class="empty-feed">Loading...</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadExplore() {
+  const token = getToken();
+  const listEl = document.getElementById('explore-list');
+  try {
+    const res = await fetch('/api/explore/outlets', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      listEl.innerHTML = '<p style="padding:20px;color:#c00;">' + (data.error || 'Could not load outlets.') + '</p>';
+      return;
+    }
+    if (!data.outlets.length) {
+      listEl.innerHTML = '<p class="empty-feed">No outlets available yet.</p>';
+      return;
+    }
+    listEl.innerHTML = data.outlets.map(o => `
+      <div class="post-card" style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <a href="/profile/${o.username}" style="color:inherit;text-decoration:none;font-weight:700;">@${o.username}</a>
+          <button onclick="toggleExploreFollow(${o.id}, this)" class="btn-primary" style="font-size:13px;padding:6px 14px;" data-following="${o.is_following}">${o.is_following ? 'Following' : 'Follow'}</button>
+        </div>
+        ${o.latest_post ? `<p style="margin-top:8px;font-size:14px;color:var(--muted);">${o.latest_post}</p>` : '<p style="margin-top:8px;font-size:13px;color:var(--muted);font-style:italic;">No posts yet</p>'}
+      </div>
+    `).join('');
+  } catch(e) {
+    listEl.innerHTML = '<p style="padding:20px;color:#c00;">Error: ' + e.message + '</p>';
+  }
+}
+
+async function toggleExploreFollow(outletId, btn) {
+  const token = getToken();
+  const res = await fetch('/api/users/' + outletId + '/follow_by_id', {
+    method: 'POST', headers: { 'Authorization': 'Bearer ' + token }
+  });
+  const data = await res.json();
+  if (data.ok) {
+    const nowFollowing = btn.dataset.following !== 'true';
+    btn.dataset.following = nowFollowing;
+    btn.textContent = nowFollowing ? 'Following' : 'Follow';
+  } else {
+    showMessage(data.error || 'Could not update follow.', true);
+  }
+}
+
+loadExplore();
+</script>
+{% endblock %}
