@@ -205,7 +205,6 @@ async function loadProfile() {
         ) : ''}
         <div class="post-actions">
           <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}">${post.user_voted ? '❤️' : '🤍'} <span id="score-${post.id}">${Math.round(post.community_score)}</span></button>
-          <button onclick='translatePost(${post.id}, ${JSON.stringify(typeof linkify === "function" ? linkify(post.content) : post.content)}, ${JSON.stringify(post.content)})' class="vote-btn" style="background:none;">Translate</button>
           ${isOwn ? '<button onclick="deletePost(' + post.id + ', this)" class="delete-btn">Delete</button>' : ''}
         </div>
         <div id="comments-${post.id}" style="margin-top:8px;">
