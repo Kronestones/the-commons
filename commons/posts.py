@@ -147,16 +147,38 @@ class PostManager:
     def _news_visibility_filter(self, db: Session, user: User):
         """
         News posts only show in the general feed to people who follow
-        that outlet. Everyone else's feed stays free of headlines they
-        never asked for — the outlet's own profile page is unaffected.
+        that outlet, and even then only their 3 most recent posts —
+        following an active outlet shouldn't flood the feed. The
+        outlet's own profile page is unaffected; this only limits
+        what appears in the general/home feed.
         """
+        RECENT_NEWS_PER_OUTLET = 3
+
         followed_ids = [
             f.following_id for f in
             db.query(Follow).filter(Follow.follower_id == user.id).all()
         ]
+
+        allowed_news_post_ids = []
+        if followed_ids:
+            followed_news_authors = (
+                db.query(User)
+                .filter(User.id.in_(followed_ids))
+                .all()
+            )
+            for author in followed_news_authors:
+                recent = (
+                    db.query(Post.id)
+                    .filter(Post.author_id == author.id, Post.is_news == True)
+                    .order_by(desc(Post.published_at))
+                    .limit(RECENT_NEWS_PER_OUTLET)
+                    .all()
+                )
+                allowed_news_post_ids.extend([r[0] for r in recent])
+
         return or_(
             Post.is_news == False,
-            Post.author_id.in_(followed_ids) if followed_ids else False,
+            Post.id.in_(allowed_news_post_ids) if allowed_news_post_ids else False,
         )
 
     def get_feed_reason(self, post: Post, user: User) -> str:
