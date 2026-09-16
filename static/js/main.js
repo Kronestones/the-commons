@@ -403,7 +403,7 @@ function togglePassword(inputId, btn) {
 
 // ── Auth Guard ────────────────────────────────────────────────────────────────
 // Pages that don't require a token
-const PUBLIC_PATHS = ['/login', '/register', '/codex', '/kinto'];
+const PUBLIC_PATHS = ['/login', '/register', '/codex', '/kinto', '/chat'];
 const LANDING_PAGE = '/register';
 
 (function authGuard() {
