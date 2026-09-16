@@ -1,0 +1,175 @@
+/* static/css/chat.css
+   Append to main.css, or link as a separate stylesheet from chat.html —
+   whichever matches how you've handled page-specific CSS elsewhere.
+   Colors below use generic neutrals/greens so it's easy to swap in your
+   existing Commons palette variables if you have them (e.g. replace
+   #2e7d52 with your brand green var). */
+
+.chat-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.chat-subtitle {
+  margin: 4px 0 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* --- Disclaimer banner --- */
+.chat-disclaimer {
+  background: #fff8e1;
+  border: 1px solid #e8d68a;
+  border-radius: 8px;
+  padding: 12px 40px 12px 14px;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: #4a3f10;
+  position: relative;
+}
+
+.chat-disclaimer-dismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: 1px solid #c9b45c;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: #4a3f10;
+}
+
+.chat-disclaimer-dismissed {
+  opacity: 0.55;
+}
+
+/* --- Message window --- */
+.chat-window {
+  height: 55vh;
+  min-height: 320px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fafafa;
+  padding: 10px;
+}
+
+.chat-loading {
+  color: #999;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.chat-message {
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #eee;
+  position: relative;
+}
+
+.chat-message-self {
+  background: #eef7f0;
+  border-color: #cfe8d6;
+}
+
+.chat-message-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+.chat-message-username {
+  font-weight: 600;
+  color: #2e7d52;
+}
+
+.chat-message-text {
+  font-size: 0.95rem;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.chat-message-actions {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.chat-message:hover .chat-message-actions {
+  opacity: 1;
+}
+
+.chat-message-actions button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 4px;
+}
+
+/* --- Input row --- */
+.chat-input-reminder {
+  font-size: 0.78rem;
+  color: #888;
+  margin: 4px 0;
+}
+
+.chat-form {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+}
+
+.chat-send-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #2e7d52;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-send-btn:hover {
+  background: #256a44;
+}
+
+.chat-login-prompt {
+  text-align: center;
+  padding: 10px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .chat-window {
+    height: 60vh;
+  }
+}

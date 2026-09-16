@@ -7,7 +7,7 @@ All state written to disk. Nothing held only in memory.
 
 from sqlalchemy import (
     create_engine, Column, Integer, String, Text, Boolean,
-    DateTime, Float, ForeignKey, Enum
+    DateTime, Float, ForeignKey, Enum, UniqueConstraint
 )
 try:
     from sqlalchemy.orm import declarative_base
@@ -130,6 +130,62 @@ class FingerprintRecord(Base):
     decided_at      = Column(DateTime, nullable=True)
 
     post            = relationship("Post", back_populates="fingerprint")
+
+
+class ChatMessageStatus(str, enum.Enum):
+    VISIBLE = "visible"
+    HIDDEN_PENDING_REVIEW = "hidden_pending_review"
+    REMOVED = "removed"
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    author_id  = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    content    = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    status     = Column(
+        Enum(ChatMessageStatus, name="chat_message_status"),
+        default=ChatMessageStatus.VISIBLE,
+        nullable=False,
+        index=True,
+    )
+    reply_to_id = Column(Integer, ForeignKey("chat_messages.id"), nullable=True)
+
+    author  = relationship("User", foreign_keys=[author_id])
+    reports = relationship("ChatReport", back_populates="message", cascade="all, delete-orphan")
+    reply_to = relationship("ChatMessage", remote_side=[id])
+
+
+class ChatReport(Base):
+    __tablename__ = "chat_reports"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    message_id  = Column(Integer, ForeignKey("chat_messages.id", ondelete="CASCADE"), nullable=False)
+    reporter_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    reported_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    reason      = Column(Text, nullable=True)
+    created_at  = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    message = relationship("ChatMessage", back_populates="reports")
+
+    __table_args__ = (
+        UniqueConstraint("message_id", "reporter_id", name="uq_chat_report_once_per_user"),
+    )
+
+
+class ChatBlock(Base):
+    __tablename__ = "chat_blocks"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    blocker_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    blocked_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("blocker_id", "blocked_id", name="uq_chat_block_pair"),
+    )
 
 
 class CircleMember(Base):

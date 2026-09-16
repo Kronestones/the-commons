@@ -1,0 +1,73 @@
+{# templates/chat.html #}
+{# Extends your existing base layout — adjust {% extends %} target and #}
+{# nav-active block names to match how your other templates do it. #}
+{% extends "base.html" %}
+
+{% block title %}Commons Chat{% endblock %}
+
+{% block content %}
+<div class="chat-page">
+
+  <div class="chat-header">
+    <h1>Commons Chat</h1>
+    <p class="chat-subtitle">A public room to say hello, ask questions, and meet your neighbors.</p>
+  </div>
+
+  <div class="chat-disclaimer" id="chatDisclaimer">
+    <strong>Please read:</strong> This is a public chat room. Keep conversations respectful
+    and appropriate for all ages — people of any age may be present. Never share personal
+    information (full name, address, phone number, school, financial details) with people
+    you meet here. The Commons does not monitor conversations in real time and is not
+    responsible for what users say to each other. If you see something concerning, use the
+    <strong>🚩 Report</strong> button on that message.
+    <button class="chat-disclaimer-dismiss" id="dismissDisclaimer" aria-label="Dismiss">Got it</button>
+  </div>
+
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-messages" id="chatMessages">
+      <p class="chat-loading" id="chatLoading">Loading messages…</p>
+    </div>
+  </div>
+
+  <div class="chat-input-row">
+    {% if current_user %}
+      <p class="chat-input-reminder">Be kind. Keep it appropriate for all ages. Never share personal info.</p>
+      <form id="chatForm" class="chat-form" autocomplete="off">
+        <input
+          type="text"
+          id="chatInput"
+          class="chat-input"
+          placeholder="Say something to the Commons…"
+          maxlength="500"
+          required
+        />
+        <button type="submit" class="chat-send-btn">Send</button>
+      </form>
+    {% else %}
+      <div class="chat-login-prompt">
+        <a href="/login">Log in</a> to join the conversation. You can read along without an account.
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<template id="chatMessageTemplate">
+  <div class="chat-message">
+    <div class="chat-message-meta">
+      <span class="chat-message-username"></span>
+      <span class="chat-message-time"></span>
+    </div>
+    <div class="chat-message-text"></div>
+    <div class="chat-message-actions">
+      <button class="chat-action-report" title="Report this message">🚩</button>
+      <button class="chat-action-block" title="Block this user">🚫</button>
+    </div>
+  </div>
+</template>
+
+<script>
+  window.CURRENT_USERNAME = {{ (current_user.username | tojson) if current_user else "null" }};
+</script>
+<script src="/static/js/chat.js"></script>
+{% endblock %}
