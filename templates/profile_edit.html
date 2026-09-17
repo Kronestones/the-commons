@@ -26,6 +26,14 @@
       <input type="text" id="youtube" placeholder="Paste a video or channel link">
     </label>
 
+    <label>Bluesky <small>(handle or profile link — leave blank to remove)</small>
+      <input type="text" id="bluesky" placeholder="e.g. yourname.bsky.social">
+    </label>
+
+    <label>TikTok <small>(username or profile link — leave blank to remove)</small>
+      <input type="text" id="tiktok" placeholder="e.g. yourusername or https://tiktok.com/@yourusername">
+    </label>
+
     <div id="edit-msg" class="form-error" style="display:none;"></div>
 
     <button class="btn-primary btn-full" onclick="saveProfile()">Save Changes</button>
@@ -57,6 +65,8 @@ async function loadCurrent() {
       document.getElementById('twitch').value  = p.connections.twitch_url ? p.connections.twitch_url : '';
       document.getElementById('spotify').value = p.connections.spotify_url ? p.connections.spotify_url : '';
       document.getElementById('youtube').value = p.connections.youtube_video_url ? p.connections.youtube_video_url : (p.connections.youtube_channel_url ? p.connections.youtube_channel_url : '');
+    document.getElementById('bluesky').value = p.connections.bluesky_url ? p.connections.bluesky_url : '';
+    document.getElementById('tiktok').value = p.connections.tiktok_url ? p.connections.tiktok_url : '';
     }
   }
 }
@@ -91,6 +101,8 @@ async function saveProfile() {
   const twitch  = document.getElementById('twitch').value.trim();
   const spotify = document.getElementById('spotify').value.trim();
   const youtube = document.getElementById('youtube').value.trim();
+  const bluesky = document.getElementById('bluesky').value.trim();
+  const tiktok = document.getElementById('tiktok').value.trim();
 
   if (ok) {
     const f = new FormData();
@@ -116,6 +128,26 @@ async function saveProfile() {
     const f = new FormData();
     f.append('youtube', youtube);
     const r = await fetch('/api/profile/youtube', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
+    });
+    const d = await r.json();
+    if (!d.ok) { ok = false; msgEl.textContent = d.error; msgEl.style.display = ''; }
+  }
+
+  if (ok) {
+    const f = new FormData();
+    f.append('bluesky', bluesky);
+    const r = await fetch('/api/profile/bluesky', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
+    });
+    const d = await r.json();
+    if (!d.ok) { ok = false; msgEl.textContent = d.error; msgEl.style.display = ''; }
+  }
+
+  if (ok) {
+    const f = new FormData();
+    f.append('tiktok', tiktok);
+    const r = await fetch('/api/profile/tiktok', {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
     });
     const d = await r.json();

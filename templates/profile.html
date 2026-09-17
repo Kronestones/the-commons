@@ -149,7 +149,7 @@ async function loadProfile() {
       bioEl.textContent = p.bio;
       bioEl.style.display = '';
     }
-    if (p.connections && (p.connections.twitch_url || p.connections.spotify_url || p.connections.youtube_video_url || p.connections.youtube_channel_url)) {
+    if (p.connections && (p.connections.twitch_url || p.connections.spotify_url || p.connections.youtube_video_url || p.connections.youtube_channel_url || p.connections.bluesky_url || p.connections.tiktok_url)) {
       const c = p.connections;
       let html = '<div class="profile-connections" style="margin-top:16px;display:flex;flex-direction:column;gap:12px;">';
       if (c.twitch_url) {
@@ -162,6 +162,12 @@ async function loadProfile() {
         html += '<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;"><iframe src="' + c.youtube_video_url + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen frameborder="0"></iframe></div>';
       } else if (c.youtube_channel_url) {
         html += '<a href="' + c.youtube_channel_url + '" target="_blank" rel="noopener noreferrer" class="vote-btn" style="text-align:center;text-decoration:none;display:block;">\u25b6 View YouTube Channel</a>';
+      }
+      if (c.bluesky_url) {
+        html += '<a href="' + c.bluesky_url + '" target="_blank" rel="noopener noreferrer" class="vote-btn" style="text-align:center;text-decoration:none;display:block;">View on Bluesky</a>';
+      }
+      if (c.tiktok_url) {
+        html += '<a href="' + c.tiktok_url + '" target="_blank" rel="noopener noreferrer" class="vote-btn" style="text-align:center;text-decoration:none;display:block;">View on TikTok</a>';
       }
       html += '</div>';
       const existing = document.getElementById('profile-connections-wrap');

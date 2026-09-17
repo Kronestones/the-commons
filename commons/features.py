@@ -333,6 +333,26 @@ class ProfileManager:
             db.commit()
         return result
 
+    def update_bluesky(self, db: Session, user: User, raw_input: str) -> dict:
+        from commons.connections import set_bluesky_connection, remove_connection
+        if not raw_input.strip():
+            result = remove_connection(user, "bluesky")
+        else:
+            result = set_bluesky_connection(user, raw_input)
+        if result.get("ok"):
+            db.commit()
+        return result
+
+    def update_tiktok(self, db: Session, user: User, raw_input: str) -> dict:
+        from commons.connections import set_tiktok_connection, remove_connection
+        if not raw_input.strip():
+            result = remove_connection(user, "tiktok")
+        else:
+            result = set_tiktok_connection(user, raw_input)
+        if result.get("ok"):
+            db.commit()
+        return result
+
 
 # ── Notification Manager ──────────────────────────────────────────────────────
 

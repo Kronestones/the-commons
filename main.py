@@ -1708,6 +1708,22 @@ async def api_update_youtube(
 ):
     return JSONResponse(profile_manager.update_youtube(db, current_user, youtube))
 
+@app.post("/api/profile/bluesky")
+async def api_update_bluesky(
+    bluesky:      str = Form(""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(profile_manager.update_bluesky(db, current_user, bluesky))
+
+@app.post("/api/profile/tiktok")
+async def api_update_tiktok(
+    tiktok:       str = Form(""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(profile_manager.update_tiktok(db, current_user, tiktok))
+
 @app.post("/api/profile/display-name")
 async def api_update_display_name(
     display_name: str = Form(...),
