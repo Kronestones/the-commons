@@ -177,6 +177,57 @@ def youtube_video_embed_url(video_id: str) -> str:
     return f"https://www.youtube.com/embed/{video_id}"
 
 
+_BLUESKY_HANDLE_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9.-]{1,251}[a-zA-Z0-9]$")
+_TIKTOK_USERNAME_RE = re.compile(r"^[a-zA-Z0-9_.]{2,24}$")
+
+
+def parse_bluesky_input(raw: str) -> Optional[str]:
+    raw = raw.strip()
+    if not raw:
+        return None
+
+    if "bsky.app" in raw:
+        parsed = urlparse(raw if "://" in raw else f"https://{raw}")
+        parts = [p for p in parsed.path.split("/") if p]
+        if len(parts) >= 2 and parts[0] == "profile":
+            handle = parts[1]
+        else:
+            return None
+    else:
+        handle = raw.lstrip("@")
+
+    if not _BLUESKY_HANDLE_RE.match(handle):
+        return None
+    return handle
+
+
+def bluesky_profile_url(handle: str) -> str:
+    return f"https://bsky.app/profile/{handle}"
+
+
+def parse_tiktok_input(raw: str) -> Optional[str]:
+    raw = raw.strip()
+    if not raw:
+        return None
+
+    if "tiktok.com" in raw:
+        parsed = urlparse(raw if "://" in raw else f"https://{raw}")
+        parts = [p for p in parsed.path.split("/") if p]
+        if not parts:
+            return None
+        username = parts[0].lstrip("@")
+    else:
+        username = raw.lstrip("@")
+
+    if not _TIKTOK_USERNAME_RE.match(username):
+        return None
+    return username
+
+
+def tiktok_profile_url(username: str) -> str:
+    return f"https://www.tiktok.com/@{username}"
+
+
 # ── Read/write helpers for the User.connections JSON column ─────────────
 
 def load_connections(user) -> dict:
@@ -243,6 +294,28 @@ def set_youtube_connection(user, raw_input: str) -> dict:
     return {"ok": True, **parsed}
 
 
+def set_bluesky_connection(user, raw_input: str) -> dict:
+    handle = parse_bluesky_input(raw_input)
+    if not handle:
+        return {"ok": False, "error": "That doesn't look like a valid Bluesky handle or link."}
+
+    data = load_connections(user)
+    data["bluesky_handle"] = handle
+    user.connections = json.dumps(data)
+    return {"ok": True, "handle": handle}
+
+
+def set_tiktok_connection(user, raw_input: str) -> dict:
+    username = parse_tiktok_input(raw_input)
+    if not username:
+        return {"ok": False, "error": "That doesn't look like a valid TikTok username or link."}
+
+    data = load_connections(user)
+    data["tiktok_username"] = username
+    user.connections = json.dumps(data)
+    return {"ok": True, "username": username}
+
+
 def remove_connection(user, kind: str) -> dict:
     """kind is 'twitch' or 'spotify'."""
     data = load_connections(user)
@@ -255,6 +328,10 @@ def remove_connection(user, kind: str) -> dict:
         data.pop("youtube_type", None)
         data.pop("youtube_id", None)
         data.pop("youtube_channel_url", None)
+    elif kind == "bluesky":
+        data.pop("bluesky_handle", None)
+    elif kind == "tiktok":
+        data.pop("tiktok_username", None)
     else:
         return {"ok": False, "error": f"Unknown connection kind: {kind}"}
     user.connections = json.dumps(data)
@@ -285,5 +362,11 @@ def get_profile_embeds(user, parent_domain: str) -> dict:
         result["youtube_video_url"] = youtube_video_embed_url(data["youtube_id"])
     elif data.get("youtube_type") == "channel" and data.get("youtube_channel_url"):
         result["youtube_channel_url"] = data["youtube_channel_url"]
+
+    if data.get("bluesky_handle"):
+        result["bluesky_url"] = bluesky_profile_url(data["bluesky_handle"])
+
+    if data.get("tiktok_username"):
+        result["tiktok_url"] = tiktok_profile_url(data["tiktok_username"])
 
     return result
