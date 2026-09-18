@@ -46,6 +46,16 @@
           <span class="post-time" data-time="{{ post.published_at.isoformat() if post.published_at else '' }}"></span>
         </div>
         <div class="post-content" id="post-content-{{ post.id }}">{{ post.content | replace("\n", "<br>") }}</div>
+        <div class="post-media-embed" id="post-media-embed-{{ post.id }}"></div>
+        <script>
+          (function() {
+            var text = {{ post.content | tojson }};
+            var target = document.getElementById('post-media-embed-{{ post.id }}');
+            if (target && typeof extractMediaEmbeds === 'function') {
+              target.innerHTML = extractMediaEmbeds(text);
+            }
+          })();
+        </script>
         {% if post.media_path %}
           {% if post.post_type.value == 'video' %}
         <video src="{{ post.media_path if post.media_path.startswith('http') else '/media/' + post.media_path }}" controls playsinline style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;background:#000;"></video>
