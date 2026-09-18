@@ -106,6 +106,23 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/media",  StaticFiles(directory=str(config.media_dir)), name="media")
 templates = Jinja2Templates(directory="templates")
 
+import re as _re
+import html as _html
+
+_URL_RE = _re.compile(r'(https?://[^\s<>"{}|\\^`\[\]]+)')
+
+def _linkify_html(text: str) -> str:
+    """Escape HTML, then wrap bare URLs in clickable <a> tags."""
+    if not text:
+        return ""
+    escaped = _html.escape(text)
+    return _URL_RE.sub(
+        r'<a href="\1" target="_blank" rel="noopener noreferrer" style="color:var(--green-dark);word-break:break-all;">\1</a>',
+        escaped
+    )
+
+templates.env.filters["linkify"] = _linkify_html
+
 # ── Startup ───────────────────────────────────────────────────────────────────
 
 @app.on_event("startup")

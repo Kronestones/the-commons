@@ -45,7 +45,7 @@
           <span class="post-author">{% if post.author %}<a href="/profile/{{ post.author.username }}" style="color:inherit;text-decoration:none;">@{{ post.author.username }}</a>{% else %}@unknown{% endif %}</span>
           <span class="post-time" data-time="{{ post.published_at.isoformat() if post.published_at else '' }}"></span>
         </div>
-        <div class="post-content" id="post-content-{{ post.id }}">{{ post.content | replace("\n", "<br>") }}</div>
+        <div class="post-content" id="post-content-{{ post.id }}">{{ post.content | linkify | replace("\n", "<br>") | safe }}</div>
         <div class="post-media-embed" id="post-media-embed-{{ post.id }}"></div>
         <script>
           (function() {
