@@ -160,14 +160,24 @@ async function loadProfile() {
       }
       if (c.youtube_video_url) {
         html += '<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;"><iframe src="' + c.youtube_video_url + '" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen frameborder="0"></iframe></div>';
-      } else if (c.youtube_channel_url) {
-        html += '<a href="' + c.youtube_channel_url + '" target="_blank" rel="noopener noreferrer" class="vote-btn" style="text-align:center;text-decoration:none;display:block;">\u25b6 View YouTube Channel</a>';
+      }
+
+      const iconLinks = [];
+      if (c.youtube_channel_url && !c.youtube_video_url) {
+        iconLinks.push({ url: c.youtube_channel_url, icon: '\u25b6', label: 'YouTube' });
       }
       if (c.bluesky_url) {
-        html += '<a href="' + c.bluesky_url + '" target="_blank" rel="noopener noreferrer" class="vote-btn" style="text-align:center;text-decoration:none;display:block;">View on Bluesky</a>';
+        iconLinks.push({ url: c.bluesky_url, icon: '\ud83e\udd8b', label: 'Bluesky' });
       }
       if (c.tiktok_url) {
-        html += '<a href="' + c.tiktok_url + '" target="_blank" rel="noopener noreferrer" class="vote-btn" style="text-align:center;text-decoration:none;display:block;">View on TikTok</a>';
+        iconLinks.push({ url: c.tiktok_url, icon: '\u266a', label: 'TikTok' });
+      }
+      if (iconLinks.length) {
+        html += '<div style="display:flex;gap:10px;flex-wrap:wrap;">';
+        iconLinks.forEach(function(l) {
+          html += '<a href="' + l.url + '" target="_blank" rel="noopener noreferrer" title="' + l.label + '" style="display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:16px;background:var(--green-mid, #eef3ee);color:var(--green-dark, #2e7d52);text-decoration:none;font-size:13px;font-weight:600;">' + l.icon + ' ' + l.label + '</a>';
+        });
+        html += '</div>';
       }
       html += '</div>';
       const existing = document.getElementById('profile-connections-wrap');
