@@ -179,9 +179,9 @@ async function loadProfile() {
         iconLinks.push({ url: c.tiktok_url, icon: SVG_ICONS.tiktok, label: 'TikTok' });
       }
       if (iconLinks.length) {
-        html += '<div style="display:flex;gap:10px;flex-wrap:wrap;">';
+        html += '<div style="display:flex;gap:14px;flex-wrap:wrap;">';
         iconLinks.forEach(function(l) {
-          html += '<a href="' + l.url + '" target="_blank" rel="noopener noreferrer" title="' + l.label + '" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:16px;background:var(--green-mid, #2e7d52);color:white;text-decoration:none;font-size:13px;font-weight:600;">' + l.icon + ' ' + l.label + '</a>';
+          html += '<a href="' + l.url + '" target="_blank" rel="noopener noreferrer" title="' + l.label + '" style="display:inline-flex;color:var(--green-dark, #2e7d52);">' + l.icon.replace('width="16" height="16"', 'width="24" height="24"').replace(/fill="white"/, 'fill="currentColor"') + '</a>';
         });
         html += '</div>';
       }
