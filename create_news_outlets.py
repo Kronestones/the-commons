@@ -55,6 +55,11 @@ DISPLAY_NAMES = {
     "TheGuardian":      "The Guardian",
     "Salon":            "Salon",
     "CSMonitor":        "Christian Science Monitor",
+    "DemocracyNow":       "Democracy Now!",
+    "ScienceNews":        "Science News",
+    "NonprofitQuarterly": "Nonprofit Quarterly",
+    "Bellingcat":         "Bellingcat",
+    "SpotlightPA":        "Spotlight PA",
 }
 
 

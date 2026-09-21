@@ -64,6 +64,11 @@ NEWS_OUTLETS = [
     {"username": "TheGuardian",     "rss_url": "https://www.theguardian.com/world/rss"},  # VERIFIED
     {"username": "Salon",           "rss_url": "https://www.salon.com/feed/"},  # VERIFIED
     {"username": "CSMonitor",       "rss_url": "https://rss.csmonitor.com/feeds/all"},  # VERIFIED
+    {"username": "DemocracyNow",     "rss_url": "https://www.democracynow.org/democracynow.rss"},  # VERIFIED
+    {"username": "ScienceNews",      "rss_url": "https://www.sciencenews.org/feed"},  # VERIFIED
+    {"username": "NonprofitQuarterly", "rss_url": "https://nonprofitquarterly.org/feed/"},  # VERIFIED
+    {"username": "Bellingcat",       "rss_url": "https://www.bellingcat.com/feed/"},  # VERIFIED
+    {"username": "SpotlightPA",      "rss_url": "https://www.spotlightpa.org/feeds/full.xml"},  # VERIFIED
     # AP and Reuters intentionally omitted — neither offers a reliable
     # official public RSS feed anymore. NHK World Japan, C-SPAN, The
     # Bureau of Investigative Journalism, and The Impartial Reporter
