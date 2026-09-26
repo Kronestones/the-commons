@@ -60,6 +60,12 @@ DISPLAY_NAMES = {
     "NonprofitQuarterly": "Nonprofit Quarterly",
     "Bellingcat":         "Bellingcat",
     "SpotlightPA":        "Spotlight PA",
+    "CalMatters":         "CalMatters",
+    "WyoFile":            "WyoFile",
+    "BlockClubChicago":   "Block Club Chicago",
+    "LAist":              "LAist",
+    "MinnPost":           "MinnPost",
+    "HighCountryNews":    "High Country News",
 }
 
 

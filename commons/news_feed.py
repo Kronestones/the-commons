@@ -69,6 +69,12 @@ NEWS_OUTLETS = [
     {"username": "NonprofitQuarterly", "rss_url": "https://nonprofitquarterly.org/feed/"},  # VERIFIED
     {"username": "Bellingcat",       "rss_url": "https://www.bellingcat.com/feed/"},  # VERIFIED
     {"username": "SpotlightPA",      "rss_url": "https://www.spotlightpa.org/feeds/full.xml"},  # VERIFIED
+    {"username": "CalMatters",       "rss_url": "https://calmatters.org/feed/"},  # VERIFIED
+    {"username": "WyoFile",          "rss_url": "https://wyofile.com/feed/"},  # VERIFIED
+    {"username": "BlockClubChicago", "rss_url": "https://blockclubchicago.org/feed/"},  # VERIFIED
+    {"username": "LAist",            "rss_url": "https://laist.com/rss-feed"},  # VERIFIED
+    {"username": "MinnPost",         "rss_url": "https://www.minnpost.com/feed/"},  # VERIFIED
+    {"username": "HighCountryNews",  "rss_url": "https://www.hcn.org/feed/"},  # VERIFIED
     # AP and Reuters intentionally omitted — neither offers a reliable
     # official public RSS feed anymore. NHK World Japan, C-SPAN, The
     # Bureau of Investigative Journalism, and The Impartial Reporter
