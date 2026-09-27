@@ -18,6 +18,20 @@
   let knownMessageIds = new Set();
   let pollTimer = null;
 
+  // --- Login state (client-side, same pattern as the rest of the site) --
+  // main.js (loaded before this file on every page) exposes getUsername()
+  // and getToken(), which read the JWT from localStorage. There is no
+  // server-side "current_user" for this page — see main.py's chat_page().
+  const CURRENT_USERNAME = (typeof getUsername === 'function') ? getUsername() : null;
+  const AUTH_TOKEN = (typeof getToken === 'function') ? getToken() : null;
+  const chatInputLoggedIn = document.getElementById('chatInputLoggedIn');
+  const chatLoginPrompt = document.getElementById('chatLoginPrompt');
+  if (CURRENT_USERNAME) {
+    if (chatInputLoggedIn) chatInputLoggedIn.style.display = '';
+  } else {
+    if (chatLoginPrompt) chatLoginPrompt.style.display = '';
+  }
+
   // --- Disclaimer dismiss (session-only, not permanent) -----------------
   // Per-tab memory var instead of localStorage/sessionStorage so this
   // works safely inside any embedded/artifact context too, and simply
@@ -64,7 +78,7 @@
     const reportBtn = node.querySelector('.chat-action-report');
     const blockBtn = node.querySelector('.chat-action-block');
 
-    if (msg.is_self || !window.CURRENT_USERNAME) {
+    if (msg.is_self || !CURRENT_USERNAME) {
       // Can't report/block your own messages, and logged-out users
       // can't report/block at all.
       reportBtn.remove();
@@ -109,7 +123,10 @@
 
     const res = await fetch('/api/chat/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Bearer ' + (AUTH_TOKEN || ''),
+      },
       body: formData.toString(),
     });
 
@@ -134,7 +151,10 @@
     try {
       const res = await fetch('/api/chat/report', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Bearer ' + (AUTH_TOKEN || ''),
+        },
         body: formData.toString(),
       });
       if (!res.ok) throw new Error();
@@ -153,7 +173,10 @@
     try {
       const res = await fetch('/api/chat/block', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Bearer ' + (AUTH_TOKEN || ''),
+        },
         body: formData.toString(),
       });
       if (!res.ok) throw new Error();

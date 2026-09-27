@@ -1506,17 +1506,14 @@ async def api_explore_outlets(
 # ── Chat ────────────────────────────────────────────────────────────────────
 
 @app.get("/chat", response_class=HTMLResponse)
-async def chat_page(request: Request, db: Session = Depends(get_db)):
-    from commons.auth import decode_token
-    current_username = None
-    token = request.cookies.get("token", "")
-    if token:
-        payload = decode_token(token)
-        if payload:
-            current_username = payload.get("username")
+async def chat_page(request: Request):
+    # Login state for /chat is determined entirely client-side (chat.js
+    # reads the JWT from localStorage via the site's existing
+    # getUsername()/getToken() helpers) since this app never sets a
+    # server-side "token" cookie — the old code here decoded a cookie
+    # that was never actually being set.
     return templates.TemplateResponse("chat.html", {
         "request": request,
-        "current_username": current_username,
     })
 
 @app.get("/api/chat/messages")

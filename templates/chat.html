@@ -30,7 +30,7 @@
   </div>
 
   <div class="chat-input-row">
-    {% if current_user %}
+    <div class="chat-input-row-loggedin" id="chatInputLoggedIn" style="display:none">
       <p class="chat-input-reminder">Be kind. Keep it appropriate for all ages. Never share personal info.</p>
       <form id="chatForm" class="chat-form" autocomplete="off">
         <input
@@ -43,11 +43,10 @@
         />
         <button type="submit" class="chat-send-btn">Send</button>
       </form>
-    {% else %}
-      <div class="chat-login-prompt">
-        <a href="/login">Log in</a> to join the conversation. You can read along without an account.
-      </div>
-    {% endif %}
+    </div>
+    <div class="chat-login-prompt" id="chatLoginPrompt" style="display:none">
+      <a href="/login">Log in</a> to join the conversation. You can read along without an account.
+    </div>
   </div>
 
 </div>
@@ -66,8 +65,5 @@
   </div>
 </template>
 
-<script>
-  window.CURRENT_USERNAME = {{ (current_user.username | tojson) if current_user else "null" }};
-</script>
 <script src="/static/js/chat.js"></script>
 {% endblock %}
