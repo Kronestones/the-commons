@@ -24,10 +24,9 @@
   // server-side "current_user" for this page — see main.py's chat_page().
   const CURRENT_USERNAME = (typeof getUsername === 'function') ? getUsername() : null;
   const AUTH_TOKEN = (typeof getToken === 'function') ? getToken() : null;
-  const IS_LOGGED_IN = !!(AUTH_TOKEN || CURRENT_USERNAME);
   const chatInputLoggedIn = document.getElementById('chatInputLoggedIn');
   const chatLoginPrompt = document.getElementById('chatLoginPrompt');
-  if (IS_LOGGED_IN) {
+  if (CURRENT_USERNAME) {
     if (chatInputLoggedIn) chatInputLoggedIn.style.display = '';
   } else {
     if (chatLoginPrompt) chatLoginPrompt.style.display = '';
@@ -80,7 +79,7 @@
     const reportBtn = node.querySelector('.chat-action-report');
     const blockBtn = node.querySelector('.chat-action-block');
 
-    if (msg.is_self || !IS_LOGGED_IN) {
+    if (msg.is_self || !CURRENT_USERNAME) {
       // Can't report/block your own messages, and logged-out users
       // can't report/block at all.
       reportBtn.remove();
