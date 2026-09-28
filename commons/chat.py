@@ -56,7 +56,7 @@ class ChatManager:
         db.add(chat_message)
         db.commit()
         db.refresh(chat_message)
-        return {"ok": True, "message": chat_message}
+        return {"ok": True, "id": chat_message.id}
 
     # --- Reading -------------------------------------------------------
 
@@ -89,7 +89,7 @@ class ChatManager:
                 "author":     m.author.username if m.author else "unknown",
                 "author_id":  m.author_id,
                 "content":    m.content,
-                "created_at": m.created_at.isoformat(),
+                "created_at": m.created_at.isoformat() + "Z",
                 "reply_to_id": m.reply_to_id,
                 "reply_to_author": (m.reply_to.author.username if m.reply_to and m.reply_to.author else None),
                 "reply_to_content": (m.reply_to.content if m.reply_to else None),

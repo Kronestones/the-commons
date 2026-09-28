@@ -46,6 +46,15 @@
     });
   }
 
+  function decodeEntities(str) {
+    // Server stores messages HTML-escaped (e.g. don&#x27;t); turn them back into
+    // plain text. A textarea never runs scripts, and the result is only ever
+    // assigned via textContent, so this stays safe.
+    const t = document.createElement('textarea');
+    t.innerHTML = str == null ? '' : String(str);
+    return t.value;
+  }
+
   function escapeForDisplay(str) {
     // Messages are already HTML-escaped server-side before storage,
     // but escape again defensively in case that ever changes.
@@ -63,10 +72,10 @@
     const node = messageTemplate.content.cloneNode(true);
     const el = node.querySelector('.chat-message');
     el.dataset.messageId = msg.id;
-    el.dataset.username = msg.username;
+    el.dataset.username = msg.author;
 
     const usernameEl = node.querySelector('.chat-message-username');
-    usernameEl.textContent = msg.username;
+    usernameEl.textContent = msg.author;
     if (msg.is_self) {
       el.classList.add('chat-message-self');
     }
@@ -75,7 +84,7 @@
 
     // message content already escaped server-side; textContent here
     // is an extra safety layer, not a workaround for missing escaping.
-    node.querySelector('.chat-message-text').textContent = msg.message;
+    node.querySelector('.chat-message-text').textContent = decodeEntities(msg.content);
 
     const reportBtn = node.querySelector('.chat-action-report');
     const blockBtn = node.querySelector('.chat-action-block');
@@ -86,8 +95,8 @@
       reportBtn.remove();
       blockBtn.remove();
     } else {
-      reportBtn.addEventListener('click', () => reportMessage(msg.id, msg.username));
-      blockBtn.addEventListener('click', () => blockUser(msg.username));
+      reportBtn.addEventListener('click', () => reportMessage(msg.id, msg.author));
+      blockBtn.addEventListener('click', () => blockUser(msg.author_id, msg.author));
     }
 
     return node;
@@ -137,6 +146,11 @@
       throw new Error(err.detail || 'Could not send message.');
     }
 
+    const sent = await res.json().catch(() => ({}));
+    if (sent && sent.ok === false) {
+      throw new Error(sent.error || 'Could not send message.');
+    }
+
     // Immediately fetch so the sender sees their own message right away
     // instead of waiting for the next poll tick.
     await fetchMessages();
@@ -166,11 +180,11 @@
     }
   }
 
-  async function blockUser(username) {
+  async function blockUser(userId, username) {
     if (!confirm(`Block ${username}? You won't see their messages anymore.`)) return;
 
     const formData = new URLSearchParams();
-    formData.append('blocked_username', username);
+    formData.append('blocked_id', userId);
 
     try {
       const res = await fetch('/api/chat/block', {
