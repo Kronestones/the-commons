@@ -319,6 +319,16 @@ class ProfileManager:
             db.commit()
         return result
 
+    def update_now_playing(self, db: Session, user, raw_input: str) -> dict:
+        from commons.connections import set_now_playing, remove_connection
+        if not raw_input.strip():
+            result = remove_connection(user, "now_playing")
+        else:
+            result = set_now_playing(user, raw_input)
+        if result.get("ok"):
+            db.commit()
+        return result
+
     def update_spotify(self, db: Session, user: User, raw_input: str) -> dict:
         from commons.connections import set_spotify_connection, remove_connection
         if not raw_input.strip():

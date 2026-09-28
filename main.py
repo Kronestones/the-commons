@@ -1774,6 +1774,14 @@ async def api_update_twitch(
 ):
     return JSONResponse(profile_manager.update_twitch(db, current_user, twitch))
 
+@app.post("/api/profile/now-playing")
+async def api_update_now_playing(
+    now_playing:  str = Form(""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(profile_manager.update_now_playing(db, current_user, now_playing))
+
 @app.post("/api/profile/spotify")
 async def api_update_spotify(
     spotify:      str = Form(""),

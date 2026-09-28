@@ -149,9 +149,13 @@ async function loadProfile() {
       bioEl.textContent = p.bio;
       bioEl.style.display = '';
     }
-    if (p.connections && (p.connections.twitch_url || p.connections.spotify_url || p.connections.youtube_video_url || p.connections.youtube_channel_url || p.connections.bluesky_url || p.connections.tiktok_url)) {
+    if (p.connections && (p.connections.twitch_url || p.connections.spotify_url || p.connections.youtube_video_url || p.connections.youtube_channel_url || p.connections.bluesky_url || p.connections.tiktok_url || p.connections.now_playing)) {
       const c = p.connections;
       let html = '<div class="profile-connections" style="margin-top:16px;display:flex;flex-direction:column;gap:12px;">';
+      if (c.now_playing) {
+        html += '<div style="display:flex;align-items:center;gap:8px;font-size:14px;">'
+          + '<span>🎮 Now Playing:</span><strong>' + c.now_playing.replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])) + '</strong></div>';
+      }
       if (c.twitch_url) {
         html += '<iframe src="' + c.twitch_url + '" height="280" width="100%" allowfullscreen frameborder="0" scrolling="no"></iframe>';
       }

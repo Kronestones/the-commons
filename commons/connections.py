@@ -332,6 +332,8 @@ def remove_connection(user, kind: str) -> dict:
         data.pop("bluesky_handle", None)
     elif kind == "tiktok":
         data.pop("tiktok_username", None)
+    elif kind == "now_playing":
+        data.pop("now_playing", None)
     else:
         return {"ok": False, "error": f"Unknown connection kind: {kind}"}
     user.connections = json.dumps(data)
@@ -369,4 +371,25 @@ def get_profile_embeds(user, parent_domain: str) -> dict:
     if data.get("tiktok_username"):
         result["tiktok_url"] = tiktok_profile_url(data["tiktok_username"])
 
+    if data.get("now_playing"):
+        result["now_playing"] = data["now_playing"]
+
     return result
+
+
+def set_now_playing(user, raw_input: str) -> dict:
+    """
+    Stores a free-text "now playing" line on the user object
+    (caller is responsible for db.commit()). Plain text, no link parsing —
+    this is what a gamer is currently playing, not a URL.
+    """
+    text = raw_input.strip()
+    if not text:
+        return {"ok": False, "error": "Enter what you're playing, or leave it blank to remove."}
+    if len(text) > 80:
+        return {"ok": False, "error": "Keep it under 80 characters."}
+
+    data = load_connections(user)
+    data["now_playing"] = text
+    user.connections = json.dumps(data)
+    return {"ok": True, "now_playing": text}
