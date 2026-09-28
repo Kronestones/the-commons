@@ -115,7 +115,7 @@ def _linkify_html(text: str) -> str:
     """Escape HTML, then wrap bare URLs in clickable <a> tags."""
     if not text:
         return ""
-    escaped = _html.escape(text)
+    escaped = _html.escape(_html.unescape(text))  # undo the save-time escape once, then escape for display
     return _URL_RE.sub(
         r'<a href="\1" target="_blank" rel="noopener noreferrer" style="color:var(--green-dark);word-break:break-all;">\1</a>',
         escaped

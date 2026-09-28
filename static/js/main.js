@@ -175,6 +175,14 @@ window.addEventListener('scroll', () => {
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 
+// Post text is stored already HTML-escaped (server side). Undo that one layer before
+// escapeHtml() so it isn't escaped twice (which showed up as I&#x27;m). Output is still escaped.
+function decodeHtmlEntities(text) {
+  const t = document.createElement('textarea');
+  t.innerHTML = text || '';
+  return t.value;
+}
+
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.appendChild(document.createTextNode(text || ''));
@@ -667,7 +675,7 @@ async function deleteComment(commentId, postId) {
 // ── Linkify ───────────────────────────────────────────────────────────────────
 function linkify(text) {
   const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g;
-  return escapeHtml(text).replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--green-dark);word-break:break-all;">$1</a>');
+  return escapeHtml(decodeHtmlEntities(text)).replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--green-dark);word-break:break-all;">$1</a>');
 }
 
 // ── Media embeds in post content (Twitch / Spotify / YouTube) ──────────────────
