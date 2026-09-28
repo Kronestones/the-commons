@@ -449,6 +449,36 @@ async def api_feed(
         })
     return JSONResponse({"ok": True, "feed": feed, "mode": result["mode"].value})
 
+@app.post("/api/posts/{post_id}/share")
+async def api_share_post(
+    request:      Request,
+    post_id:      int,
+    caption:      str  = Form(default=""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    ip = get_client_ip(request)
+    enforce_rate_limit(ip, "post")
+
+    c = sanitizer.sanitize_text(caption, max_length=1000)
+    if not c["ok"]:
+        return JSONResponse({"ok": False, "error": c["error"]}, status_code=400)
+
+    result = posts.share(db, current_user, post_id, c["value"])
+    if not result["ok"]:
+        return JSONResponse({"ok": False, "error": result["error"]}, status_code=400)
+
+    post = result["post"]
+    return JSONResponse({
+        "ok":      True,
+        "post_id": post.id,
+        "status":  post.status.value,
+        "message": (
+            "Shared to your profile." if post.status == PostStatus.PUBLISHED
+            else "Your share is being verified and will appear shortly."
+        )
+    })
+
 @app.post("/api/posts/{post_id}/vote")
 async def api_vote(
     post_id: int,

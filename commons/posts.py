@@ -60,6 +60,66 @@ class PostManager:
 
         return {"ok": True, "post": post}
 
+    # ── Share ─────────────────────────────────────────────────────────────────
+
+    def share(self, db: Session, author: User, original_id: int, caption: str = "") -> dict:
+        """Share a published post to the author's own profile (and their followers' feeds).
+        A share is a normal Post row whose shared_post_id points at the original."""
+        from .fingerprint import check_zero_tolerance
+        from datetime import datetime as _dt
+
+        caption = (caption or "").strip()
+        if len(caption) > 1000:
+            return {"ok": False, "error": "Caption exceeds 1,000 character limit."}
+        if caption and check_zero_tolerance(caption):
+            return {"ok": False, "error": "Your caption contains content that is not permitted on The Commons."}
+
+        target = db.query(Post).filter(Post.id == original_id).first()
+        # sharing a share means sharing the original post
+        if target is not None and target.shared_post_id:
+            target = db.query(Post).filter(Post.id == target.shared_post_id).first()
+
+        if (target is None or target.status != PostStatus.PUBLISHED
+                or target.author is None or not target.author.is_active):
+            return {"ok": False, "error": "That post isn't available to share."}
+        if target.author_id == author.id:
+            return {"ok": False, "error": "You can't share your own post."}
+
+        already = (db.query(Post)
+                     .filter(Post.author_id == author.id,
+                             Post.shared_post_id == target.id,
+                             Post.status != PostStatus.REMOVED)
+                     .first())
+        if already:
+            return {"ok": False, "error": "You've already shared this post."}
+
+        post = Post(
+            author_id      = author.id,
+            post_type      = PostType.TEXT,
+            content        = caption,
+            media_path     = "",
+            is_news        = False,
+            is_political   = False,
+            shared_post_id = target.id,
+            status         = PostStatus.PENDING,
+        )
+        db.add(post)
+        db.commit()
+        db.refresh(post)
+
+        if caption:
+            # the only new content is the caption, so that is what Fingerprint scans
+            fingerprint.scan(db, post)
+            db.refresh(post)
+        else:
+            # a bare share adds no new content; the original was already verified
+            post.status = PostStatus.PUBLISHED
+            post.published_at = _dt.utcnow()
+            db.commit()
+            db.refresh(post)
+
+        return {"ok": True, "post": post}
+
     # ── Feed ──────────────────────────────────────────────────────────────────
 
     def get_feed(self, db: Session, user: User,
