@@ -193,11 +193,3 @@
   background: transparent; border: none; border-radius: 50%;
   color: #161b17; cursor: pointer;
 }
-
-/* close fix */
-.chat-disclaimer-dismissed { display: none !important; }
-
-/* chat-window-mobile-v3: keep the message box + input on one screen */
-@media (max-width: 600px) {
-  .chat-window { height: 42vh; min-height: 220px; }
-}
