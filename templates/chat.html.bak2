@@ -11,16 +11,13 @@
 
   <div class="chat-header">
     <h1>Commons Chat</h1>
+    <p class="chat-subtitle">Welcome to the public chat.</p>
   </div>
 
-  <div class="chat-disclaimer chat-notice-v2" id="chatDisclaimer">
-    <button class="chat-disclaimer-dismiss" id="dismissDisclaimer" aria-label="Close">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-    </button>
-    <p class="chat-notice-title">ℹ️ Welcome to the public chat</p>
-    <p>🔒 Don't share personal information</p>
-    <p>⚖️ The Commons isn't responsible for what users say</p>
-    <p>🚩 See something concerning? Tap Report on that message</p>
+  <div class="chat-disclaimer chat-disclaimer-short" id="chatDisclaimer">
+    Don't share personal information. The Commons isn't responsible for what
+    users say. See something concerning? Tap 🚩 <strong>Report</strong> on that message.
+    <button class="chat-disclaimer-dismiss" id="dismissDisclaimer" aria-label="Dismiss">Got it</button>
   </div>
 
   <div class="chat-window" id="chatWindow">

@@ -173,23 +173,3 @@
     height: 60vh;
   }
 }
-
-/* chat-notice-v2: matches the feed's "How The Commons works" box */
-.chat-disclaimer.chat-notice-v2 {
-  position: relative;
-  background: #e9f4ee;
-  border: 1.5px solid #2d6a4f;
-  border-radius: 16px;
-  padding: 16px 48px 8px 16px;
-  margin: 0 0 16px 0;
-  color: #1a1a1a;
-}
-.chat-notice-v2 p { margin: 0 0 10px 0; line-height: 1.35; }
-.chat-notice-v2 .chat-notice-title { font-weight: 700; color: #193a27; font-size: 1.05em; }
-.chat-notice-v2 .chat-disclaimer-dismiss {
-  position: absolute; top: 10px; right: 10px;
-  width: 36px; height: 36px; padding: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: transparent; border: none; border-radius: 50%;
-  color: #161b17; cursor: pointer;
-}
