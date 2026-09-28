@@ -52,6 +52,7 @@ from commons.preferences import preference_engine, WatchEvent
 from commons.surplus     import surplus_manager
 from commons.social      import social, Like, Comment, Share
 from commons.parental    import parental, ParentalControl
+from commons.account_safety import account_safety_manager, AccountRestriction, MessageFlag, BannedEmail, restriction_scheduler
 from commons.maintenance    import maintenance
 from commons.news_feed       import news_feed
 from commons.circle_assistants import circle_assistants, AssistantAnalysis
@@ -144,6 +145,7 @@ async def startup():
     from commons.blessing import BlessingApplication, BlessingVote, MonthlyBlessingRecord
     from commons.livestream import LiveStream, LiveChatMessage, StreamViewer, StreamGiftEvent
     from commons.transparency import OperatingCostEntry, MonthlyReport
+    from commons.account_safety import AccountRestriction, MessageFlag, BannedEmail
     from commons.database import Base, engine
     Base.metadata.create_all(bind=engine)
 
@@ -155,6 +157,7 @@ async def startup():
             revival.startup_check()
             heartbeat.start()
             news_feed.start()
+            restriction_scheduler.start()
         except Exception as e:
             print(f"[STARTUP] Background startup warning: {e}")
 
@@ -1633,6 +1636,40 @@ async def api_chat_moderation_restore(
     if current_user.role.value.upper() != "SOVEREIGN":
         return JSONResponse({"ok": False, "error": "Sovereign access only."}, status_code=403)
     result = chat_manager.restore_message(db, message_id)
+    return JSONResponse(result)
+
+@app.get("/api/messages/moderation/pending")
+async def api_message_moderation_pending(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    from commons.account_safety import account_safety_manager
+    if current_user.role.value.upper() != "SOVEREIGN":
+        return JSONResponse({"ok": False, "error": "Sovereign access only."}, status_code=403)
+    return JSONResponse({"ok": True, "flags": account_safety_manager.get_pending_flags(db)})
+
+@app.post("/api/messages/moderation/confirm")
+async def api_message_moderation_confirm(
+    flag_id: int = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    from commons.account_safety import account_safety_manager
+    if current_user.role.value.upper() != "SOVEREIGN":
+        return JSONResponse({"ok": False, "error": "Sovereign access only."}, status_code=403)
+    result = account_safety_manager.confirm_flag(db, flag_id)
+    return JSONResponse(result)
+
+@app.post("/api/messages/moderation/dismiss")
+async def api_message_moderation_dismiss(
+    flag_id: int = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    from commons.account_safety import account_safety_manager
+    if current_user.role.value.upper() != "SOVEREIGN":
+        return JSONResponse({"ok": False, "error": "Sovereign access only."}, status_code=403)
+    result = account_safety_manager.dismiss_flag(db, flag_id)
     return JSONResponse(result)
 
 @app.get("/api/users/{username}/profile")

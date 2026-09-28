@@ -33,6 +33,10 @@ def send_message(db: Session, sender: User, receiver_username: str, content: str
     if receiver.id == sender.id:
         return {"ok": False, "error": "You cannot message yourself."}
 
+    from .account_safety import account_safety_manager
+    if account_safety_manager.is_restricted(db, sender.id):
+        return {"ok": False, "error": "Your account is under review and can only contact Sovereign support until resolved."}
+
     known = is_known_contact(db, sender.id, receiver.id)
 
     # Check if already an accepted thread exists
@@ -53,6 +57,12 @@ def send_message(db: Session, sender: User, receiver_username: str, content: str
     )
     db.add(msg)
     db.commit()
+
+    from .dm_safety import evaluate_message
+    signals = evaluate_message(db, sender, content)
+    if signals:
+        account_safety_manager.flag_message(db, msg, sender, receiver, signals)
+
     return {"ok": True, "request": is_request}
 
 

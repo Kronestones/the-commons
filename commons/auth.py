@@ -92,6 +92,10 @@ def register_user(db: Session, username: str, email: str,
     if db.query(User).filter(User.email == email).first():
         return {"ok": False, "error": "An account with that email already exists."}
 
+    from .account_safety import BannedEmail
+    if db.query(BannedEmail).filter(BannedEmail.email == email).first():
+        return {"ok": False, "error": "This email is not eligible to register."}
+
     # Magic link auth — no real password needed
     pw_hash = "magic_link_no_password" if password == "magic_link" else hash_password(password)
     user = User(

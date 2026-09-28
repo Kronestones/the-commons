@@ -89,9 +89,13 @@ class Bookmark(Base):
 
 class DirectMessage(Base):
     """
-    End-to-end encrypted direct messages.
-    Not readable by the platform. Codex Law 3.
-    Messages are stored encrypted — only sender and recipient can read.
+    Direct messages between users.
+    NOTE: content is currently stored as plain text, not actually
+    end-to-end encrypted (see the TODO on content_encrypted below) —
+    this docstring previously overstated that. Automated safety
+    scanning (commons/dm_safety.py) reads message content to detect
+    patterns associated with predatory contact toward minors; flagged
+    accounts are reviewed by a human moderator, never auto-removed.
     """
     __tablename__ = "direct_messages"
 
@@ -715,9 +719,11 @@ class TrendingManager:
 
 class DirectMessageManager:
     """
-    End-to-end encrypted direct messages.
-    The platform cannot read message content.
-    Codex Law 3: No data selling. No surveillance.
+    Direct messages between users.
+    Automated safety scanning runs on send (see commons/dm_safety.py) to
+    flag patterns associated with predatory contact toward minors.
+    Flagged accounts are restricted and queued for human review — never
+    auto-removed. See commons/account_safety.py.
     """
 
     def send(self, db: Session, sender: User,
@@ -733,15 +739,43 @@ class DirectMessageManager:
         if not recipient.is_active:
             return {"ok": False, "error": "Cannot message this account."}
 
+        from .account_safety import account_safety_manager
+        if account_safety_manager.is_restricted(db, sender.id):
+            return {"ok": False, "error": "Your account is under review and can only contact Sovereign support until resolved."}
+
+        # Known-contact / stranger-request gating (matches
+        # commons/messaging.py's send_message() — previously this path
+        # had no such gate, letting any account message any other
+        # account directly with no accept step).
+        known = db.query(Follow).filter(
+            ((Follow.follower_id == sender.id) & (Follow.following_id == recipient_id)) |
+            ((Follow.follower_id == recipient_id) & (Follow.following_id == sender.id))
+        ).first() is not None
+
+        existing = db.query(DirectMessage).filter(
+            ((DirectMessage.sender_id == sender.id) & (DirectMessage.recipient_id == recipient_id)) |
+            ((DirectMessage.sender_id == recipient_id) & (DirectMessage.recipient_id == sender.id)),
+            DirectMessage.accepted == True
+        ).first()
+
+        is_request = not known and existing is None
+
         # In production: encrypt with recipient's public key
         # For now: store as-is, mark as encrypted placeholder
         msg = DirectMessage(
             sender_id          = sender.id,
             recipient_id       = recipient_id,
             content_encrypted  = content,  # TODO: Replace with actual E2E encryption
+            is_request         = is_request,
+            accepted           = None if is_request else True,
         )
         db.add(msg)
         db.commit()
+
+        from .dm_safety import evaluate_message
+        signals = evaluate_message(db, sender, content)
+        if signals:
+            account_safety_manager.flag_message(db, msg, sender, recipient, signals)
 
         # Notify recipient
         notification_manager.create(
