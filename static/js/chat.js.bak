@@ -41,7 +41,6 @@
     dismissBtn.addEventListener('click', () => {
       disclaimerDismissed = true;
       disclaimerEl.classList.add('chat-disclaimer-dismissed');
-      disclaimerEl.style.display = 'none';
     });
   }
 

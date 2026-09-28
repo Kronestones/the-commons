@@ -6,17 +6,20 @@
 {% block title %}Commons Chat{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="/static/css/chat.css">
 <div class="chat-page">
 
   <div class="chat-header">
     <h1>Commons Chat</h1>
-    <p class="chat-subtitle">Welcome to the public chat.</p>
+    <p class="chat-subtitle">A public room to say hello, ask questions, and meet your neighbors.</p>
   </div>
 
-  <div class="chat-disclaimer chat-disclaimer-short" id="chatDisclaimer">
-    Don't share personal information. The Commons isn't responsible for what
-    users say. See something concerning? Tap 🚩 <strong>Report</strong> on that message.
+  <div class="chat-disclaimer" id="chatDisclaimer">
+    <strong>Please read:</strong> This is a public chat room. Keep conversations respectful
+    and appropriate for all ages — people of any age may be present. Never share personal
+    information (full name, address, phone number, school, financial details) with people
+    you meet here. The Commons does not monitor conversations in real time and is not
+    responsible for what users say to each other. If you see something concerning, use the
+    <strong>🚩 Report</strong> button on that message.
     <button class="chat-disclaimer-dismiss" id="dismissDisclaimer" aria-label="Dismiss">Got it</button>
   </div>
 
@@ -61,8 +64,6 @@
     </div>
   </div>
 </template>
-{% endblock %}
 
-{% block scripts %}
 <script src="/static/js/chat.js"></script>
 {% endblock %}
