@@ -446,6 +446,7 @@ async def api_feed(
             "published_at":  post.published_at.isoformat() if post.published_at else None,
             "reason":        posts.get_feed_reason(post, current_user),
             "user_voted":    user_voted,
+            "shared":        posts.shared_summary(post),
         })
     return JSONResponse({"ok": True, "feed": feed, "mode": result["mode"].value})
 

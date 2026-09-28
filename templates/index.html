@@ -63,9 +63,28 @@
         <img src="{{ post.media_path if post.media_path.startswith('http') else '/media/' + post.media_path }}" style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;object-fit:cover;">
           {% endif %}
         {% endif %}
+        {% if post.shared_post_id %}
+          {% set sp = post.shared_post %}
+          {% if sp and sp.status.value == 'published' and sp.author and sp.author.is_active %}
+        <div class="shared-post" style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:8px;background:var(--green-light);">
+          <div class="post-header"><span class="post-author"><a href="/profile/{{ sp.author.username }}" style="color:inherit;text-decoration:none;">@{{ sp.author.username }}</a></span></div>
+          <div class="post-content">{{ sp.content | linkify | replace("\n", "<br>") | safe }}</div>
+          {% if sp.media_path %}
+            {% if sp.post_type.value == 'video' %}
+          <video src="{{ sp.media_path if sp.media_path.startswith('http') else '/media/' + sp.media_path }}" controls playsinline style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;background:#000;"></video>
+            {% else %}
+          <img src="{{ sp.media_path if sp.media_path.startswith('http') else '/media/' + sp.media_path }}" style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;object-fit:cover;">
+            {% endif %}
+          {% endif %}
+        </div>
+          {% else %}
+        <div class="shared-post" style="border:1px dashed var(--border);border-radius:10px;padding:10px 12px;margin-top:8px;color:var(--muted);font-size:14px;">This post is no longer available.</div>
+          {% endif %}
+        {% endif %}
         <div class="post-actions">
           <button onclick="vote({{ post.id }}, 1, this)" class="vote-btn {% if post.id in voted_post_ids %}voted{% endif %}" style="font-size:15px;background:none;border:none;color:var(--muted);">{% if post.id in voted_post_ids %}❤️{% else %}🤍{% endif %} <span id="score-{{ post.id }}">{{ post.community_score | int }}</span></button>
           <span style="font-size:14px;color:var(--muted);">💬 <span id="comment-count-{{ post.id }}">0</span></span>
+          {% if post.author and post.author.username != current_username %}<button onclick="sharePost({{ post.id }}, this)" class="vote-btn" style="font-size:14px;background:none;border:none;color:var(--muted);">🔁 Share</button>{% endif %}
         </div>
         <div id="comments-{{ post.id }}" style="margin-top:8px;">
           <div id="comment-list-{{ post.id }}" style="margin-bottom:8px;"></div>
