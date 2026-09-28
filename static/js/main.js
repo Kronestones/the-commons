@@ -140,8 +140,10 @@ async function loadMorePosts() {
             ? `<video src="${post.media_path.startsWith('http') ? post.media_path : '/media/' + post.media_path}" controls playsinline style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;background:#000;"></video>`
             : `<img src="${post.media_path.startsWith('http') ? post.media_path : '/media/' + post.media_path}" style="width:100%;border-radius:8px;margin-top:8px;max-height:500px;object-fit:cover;">`
         ) : ''}
+        ${typeof renderSharedPost === 'function' ? renderSharedPost(post.shared) : ''}
         <div class="post-actions">
           <button onclick="vote(${post.id}, 1, this)" class="vote-btn ${post.user_voted ? 'voted' : ''}" style="font-size:15px;">${post.user_voted ? '❤️' : '🤍'} <span id="score-${post.id}">${Math.round(post.community_score)}</span></button>
+          ${post.author !== getUsername() ? `<button onclick="sharePost(${post.id}, this)" class="vote-btn" style="font-size:14px;background:none;border:none;color:var(--muted);">🔁 Share</button>` : ''}
         </div>
         <div id="comments-${post.id}" style="margin-top:8px;">
           <div id="comment-list-${post.id}" style="margin-bottom:8px;"></div>

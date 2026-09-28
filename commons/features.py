@@ -220,6 +220,7 @@ class ProfileManager:
     def get_profile(self, db: Session, username: str,
                     viewer: Optional[User] = None) -> Optional[dict]:
         """Get a user's public profile."""
+        from .share_util import shared_summary
         user = db.query(User).filter(User.username.ilike(username)).first()
         if not user:
             return None
@@ -278,6 +279,7 @@ class ProfileManager:
                     "id":              p.id,
                     "content":         p.content,
                     "post_type":       p.post_type.value,
+                    "shared":          shared_summary(p),
                     "media_path":      p.media_path,
                     "community_score": p.community_score,
                     "view_count":      p.view_count,
