@@ -62,7 +62,13 @@ class Config:
         print(f"\n[CONFIG] The Commons Configuration")
         print(f"[CONFIG]   Environment : {self.environment}")
         print(f"[CONFIG]   Host        : {self.host}:{self.port}")
-        print(f"[CONFIG]   Database    : {self.database_url}")
+        _db = self.database_url
+        try:
+            from sqlalchemy.engine import make_url
+            _db = make_url(_db).render_as_string(hide_password=True)
+        except Exception:
+            _db = "(hidden)"
+        print(f"[CONFIG]   Database    : {_db}")
         print(f"[CONFIG]   Media dir   : {self.media_dir}")
         print(f"[CONFIG]   Fingerprint : {'ON' if self.fingerprint_on else 'OFF'}")
         print(f"[CONFIG]   Fee         : ${self.transaction_fee:.2f}")

@@ -106,11 +106,13 @@ class Post(Base):
     view_count      = Column(Integer, default=0)
     created_at      = Column(DateTime, default=datetime.utcnow)
     published_at    = Column(DateTime, nullable=True)
+    shared_post_id  = Column(Integer, ForeignKey("posts.id"), nullable=True)  # set when this post is a share of another post
 
     author          = relationship("User", back_populates="posts")
     fingerprint     = relationship("FingerprintRecord", back_populates="post", uselist=False)
     community_votes = relationship("CommunityVote", back_populates="post")
     product_tags    = relationship("ProductTag", back_populates="post")
+    shared_post     = relationship("Post", remote_side=[id], foreign_keys=[shared_post_id])
 
 
 class FingerprintRecord(Base):
