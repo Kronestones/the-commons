@@ -72,6 +72,13 @@ def validate_password(password: str) -> dict:
         return {"ok": False, "error": "Password is too long."}
     return {"ok": True}
 
+def _is_blocked_gov_email(email: str) -> bool:
+    """True for .gov / .mil addresses (and their subdomains), case-insensitive.
+    The Commons is a people space — federal and military accounts don't get a seat."""
+    domain = email.strip().lower().rsplit("@", 1)[-1]
+    return domain == "gov" or domain.endswith(".gov") or domain == "mil" or domain.endswith(".mil")
+
+
 def register_user(db: Session, username: str, email: str,
                   password: str, display_name: str = None,
                   is_minor: bool = False) -> dict:
@@ -95,6 +102,9 @@ def register_user(db: Session, username: str, email: str,
     from .account_safety import BannedEmail
     if db.query(BannedEmail).filter(BannedEmail.email == email).first():
         return {"ok": False, "error": "This email is not eligible to register."}
+
+    if _is_blocked_gov_email(email):
+        return {"ok": False, "error": "Government (.gov/.mil) email addresses can't register on The Commons."}
 
     # Magic link auth — no real password needed
     pw_hash = "magic_link_no_password" if password == "magic_link" else hash_password(password)
