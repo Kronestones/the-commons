@@ -82,6 +82,7 @@ class User(Base):
     created_at      = Column(DateTime, default=datetime.utcnow)
     last_seen       = Column(DateTime, default=datetime.utcnow)
     connections     = Column(Text, default="{}")
+    profile_theme   = Column(Text, default="{}")  # palette/font/stickers — see commons/theme.py
 
     # No biometrics — ever
     # No phone number required

@@ -313,6 +313,16 @@ class ProfileManager:
         db.commit()
         return {"ok": True}
 
+    def update_theme(self, db: Session, user: User, palette: str) -> dict:
+        from commons.theme import set_palette, remove_palette
+        if not palette.strip():
+            result = remove_palette(user)
+        else:
+            result = set_palette(user, palette.strip())
+        if result.get("ok"):
+            db.commit()
+        return result
+
     def update_twitch(self, db: Session, user: User, raw_input: str) -> dict:
         from commons.connections import set_twitch_connection, remove_connection
         if not raw_input.strip():

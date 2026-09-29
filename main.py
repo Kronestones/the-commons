@@ -1766,6 +1766,14 @@ async def api_update_bio(
 ):
     return JSONResponse(profile_manager.update_bio(db, current_user, bio))
 
+@app.post("/api/profile/theme")
+async def api_update_theme(
+    palette:      str = Form(""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(profile_manager.update_theme(db, current_user, palette))
+
 @app.post("/api/profile/twitch")
 async def api_update_twitch(
     twitch:       str = Form(""),
