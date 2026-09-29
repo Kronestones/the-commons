@@ -95,20 +95,60 @@ async function uploadBanner(input) {
   else showMessage(data.error || 'Upload failed', true);
 }
 
-// Colors the banner/avatar/username to match a saved theme.palette. Purely
-// inline-style, scoped to these three existing elements — no CSS file changes,
-// no effect on any other page. Falls back to the site default when theme is null.
+// Colors the whole profile page to match a saved theme.palette — background, header
+// text, the post composer, and every post card — while leaving uploaded avatar/banner
+// photos completely alone (those still show over the themed background as before).
+// Purely inline-style, scoped to elements on this one page — no CSS file changes, so
+// no other page is affected. Falls back to the default green look when theme is null.
+let currentProfileTheme = null;
+
 function applyProfileTheme(theme) {
+  currentProfileTheme = theme;
+  const layout = document.querySelector('.profile-layout');
   const banner = document.getElementById('profile-banner');
   const avatar = document.getElementById('profile-avatar');
   const nameEl = document.getElementById('profile-username');
-  if (!theme) return; // keep the default green look
+  const displayNameEl = document.getElementById('profile-displayname');
+  const bioEl = document.getElementById('profile-bio');
+  const joinedEl = document.getElementById('profile-joined');
+  const statsEl = document.getElementById('profile-stats');
+  const composer = document.getElementById('profile-composer');
+  if (!theme) {
+    if (layout) { layout.style.background = ''; layout.style.borderRadius = ''; layout.style.padding = ''; }
+    return; // keep the default green look
+  }
+  if (layout) {
+    layout.style.background = theme.bg;
+    layout.style.borderRadius = '16px';
+    layout.style.padding = '16px';
+  }
   if (banner) banner.style.background = theme.gradient || theme.primary;
   if (avatar) {
     avatar.style.background = theme.secondary;
     avatar.style.borderColor = theme.accent;
   }
   if (nameEl) nameEl.style.color = theme.primary;
+  [displayNameEl, bioEl, joinedEl, statsEl].forEach(el => { if (el) el.style.color = theme.text; });
+  if (composer) {
+    composer.style.background = theme.card_bg;
+    composer.style.border = '1px solid ' + theme.accent;
+    composer.style.color = theme.text;
+    composer.style.borderRadius = '12px';
+    const textarea = composer.querySelector('textarea');
+    if (textarea) { textarea.style.background = 'transparent'; textarea.style.color = theme.text; }
+  }
+  themeProfileCards(theme);
+}
+
+// Re-applies the current theme to every rendered post card. Called once right after
+// postsEl.innerHTML is rebuilt, since those DOM nodes are freshly created each time.
+function themeProfileCards(theme) {
+  if (!theme) return;
+  document.querySelectorAll('#profile-posts .post-card').forEach(card => {
+    card.style.background = theme.card_bg;
+    card.style.borderColor = theme.accent;
+    card.style.color = theme.text;
+  });
 }
 
 async function loadProfile() {
@@ -264,6 +304,7 @@ async function loadProfile() {
         </div>
       </div>
     `).join('');
+    themeProfileCards(currentProfileTheme);
 
     // Load comments for the freshly-rendered profile posts
     if (typeof autoLoadComments === 'function') {

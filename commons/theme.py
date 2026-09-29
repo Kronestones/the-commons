@@ -11,36 +11,43 @@ PALETTES = {
         "label": "Bubblegum",
         "primary": "#ff6fb0", "secondary": "#c9a7ff", "accent": "#ff9edb",
         "bg": "#fff0f8", "text": "#4a1f38",
+        "card_bg": "#ffffff",
     },
     "y2k_chrome": {
         "label": "Y2K Chrome",
         "primary": "#8fa3b3", "secondary": "#1c1c1e", "accent": "#4fc3f7",
         "bg": "#e8ecef", "text": "#1c1c1e",
+        "card_bg": "#ffffff",
     },
     "cyberpunk": {
         "label": "Cyberpunk",
         "primary": "#ff2fd0", "secondary": "#0d0d0d", "accent": "#39ff14",
         "bg": "#12001a", "text": "#f5f5f5",
+        "card_bg": "#1e0530",
     },
     "forest_witch": {
         "label": "Forest Witch",
         "primary": "#1e4d2b", "secondary": "#d4af37", "accent": "#4a7c59",
         "bg": "#12240f", "text": "#f2e9d8",
+        "card_bg": "#1c3618",
     },
     "sunset_glow": {
         "label": "Sunset Glow",
         "primary": "#ff8a5c", "secondary": "#c46fd6", "accent": "#ffd15c",
         "bg": "#2b1930", "text": "#fff3e6",
+        "card_bg": "#3a2340",
     },
     "barbie_energy": {
         "label": "Barbie Energy",
         "primary": "#ff1493", "secondary": "#ffffff", "accent": "#ffd700",
         "bg": "#ffe4f1", "text": "#7a0045",
+        "card_bg": "#ffffff",
     },
     "pride": {
         "label": "Pride",
         "primary": "#e02020", "secondary": "#2050e0", "accent": "#ffd400",
         "bg": "#120d1c", "text": "#ffffff",
+        "card_bg": "#1e1830",
         "gradient": "linear-gradient(90deg, #e02020, #ff9500, #ffd400, #2ba84a, #2050e0, #7b2fbe)",
     },
 }
