@@ -248,6 +248,9 @@ class ProfileManager:
         if viewer and viewer.id != user.id:
             is_following = follow_manager.is_following(db, viewer.id, user.id)
             is_blocked   = block_manager.is_blocked(db, viewer.id, user.id)
+            # Friends = a mutual follow (they follow you back). No separate
+            # request/accept system — Follow already does the work.
+            is_friend = is_following and follow_manager.is_following(db, user.id, viewer.id)
 
         # Creator stats
         total_likes = db.query(func.count(CommunityVote.id)).filter(
@@ -274,6 +277,7 @@ class ProfileManager:
             "following":       following_count,
             "post_count":      len(posts),
             "is_following":    is_following,
+            "is_friend":       locals().get("is_friend", False),
             "is_blocked":      is_blocked,
             "avatar_path":     user.avatar_path or None,
             "banner_path":     user.banner_path or None,

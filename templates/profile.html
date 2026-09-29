@@ -209,7 +209,7 @@ async function loadProfile() {
     } else if (token) {
       const isBlocked = p.is_blocked || false;
       actionsEl.innerHTML =
-        '<button onclick="toggleFollow()" class="btn-primary" id="follow-btn">' + (p.is_following ? 'Unfollow' : 'Follow') + '</button> ' +
+        '<button onclick="toggleFollow()" class="btn-primary" id="follow-btn">' + (p.is_friend ? '👫 Friends' : (p.is_following ? 'Unfollow' : 'Follow')) + '</button> ' +
         '<button onclick="toggleBlock()" class="delete-btn" id="block-btn" style="font-size:13px;padding:8px 14px;">' + (isBlocked ? 'Unblock' : 'Block') + '</button> ' +
         '<button onclick="sendMessage()" class="btn-primary" style="font-size:13px;padding:8px 14px;background:var(--green-mid);">Message</button>';
     }
