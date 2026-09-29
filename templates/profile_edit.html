@@ -38,6 +38,19 @@
       <input type="text" id="now-playing" maxlength="80" placeholder="e.g. Elden Ring">
     </label>
 
+    <label>Profile Theme <small>(pick a look for your profile — optional)</small></label>
+    <div id="theme-picker" style="display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 20px;">
+      <div class="theme-swatch" data-key="" title="Default" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:var(--green-mid);"></div>
+      <div class="theme-swatch" data-key="bubblegum" title="Bubblegum" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#ff6fb0,#c9a7ff);"></div>
+      <div class="theme-swatch" data-key="y2k_chrome" title="Y2K Chrome" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#8fa3b3,#1c1c1e);"></div>
+      <div class="theme-swatch" data-key="cyberpunk" title="Cyberpunk" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#ff2fd0,#0d0d0d);"></div>
+      <div class="theme-swatch" data-key="forest_witch" title="Forest Witch" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#1e4d2b,#d4af37);"></div>
+      <div class="theme-swatch" data-key="sunset_glow" title="Sunset Glow" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#ff8a5c,#c46fd6);"></div>
+      <div class="theme-swatch" data-key="barbie_energy" title="Barbie Energy" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#ff1493,#ffd700);"></div>
+      <div class="theme-swatch" data-key="pride" title="Pride" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(90deg,#e02020,#ff9500,#ffd400,#2ba84a,#2050e0,#7b2fbe);"></div>
+    </div>
+    <p id="theme-picker-label" style="margin:-14px 0 20px;font-size:13px;color:var(--muted, #888);">Default</p>
+
     <div id="edit-msg" class="form-error" style="display:none;"></div>
 
     <button class="btn-primary btn-full" onclick="saveProfile()">Save Changes</button>
@@ -52,6 +65,24 @@ const token = localStorage.getItem('token') || '';
 const username = localStorage.getItem('username') || '';
 
 if (!token) window.location.href = '/login';
+
+let selectedTheme = '';
+const THEME_LABELS = {
+  '': 'Default', 'bubblegum': 'Bubblegum', 'y2k_chrome': 'Y2K Chrome',
+  'cyberpunk': 'Cyberpunk', 'forest_witch': 'Forest Witch',
+  'sunset_glow': 'Sunset Glow', 'barbie_energy': 'Barbie Energy', 'pride': 'Pride'
+};
+function selectTheme(key, skipHighlightOthers) {
+  selectedTheme = key || '';
+  document.querySelectorAll('.theme-swatch').forEach(el => {
+    el.style.borderColor = (el.dataset.key === selectedTheme) ? '#333' : 'transparent';
+  });
+  const label = document.getElementById('theme-picker-label');
+  if (label) label.textContent = THEME_LABELS[selectedTheme] || 'Default';
+}
+document.querySelectorAll('.theme-swatch').forEach(el => {
+  el.addEventListener('click', () => selectTheme(el.dataset.key));
+});
 
 // Pre-fill current values
 async function loadCurrent() {
@@ -72,6 +103,7 @@ async function loadCurrent() {
     document.getElementById('bluesky').value = p.connections.bluesky_url ? p.connections.bluesky_url : '';
     document.getElementById('tiktok').value = p.connections.tiktok_url ? p.connections.tiktok_url : '';
     document.getElementById('now-playing').value = p.connections.now_playing ? p.connections.now_playing : '';
+    selectTheme(p.theme ? p.theme.key : '', true);
     }
   }
 }
@@ -124,6 +156,16 @@ async function saveProfile() {
     const f = new FormData();
     f.append('now_playing', nowPlaying);
     const r = await fetch('/api/profile/now-playing', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
+    });
+    const d = await r.json();
+    if (!d.ok) { ok = false; msgEl.textContent = d.error; msgEl.style.display = ''; }
+  }
+
+  if (ok) {
+    const f = new FormData();
+    f.append('palette', selectedTheme);
+    const r = await fetch('/api/profile/theme', {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
     });
     const d = await r.json();

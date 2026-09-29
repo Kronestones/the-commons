@@ -95,6 +95,22 @@ async function uploadBanner(input) {
   else showMessage(data.error || 'Upload failed', true);
 }
 
+// Colors the banner/avatar/username to match a saved theme.palette. Purely
+// inline-style, scoped to these three existing elements — no CSS file changes,
+// no effect on any other page. Falls back to the site default when theme is null.
+function applyProfileTheme(theme) {
+  const banner = document.getElementById('profile-banner');
+  const avatar = document.getElementById('profile-avatar');
+  const nameEl = document.getElementById('profile-username');
+  if (!theme) return; // keep the default green look
+  if (banner) banner.style.background = theme.gradient || theme.primary;
+  if (avatar) {
+    avatar.style.background = theme.secondary;
+    avatar.style.borderColor = theme.accent;
+  }
+  if (nameEl) nameEl.style.color = theme.primary;
+}
+
 async function loadProfile() {
   const postsEl = document.getElementById('profile-posts');
   const token = getProfileToken();
@@ -122,6 +138,7 @@ async function loadProfile() {
     }
     const p = data.profile;
     PROFILE_USER_ID = p.id;
+    applyProfileTheme(p.theme);
     const avatarEl = document.getElementById('profile-avatar');
     if (p.avatar_path) {
       avatarEl.innerHTML = '<img src="' + (p.avatar_path.startsWith('http') ? p.avatar_path : '/media/' + p.avatar_path) + '" style="width:100%;height:100%;object-fit:cover;">';

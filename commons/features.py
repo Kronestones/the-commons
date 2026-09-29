@@ -225,6 +225,7 @@ class ProfileManager:
                     viewer: Optional[User] = None) -> Optional[dict]:
         """Get a user's public profile."""
         from .share_util import shared_summary
+        from .theme import get_theme_output
         user = db.query(User).filter(User.username.ilike(username)).first()
         if not user:
             return None
@@ -282,6 +283,7 @@ class ProfileManager:
             "avatar_path":     user.avatar_path or None,
             "banner_path":     user.banner_path or None,
             "connections":     get_profile_embeds(user, "commonscommunity.org"),
+            "theme":           get_theme_output(user),
             "posts": [
                 {
                     "id":              p.id,
