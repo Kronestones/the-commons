@@ -35,7 +35,10 @@
     <div id="pane-new" style="display:none">
       <div class="post-card">
         <h3 style="margin-bottom:12px;">New Message</h3>
-        <input id="new-to" type="text" placeholder="@username" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:15px;">
+        <div style="position:relative;">
+          <input id="new-to" type="text" placeholder="@username" autocomplete="off" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:15px;">
+          <div id="user-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid var(--border);border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);z-index:10;max-height:220px;overflow-y:auto;"></div>
+        </div>
         <textarea id="new-content" placeholder="Write a message..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:15px;min-height:100px;resize:vertical;"></textarea>
         <button onclick="sendNewMessage()" class="vote-btn" style="margin-top:8px;width:100%;">Send</button>
         <div id="new-msg-status" style="margin-top:8px;"></div>
@@ -258,8 +261,63 @@
       return d.toLocaleDateString();
     }
 
-    // Load inbox on start
-    showTab('inbox');
+    // --- @username search, so you don't need to remember the exact spelling ---
+    let searchTimer = null;
+
+    document.getElementById('new-to').addEventListener('input', (e) => {
+      const q = e.target.value.replace('@', '').trim();
+      clearTimeout(searchTimer);
+      const box = document.getElementById('user-suggestions');
+      if (q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
+      searchTimer = setTimeout(() => searchUsers(q), 250);
+    });
+
+    document.addEventListener('click', (e) => {
+      const box = document.getElementById('user-suggestions');
+      if (box && !box.contains(e.target) && e.target.id !== 'new-to') {
+        box.style.display = 'none';
+      }
+    });
+
+    async function searchUsers(q) {
+      const box = document.getElementById('user-suggestions');
+      try {
+        const res = await fetch('/api/search?q=' + encodeURIComponent(q) + '&type=users', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        const users = (data.ok && data.users) ? data.users : [];
+        if (users.length === 0) { box.style.display = 'none'; box.innerHTML = ''; return; }
+        box.innerHTML = users.map(u =>
+          '<div class="user-suggestion" data-username="' + u.username.replace(/"/g, '&quot;') + '" ' +
+          'style="padding:10px;cursor:pointer;border-bottom:1px solid var(--border);">' +
+          '@' + u.username + (u.display_name && u.display_name !== u.username ? ' <span style="color:var(--muted);font-size:13px;">(' + u.display_name + ')</span>' : '') +
+          '</div>'
+        ).join('');
+        box.style.display = 'block';
+        box.querySelectorAll('.user-suggestion').forEach(el => {
+          el.addEventListener('click', () => {
+            document.getElementById('new-to').value = '@' + el.dataset.username;
+            box.style.display = 'none';
+            box.innerHTML = '';
+            document.getElementById('new-content').focus();
+          });
+        });
+      } catch (e) {
+        box.style.display = 'none';
+      }
+    }
+
+    // If we arrived from a profile's Message button (?to=username), open
+    // New Message pre-filled instead of defaulting to the empty inbox.
+    const prefillTo = new URLSearchParams(window.location.search).get('to');
+    if (prefillTo) {
+      showTab('new');
+      document.getElementById('new-to').value = '@' + prefillTo;
+      document.getElementById('new-content').focus();
+    } else {
+      showTab('inbox');
+    }
   </script>
 </body>
 </html>
