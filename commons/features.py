@@ -225,7 +225,7 @@ class ProfileManager:
                     viewer: Optional[User] = None) -> Optional[dict]:
         """Get a user's public profile."""
         from .share_util import shared_summary
-        from .theme import get_theme_output
+        from .theme import get_theme_output, get_font_output
         user = db.query(User).filter(User.username.ilike(username)).first()
         if not user:
             return None
@@ -284,6 +284,7 @@ class ProfileManager:
             "banner_path":     user.banner_path or None,
             "connections":     get_profile_embeds(user, "commonscommunity.org"),
             "theme":           get_theme_output(user),
+            "font":            get_font_output(user),
             "posts": [
                 {
                     "id":              p.id,
@@ -321,6 +322,16 @@ class ProfileManager:
             result = remove_palette(user)
         else:
             result = set_palette(user, palette.strip())
+        if result.get("ok"):
+            db.commit()
+        return result
+
+    def update_font(self, db: Session, user: User, font: str) -> dict:
+        from commons.theme import set_font, remove_font
+        if not font.strip():
+            result = remove_font(user)
+        else:
+            result = set_font(user, font.strip())
         if result.get("ok"):
             db.commit()
         return result

@@ -102,3 +102,60 @@ def list_palettes() -> list:
     return [{"key": k, "label": v["label"], "primary": v["primary"],
              "secondary": v["secondary"], "accent": v["accent"]}
             for k, v in PALETTES.items()]
+
+FONTS = {
+    "bungee":           {"label": "Bungee",              "family": "'Bungee', cursive",             "google": "family=Bungee"},
+    "caveat":           {"label": "Caveat",               "family": "'Caveat', cursive",             "google": "family=Caveat:wght@700"},
+    "press_start":      {"label": "Press Start 2P",       "family": "'Press Start 2P', cursive",     "google": "family=Press+Start+2P"},
+    "fredoka":          {"label": "Fredoka",               "family": "'Fredoka', sans-serif",         "google": "family=Fredoka:wght@600"},
+    "pacifico":         {"label": "Pacifico",              "family": "'Pacifico', cursive",           "google": "family=Pacifico"},
+    "permanent_marker": {"label": "Permanent Marker",      "family": "'Permanent Marker', cursive",   "google": "family=Permanent+Marker"},
+    "bangers":          {"label": "Bangers",               "family": "'Bangers', cursive",            "google": "family=Bangers"},
+    "monoton":          {"label": "Monoton",               "family": "'Monoton', cursive",            "google": "family=Monoton"},
+    "righteous":        {"label": "Righteous",             "family": "'Righteous', cursive",          "google": "family=Righteous"},
+    "playfair":         {"label": "Playfair Display",      "family": "'Playfair Display', serif",     "google": "family=Playfair+Display:wght@700"},
+    "space_mono":       {"label": "Space Mono",            "family": "'Space Mono', monospace",       "google": "family=Space+Mono:wght@700"},
+    "comic_neue":       {"label": "Comic Neue",            "family": "'Comic Neue', cursive",         "google": "family=Comic+Neue:wght@700"},
+    "lobster":          {"label": "Lobster",               "family": "'Lobster', cursive",            "google": "family=Lobster"},
+    "orbitron":         {"label": "Orbitron",              "family": "'Orbitron', sans-serif",        "google": "family=Orbitron:wght@700"},
+    "shadows_light":    {"label": "Shadows Into Light",    "family": "'Shadows Into Light', cursive", "google": "family=Shadows+Into+Light"},
+}
+
+
+def set_font(user, font_key: str) -> dict:
+    """
+    Validates and stores a font choice on the user object
+    (caller is responsible for db.commit()). Independent of the color palette —
+    someone can pick a font with no palette, or a palette with no font.
+    """
+    if font_key not in FONTS:
+        return {"ok": False, "error": "That's not a font we offer."}
+
+    data = load_theme(user)
+    data["font"] = font_key
+    user.profile_theme = json.dumps(data)
+    return {"ok": True, "font": font_key}
+
+
+def remove_font(user) -> dict:
+    data = load_theme(user)
+    data.pop("font", None)
+    user.profile_theme = json.dumps(data)
+    return {"ok": True}
+
+
+def get_font_output(user) -> dict:
+    """Returns what the profile template needs, or None if no font is picked."""
+    data = load_theme(user)
+    key = data.get("font")
+    if not key or key not in FONTS:
+        return None
+    f = FONTS[key]
+    return {"key": key, **f}
+
+
+def list_fonts() -> list:
+    """For the edit-profile picker: [{"key": ..., "label": ..., "family": ...}, ...]."""
+    return [{"key": k, "label": v["label"], "family": v["family"]}
+            for k, v in FONTS.items()]
+

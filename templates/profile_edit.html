@@ -51,6 +51,26 @@
     </div>
     <p id="theme-picker-label" style="margin:-14px 0 20px;font-size:13px;color:var(--muted, #888);">Default</p>
 
+    <label>Profile Font <small>(pick a font for your name and bio — optional)</small></label>
+    <div id="font-picker" style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 20px;">
+      <button type="button" class="font-swatch" data-key="" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="">Default</button>
+      <button type="button" class="font-swatch" data-key="bungee" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="bungee">Bungee</button>
+      <button type="button" class="font-swatch" data-key="caveat" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="caveat">Caveat</button>
+      <button type="button" class="font-swatch" data-key="press_start" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="press_start">Press Start 2P</button>
+      <button type="button" class="font-swatch" data-key="fredoka" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="fredoka">Fredoka</button>
+      <button type="button" class="font-swatch" data-key="pacifico" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="pacifico">Pacifico</button>
+      <button type="button" class="font-swatch" data-key="permanent_marker" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="permanent_marker">Permanent Marker</button>
+      <button type="button" class="font-swatch" data-key="bangers" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="bangers">Bangers</button>
+      <button type="button" class="font-swatch" data-key="monoton" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="monoton">Monoton</button>
+      <button type="button" class="font-swatch" data-key="righteous" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="righteous">Righteous</button>
+      <button type="button" class="font-swatch" data-key="playfair" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="playfair">Playfair Display</button>
+      <button type="button" class="font-swatch" data-key="space_mono" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="space_mono">Space Mono</button>
+      <button type="button" class="font-swatch" data-key="comic_neue" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="comic_neue">Comic Neue</button>
+      <button type="button" class="font-swatch" data-key="lobster" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="lobster">Lobster</button>
+      <button type="button" class="font-swatch" data-key="orbitron" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="orbitron">Orbitron</button>
+      <button type="button" class="font-swatch" data-key="shadows_light" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="shadows_light">Shadows Into Light</button>
+    </div>
+
     <div id="edit-msg" class="form-error" style="display:none;"></div>
 
     <button class="btn-primary btn-full" onclick="saveProfile()">Save Changes</button>
@@ -65,6 +85,42 @@ const token = localStorage.getItem('token') || '';
 const username = localStorage.getItem('username') || '';
 
 if (!token) window.location.href = '/login';
+
+let selectedFont = '';
+const FONT_FAMILIES = {
+  '': null, 'bungee': "'Bungee', cursive", 'caveat': "'Caveat', cursive",
+  'press_start': "'Press Start 2P', cursive", 'fredoka': "'Fredoka', sans-serif",
+  'pacifico': "'Pacifico', cursive", 'permanent_marker': "'Permanent Marker', cursive",
+  'bangers': "'Bangers', cursive", 'monoton': "'Monoton', cursive",
+  'righteous': "'Righteous', cursive", 'playfair': "'Playfair Display', serif",
+  'space_mono': "'Space Mono', monospace", 'comic_neue': "'Comic Neue', cursive",
+  'lobster': "'Lobster', cursive", 'orbitron': "'Orbitron', sans-serif",
+  'shadows_light': "'Shadows Into Light', cursive"
+};
+(function loadFontPreviewStylesheet() {
+  // One combined request for every font this picker can show, so previews render
+  // in their real typeface. The live profile page loads only the ONE font someone
+  // actually picked — this bulk load is just for this settings page.
+  const families = ['Bungee','Caveat:wght@700','Press+Start+2P','Fredoka:wght@600','Pacifico',
+    'Permanent+Marker','Bangers','Monoton','Righteous','Playfair+Display:wght@700',
+    'Space+Mono:wght@700','Comic+Neue:wght@700','Lobster','Orbitron:wght@700','Shadows+Into+Light'];
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?' + families.map(f => 'family=' + f).join('&') + '&display=swap';
+  document.head.appendChild(link);
+})();
+function selectFont(key) {
+  selectedFont = key || '';
+  document.querySelectorAll('.font-swatch').forEach(el => {
+    const active = el.dataset.key === selectedFont;
+    el.style.borderColor = active ? '#333' : 'transparent';
+    const family = FONT_FAMILIES[el.dataset.key];
+    if (family) el.style.fontFamily = family;
+  });
+}
+document.querySelectorAll('.font-swatch').forEach(el => {
+  el.addEventListener('click', () => selectFont(el.dataset.key));
+});
 
 let selectedTheme = '';
 const THEME_LABELS = {
@@ -104,6 +160,7 @@ async function loadCurrent() {
     document.getElementById('tiktok').value = p.connections.tiktok_url ? p.connections.tiktok_url : '';
     document.getElementById('now-playing').value = p.connections.now_playing ? p.connections.now_playing : '';
     selectTheme(p.theme ? p.theme.key : '', true);
+    selectFont(p.font ? p.font.key : '');
     }
   }
 }
@@ -156,6 +213,16 @@ async function saveProfile() {
     const f = new FormData();
     f.append('now_playing', nowPlaying);
     const r = await fetch('/api/profile/now-playing', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
+    });
+    const d = await r.json();
+    if (!d.ok) { ok = false; msgEl.textContent = d.error; msgEl.style.display = ''; }
+  }
+
+  if (ok) {
+    const f = new FormData();
+    f.append('font', selectedFont);
+    const r = await fetch('/api/profile/font', {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
     });
     const d = await r.json();

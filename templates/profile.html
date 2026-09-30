@@ -142,6 +142,23 @@ function applyProfileTheme(theme) {
 
 // Re-applies the current theme to every rendered post card. Called once right after
 // postsEl.innerHTML is rebuilt, since those DOM nodes are freshly created each time.
+// Applies a chosen font to the username/display-name/bio, loading just that one
+// Google Font (not the whole picker roster) so the profile page stays light.
+function applyProfileFont(font) {
+  const nameEl = document.getElementById('profile-username');
+  const displayNameEl = document.getElementById('profile-displayname');
+  const bioEl = document.getElementById('profile-bio');
+  if (!font) return; // keep the site default font
+  if (!document.getElementById('profile-font-link') && font.google) {
+    const link = document.createElement('link');
+    link.id = 'profile-font-link';
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?' + font.google + '&display=swap';
+    document.head.appendChild(link);
+  }
+  [nameEl, displayNameEl, bioEl].forEach(el => { if (el) el.style.fontFamily = font.family; });
+}
+
 function themeProfileCards(theme) {
   if (!theme) return;
   document.querySelectorAll('#profile-posts .post-card').forEach(card => {
@@ -179,6 +196,7 @@ async function loadProfile() {
     const p = data.profile;
     PROFILE_USER_ID = p.id;
     applyProfileTheme(p.theme);
+    applyProfileFont(p.font);
     const avatarEl = document.getElementById('profile-avatar');
     if (p.avatar_path) {
       avatarEl.innerHTML = '<img src="' + (p.avatar_path.startsWith('http') ? p.avatar_path : '/media/' + p.avatar_path) + '" style="width:100%;height:100%;object-fit:cover;">';

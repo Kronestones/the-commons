@@ -1774,6 +1774,14 @@ async def api_update_theme(
 ):
     return JSONResponse(profile_manager.update_theme(db, current_user, palette))
 
+@app.post("/api/profile/font")
+async def api_update_font(
+    font:         str = Form(""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(profile_manager.update_font(db, current_user, font))
+
 @app.post("/api/profile/twitch")
 async def api_update_twitch(
     twitch:       str = Form(""),
