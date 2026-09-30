@@ -101,6 +101,7 @@ async function uploadBanner(input) {
 // Purely inline-style, scoped to elements on this one page — no CSS file changes, so
 // no other page is affected. Falls back to the default green look when theme is null.
 let currentProfileTheme = null;
+let currentProfileFont = null;
 
 function applyProfileTheme(theme) {
   currentProfileTheme = theme;
@@ -145,18 +146,22 @@ function applyProfileTheme(theme) {
 // Applies a chosen font to the username/display-name/bio, loading just that one
 // Google Font (not the whole picker roster) so the profile page stays light.
 function applyProfileFont(font) {
-  const nameEl = document.getElementById('profile-username');
-  const displayNameEl = document.getElementById('profile-displayname');
-  const bioEl = document.getElementById('profile-bio');
-  if (!font) return; // keep the site default font
-  if (!document.getElementById('profile-font-link') && font.google) {
+  currentProfileFont = font;
+  if (font && font.google && !document.getElementById('profile-font-link')) {
     const link = document.createElement('link');
     link.id = 'profile-font-link';
     link.rel = 'stylesheet';
     link.href = 'https://fonts.googleapis.com/css2?' + font.google + '&display=swap';
     document.head.appendChild(link);
   }
-  [nameEl, displayNameEl, bioEl].forEach(el => { if (el) el.style.fontFamily = font.family; });
+  // Re-scans every element on the page each call (cheap for a profile-sized page) so it
+  // covers post content, buttons, and comment boxes rendered after the first call — those
+  // don't inherit font-family from an ancestor by default in most browsers, so each one
+  // needs it set directly rather than relying on CSS inheritance from .profile-layout.
+  const target = font ? font.family : '';
+  document.querySelectorAll('.profile-layout, .profile-layout *').forEach(el => {
+    el.style.fontFamily = target;
+  });
 }
 
 function themeProfileCards(theme) {
@@ -288,6 +293,7 @@ async function loadProfile() {
         '<button onclick="toggleBlock()" class="delete-btn" id="block-btn" style="font-size:13px;padding:8px 14px;">' + (isBlocked ? 'Unblock' : 'Block') + '</button> ' +
         '<button onclick="sendMessage()" class="btn-primary" style="font-size:13px;padding:8px 14px;background:var(--green-mid);">Message</button>';
     }
+    applyProfileFont(currentProfileFont);
     if (!p.posts || p.posts.length === 0) {
       postsEl.innerHTML = '<p class="empty-feed">No posts yet.</p>';
       return;
@@ -323,6 +329,7 @@ async function loadProfile() {
       </div>
     `).join('');
     themeProfileCards(currentProfileTheme);
+    applyProfileFont(currentProfileFont);
 
     // Load comments for the freshly-rendered profile posts
     if (typeof autoLoadComments === 'function') {
