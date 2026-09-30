@@ -50,6 +50,67 @@ PALETTES = {
         "card_bg": "#1e1830",
         "gradient": "linear-gradient(90deg, #e02020, #ff9500, #ffd400, #2ba84a, #2050e0, #7b2fbe)",
     },
+    "galaxy": {
+        "label": "Galaxy",
+        "primary": "#6a4fd6", "secondary": "#1b1035", "accent": "#b39ddb",
+        "bg": "#0d0620", "text": "#f0e9ff",
+        "card_bg": "#1a0f38",
+    },
+    "mermaid_core": {
+        "label": "Mermaid Core",
+        "primary": "#2fd9c4", "secondary": "#0a3d40", "accent": "#7fe8d0",
+        "bg": "#e6fbf8", "text": "#063a37",
+        "card_bg": "#ffffff",
+    },
+    "retro_arcade": {
+        "label": "Retro Arcade",
+        "primary": "#ff5e1a", "secondary": "#1a0033", "accent": "#ff2fb0",
+        "bg": "#12001f", "text": "#fff0e0",
+        "card_bg": "#240a3a",
+    },
+    "cottagecore": {
+        "label": "Cottagecore",
+        "primary": "#7c9473", "secondary": "#d8c3a5", "accent": "#c98a97",
+        "bg": "#f6f1e7", "text": "#3f4a37",
+        "card_bg": "#ffffff",
+    },
+    "vaporwave": {
+        "label": "Vaporwave",
+        "primary": "#ff6ec7", "secondary": "#7afcff", "accent": "#b967ff",
+        "bg": "#1a1033", "text": "#f5f5ff",
+        "card_bg": "#26124a",
+        "gradient": "linear-gradient(135deg, #ff6ec7, #7afcff)",
+    },
+    "goth_glam": {
+        "label": "Goth Glam",
+        "primary": "#6b0f1a", "secondary": "#0d0d0d", "accent": "#c0c0c0",
+        "bg": "#0a0a0a", "text": "#eaeaea",
+        "card_bg": "#1a1a1a",
+    },
+    "tropical_punch": {
+        "label": "Tropical Punch",
+        "primary": "#ff6f59", "secondary": "#17c3b2", "accent": "#ffcb47",
+        "bg": "#fff8ea", "text": "#073b3a",
+        "card_bg": "#ffffff",
+    },
+    "midnight_gold": {
+        "label": "Midnight Gold",
+        "primary": "#d4af37", "secondary": "#0b1120", "accent": "#f1d97a",
+        "bg": "#05070f", "text": "#f5e9c8",
+        "card_bg": "#10162a",
+    },
+    "jewish_heritage": {
+        "label": "Jewish Heritage",
+        "primary": "#0038b8", "secondary": "#ffffff", "accent": "#7ba7e0",
+        "bg": "#f4f7ff", "text": "#0a1a3a",
+        "card_bg": "#ffffff",
+    },
+    "lavender_dreams": {
+        "label": "Lavender Dreams",
+        "primary": "#b39ddb", "secondary": "#e8daf5", "accent": "#ffffff",
+        "bg": "#f6f0fb", "text": "#4a3a5c",
+        "card_bg": "#ffffff",
+    },
 }
 
 
