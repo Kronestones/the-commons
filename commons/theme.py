@@ -111,6 +111,54 @@ PALETTES = {
         "bg": "#f6f0fb", "text": "#4a3a5c",
         "card_bg": "#ffffff",
     },
+    "neon_nights": {
+        "label": "Neon Nights",
+        "primary": "#ff2fb0", "secondary": "#000000", "accent": "#2fe0ff",
+        "bg": "#050505", "text": "#f5f5f5",
+        "card_bg": "#121212",
+    },
+    "desert_rose": {
+        "label": "Desert Rose",
+        "primary": "#c97b63", "secondary": "#e8b4bc", "accent": "#f3e5d8",
+        "bg": "#fbf3ec", "text": "#5c3a33",
+        "card_bg": "#ffffff",
+    },
+    "royal_velvet": {
+        "label": "Royal Velvet",
+        "primary": "#4b0082", "secondary": "#d4af37", "accent": "#8a5cf6",
+        "bg": "#0d0014", "text": "#f0e6ff",
+        "card_bg": "#1c0030",
+    },
+    "mint_chocolate": {
+        "label": "Mint Chocolate",
+        "primary": "#2e8b74", "secondary": "#3b2318", "accent": "#a8e6cf",
+        "bg": "#f4fbf8", "text": "#2b1b12",
+        "card_bg": "#ffffff",
+    },
+    "blood_moon": {
+        "label": "Blood Moon",
+        "primary": "#8b0000", "secondary": "#0a0a0a", "accent": "#ff4500",
+        "bg": "#0a0505", "text": "#ffece0",
+        "card_bg": "#1a0d0d",
+    },
+    "arctic_frost": {
+        "label": "Arctic Frost",
+        "primary": "#4fa8d8", "secondary": "#ffffff", "accent": "#c0e8f5",
+        "bg": "#f0f9fd", "text": "#0a3a52",
+        "card_bg": "#ffffff",
+    },
+    "peach_fuzz": {
+        "label": "Peach Fuzz",
+        "primary": "#ffb59e", "secondary": "#ff8c69", "accent": "#fff0e0",
+        "bg": "#fff6f0", "text": "#7a3f2e",
+        "card_bg": "#ffffff",
+    },
+    "electric_lime": {
+        "label": "Electric Lime",
+        "primary": "#c6ff00", "secondary": "#000000", "accent": "#ff2fb0",
+        "bg": "#0a0a05", "text": "#f0ffcc",
+        "card_bg": "#141408",
+    },
 }
 
 
@@ -167,7 +215,7 @@ def list_palettes() -> list:
 FONTS = {
     "bungee":           {"label": "Bungee",              "family": "'Bungee', cursive",             "google": "family=Bungee"},
     "caveat":           {"label": "Caveat",               "family": "'Caveat', cursive",             "google": "family=Caveat:wght@700"},
-    "press_start":      {"label": "Press Start 2P",       "family": "'Press Start 2P', cursive",     "google": "family=Press+Start+2P"},
+    "press_start":      {"label": "Press Start 2P",       "family": "'Press Start 2P', monospace",   "google": "family=Press+Start+2P"},
     "fredoka":          {"label": "Fredoka",               "family": "'Fredoka', sans-serif",         "google": "family=Fredoka:wght@600"},
     "pacifico":         {"label": "Pacifico",              "family": "'Pacifico', cursive",           "google": "family=Pacifico"},
     "permanent_marker": {"label": "Permanent Marker",      "family": "'Permanent Marker', cursive",   "google": "family=Permanent+Marker"},
@@ -180,6 +228,14 @@ FONTS = {
     "lobster":          {"label": "Lobster",               "family": "'Lobster', cursive",            "google": "family=Lobster"},
     "orbitron":         {"label": "Orbitron",              "family": "'Orbitron', sans-serif",        "google": "family=Orbitron:wght@700"},
     "shadows_light":    {"label": "Shadows Into Light",    "family": "'Shadows Into Light', cursive", "google": "family=Shadows+Into+Light"},
+    "anton": {"label": "Anton", "family": "'Anton', sans-serif", "google": "family=Anton"},
+    "abril_fatface": {"label": "Abril Fatface", "family": "'Abril Fatface', serif", "google": "family=Abril+Fatface"},
+    "vt323": {"label": "VT323", "family": "'VT323', monospace", "google": "family=VT323"},
+    "amatic_sc": {"label": "Amatic SC", "family": "'Amatic SC', cursive", "google": "family=Amatic+SC:wght@700"},
+    "bebas_neue": {"label": "Bebas Neue", "family": "'Bebas Neue', sans-serif", "google": "family=Bebas+Neue"},
+    "rock_salt": {"label": "Rock Salt", "family": "'Rock Salt', cursive", "google": "family=Rock+Salt"},
+    "special_elite": {"label": "Special Elite", "family": "'Special Elite', cursive", "google": "family=Special+Elite"},
+    "creepster": {"label": "Creepster", "family": "'Creepster', cursive", "google": "family=Creepster"},
 }
 
 

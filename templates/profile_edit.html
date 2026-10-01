@@ -58,6 +58,14 @@
       <div class="theme-swatch" data-key="midnight_gold" title="Midnight Gold" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#d4af37,#0b1120);"></div>
       <div class="theme-swatch" data-key="jewish_heritage" title="Jewish Heritage" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#0038b8,#ffffff);"></div>
       <div class="theme-swatch" data-key="lavender_dreams" title="Lavender Dreams" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#b39ddb,#e8daf5);"></div>
+      <div class="theme-swatch" data-key="neon_nights" title="Neon Nights" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#ff2fb0,#000000);"></div>
+      <div class="theme-swatch" data-key="desert_rose" title="Desert Rose" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#c97b63,#e8b4bc);"></div>
+      <div class="theme-swatch" data-key="royal_velvet" title="Royal Velvet" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#4b0082,#d4af37);"></div>
+      <div class="theme-swatch" data-key="mint_chocolate" title="Mint Chocolate" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#2e8b74,#3b2318);"></div>
+      <div class="theme-swatch" data-key="blood_moon" title="Blood Moon" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#8b0000,#0a0a0a);"></div>
+      <div class="theme-swatch" data-key="arctic_frost" title="Arctic Frost" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#4fa8d8,#ffffff);"></div>
+      <div class="theme-swatch" data-key="peach_fuzz" title="Peach Fuzz" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#ffb59e,#ff8c69);"></div>
+      <div class="theme-swatch" data-key="electric_lime" title="Electric Lime" style="width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;background:linear-gradient(135deg,#c6ff00,#000000);"></div>
     </div>
     <p id="theme-picker-label" style="margin:-14px 0 20px;font-size:13px;color:var(--muted, #888);">Default</p>
 
@@ -79,6 +87,14 @@
       <button type="button" class="font-swatch" data-key="lobster" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="lobster">Lobster</button>
       <button type="button" class="font-swatch" data-key="orbitron" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="orbitron">Orbitron</button>
       <button type="button" class="font-swatch" data-key="shadows_light" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="shadows_light">Shadows Into Light</button>
+      <button type="button" class="font-swatch" data-key="anton" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="anton">Anton</button>
+      <button type="button" class="font-swatch" data-key="abril_fatface" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="abril_fatface">Abril Fatface</button>
+      <button type="button" class="font-swatch" data-key="vt323" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="vt323">VT323</button>
+      <button type="button" class="font-swatch" data-key="amatic_sc" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="amatic_sc">Amatic SC</button>
+      <button type="button" class="font-swatch" data-key="bebas_neue" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="bebas_neue">Bebas Neue</button>
+      <button type="button" class="font-swatch" data-key="rock_salt" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="rock_salt">Rock Salt</button>
+      <button type="button" class="font-swatch" data-key="special_elite" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="special_elite">Special Elite</button>
+      <button type="button" class="font-swatch" data-key="creepster" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="creepster">Creepster</button>
     </div>
 
     <div id="edit-msg" class="form-error" style="display:none;"></div>
@@ -105,19 +121,54 @@ const FONT_FAMILIES = {
   'righteous': "'Righteous', cursive", 'playfair': "'Playfair Display', serif",
   'space_mono': "'Space Mono', monospace", 'comic_neue': "'Comic Neue', cursive",
   'lobster': "'Lobster', cursive", 'orbitron': "'Orbitron', sans-serif",
-  'shadows_light': "'Shadows Into Light', cursive"
+  'shadows_light': "'Shadows Into Light', cursive",
+  'anton': "'Anton', sans-serif",
+  'abril_fatface': "'Abril Fatface', serif",
+  'vt323': "'VT323', monospace",
+  'amatic_sc': "'Amatic SC', cursive",
+  'bebas_neue': "'Bebas Neue', sans-serif",
+  'rock_salt': "'Rock Salt', cursive",
+  'special_elite': "'Special Elite', cursive",
+  'creepster': "'Creepster', cursive"
 };
 (function loadFontPreviewStylesheet() {
-  // One combined request for every font this picker can show, so previews render
-  // in their real typeface. The live profile page loads only the ONE font someone
-  // actually picked — this bulk load is just for this settings page.
-  const families = ['Bungee','Caveat:wght@700','Press+Start+2P','Fredoka:wght@600','Pacifico',
-    'Permanent+Marker','Bangers','Monoton','Righteous','Playfair+Display:wght@700',
-    'Space+Mono:wght@700','Comic+Neue:wght@700','Lobster','Orbitron:wght@700','Shadows+Into+Light'];
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = 'https://fonts.googleapis.com/css2?' + families.map(f => 'family=' + f).join('&') + '&display=swap';
-  document.head.appendChild(link);
+  // Each font gets its OWN <link>, loaded independently — if one has any trouble, it
+  // can't affect the others. (A single combined request for all fonts at once risked
+  // several previews quietly falling back to the same generic style if any one family
+  // in that request didn't come through.) The live profile page already only loads
+  // the ONE font someone actually picked — this per-font loading is just for this
+  // settings page's previews.
+  const fontGoogleParams = [
+    'family=Bungee',
+    'family=Caveat:wght@700',
+    'family=Press+Start+2P',
+    'family=Fredoka:wght@600',
+    'family=Pacifico',
+    'family=Permanent+Marker',
+    'family=Bangers',
+    'family=Monoton',
+    'family=Righteous',
+    'family=Playfair+Display:wght@700',
+    'family=Space+Mono:wght@700',
+    'family=Comic+Neue:wght@700',
+    'family=Lobster',
+    'family=Orbitron:wght@700',
+    'family=Shadows+Into+Light',
+    'family=Anton',
+    'family=Abril+Fatface',
+    'family=VT323',
+    'family=Amatic+SC:wght@700',
+    'family=Bebas+Neue',
+    'family=Rock+Salt',
+    'family=Special+Elite',
+    'family=Creepster'
+  ];
+  fontGoogleParams.forEach(function(param) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?' + param + '&display=swap';
+    document.head.appendChild(link);
+  });
 })();
 function selectFont(key) {
   selectedFont = key || '';
@@ -138,7 +189,8 @@ const THEME_LABELS = {
   'cyberpunk': 'Cyberpunk', 'forest_witch': 'Forest Witch',
   'sunset_glow': 'Sunset Glow', 'barbie_energy': 'Barbie Energy', 'pride': 'Pride'
 ,
-  'galaxy': 'Galaxy', 'mermaid_core': 'Mermaid Core', 'retro_arcade': 'Retro Arcade', 'cottagecore': 'Cottagecore', 'vaporwave': 'Vaporwave', 'goth_glam': 'Goth Glam', 'tropical_punch': 'Tropical Punch', 'midnight_gold': 'Midnight Gold', 'jewish_heritage': 'Jewish Heritage', 'lavender_dreams': 'Lavender Dreams'
+  'galaxy': 'Galaxy', 'mermaid_core': 'Mermaid Core', 'retro_arcade': 'Retro Arcade', 'cottagecore': 'Cottagecore', 'vaporwave': 'Vaporwave', 'goth_glam': 'Goth Glam', 'tropical_punch': 'Tropical Punch', 'midnight_gold': 'Midnight Gold', 'jewish_heritage': 'Jewish Heritage', 'lavender_dreams': 'Lavender Dreams',
+  'neon_nights': 'Neon Nights', 'desert_rose': 'Desert Rose', 'royal_velvet': 'Royal Velvet', 'mint_chocolate': 'Mint Chocolate', 'blood_moon': 'Blood Moon', 'arctic_frost': 'Arctic Frost', 'peach_fuzz': 'Peach Fuzz', 'electric_lime': 'Electric Lime'
 };
 function selectTheme(key, skipHighlightOthers) {
   selectedTheme = key || '';
