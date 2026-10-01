@@ -1782,6 +1782,14 @@ async def api_update_font(
 ):
     return JSONResponse(profile_manager.update_font(db, current_user, font))
 
+@app.post("/api/profile/glitter")
+async def api_update_glitter(
+    enabled:      str = Form(""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(profile_manager.update_glitter(db, current_user, enabled))
+
 @app.post("/api/profile/twitch")
 async def api_update_twitch(
     twitch:       str = Form(""),

@@ -97,6 +97,11 @@
       <button type="button" class="font-swatch" data-key="creepster" style="padding:8px 14px;border-radius:8px;border:2px solid transparent;background:var(--green-light, #eee);cursor:pointer;font-size:15px;" data-font-preview="creepster">Creepster</button>
     </div>
 
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:8px 0 20px;">
+      <input type="checkbox" id="glitter-toggle" style="width:18px;height:18px;">
+      <span>✨ Glitter Name <small style="display:block;color:var(--muted,#888);font-weight:normal;">Animated shimmer on your username (uses your theme's colors if you've picked one)</small></span>
+    </label>
+
     <div id="edit-msg" class="form-error" style="display:none;"></div>
 
     <button class="btn-primary btn-full" onclick="saveProfile()">Save Changes</button>
@@ -225,6 +230,7 @@ async function loadCurrent() {
     document.getElementById('now-playing').value = p.connections.now_playing ? p.connections.now_playing : '';
     selectTheme(p.theme ? p.theme.key : '', true);
     selectFont(p.font ? p.font.key : '');
+    document.getElementById('glitter-toggle').checked = !!p.glitter;
     }
   }
 }
@@ -287,6 +293,16 @@ async function saveProfile() {
     const f = new FormData();
     f.append('font', selectedFont);
     const r = await fetch('/api/profile/font', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
+    });
+    const d = await r.json();
+    if (!d.ok) { ok = false; msgEl.textContent = d.error; msgEl.style.display = ''; }
+  }
+
+  if (ok) {
+    const f = new FormData();
+    f.append('enabled', document.getElementById('glitter-toggle').checked ? '1' : '');
+    const r = await fetch('/api/profile/glitter', {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: f
     });
     const d = await r.json();

@@ -171,6 +171,24 @@ def load_theme(user) -> dict:
     except (json.JSONDecodeError, TypeError):
         return {}
 
+def set_glitter(user, enabled: bool) -> dict:
+    """
+    Turns the animated name-shimmer effect on or off (caller is responsible for db.commit()).
+    Independent of palette and font.
+    """
+    data = load_theme(user)
+    if enabled:
+        data["glitter"] = True
+    else:
+        data.pop("glitter", None)
+    user.profile_theme = json.dumps(data)
+    return {"ok": True, "glitter": bool(enabled)}
+
+
+def get_glitter_output(user) -> bool:
+    return bool(load_theme(user).get("glitter"))
+
+
 
 def set_palette(user, palette_key: str) -> dict:
     """

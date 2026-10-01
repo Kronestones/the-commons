@@ -145,6 +145,55 @@ function applyProfileTheme(theme) {
 // postsEl.innerHTML is rebuilt, since those DOM nodes are freshly created each time.
 // Applies a chosen font to the username/display-name/bio, loading just that one
 // Google Font (not the whole picker roster) so the profile page stays light.
+// Animated shimmer on the username (and display name, if set). Uses the current
+// palette's colors for cohesion when one is picked; a default gradient otherwise.
+// Sets color/background inline directly (not just via a CSS class) so it correctly
+// overrides the plain color applyProfileTheme already set on these same elements,
+// in either on/off order.
+function applyProfileGlitter(enabled) {
+  const nameEl = document.getElementById('profile-username');
+  const displayNameEl = document.getElementById('profile-displayname');
+  const targets = [nameEl, displayNameEl].filter(Boolean);
+
+  if (!enabled) {
+    targets.forEach(el => {
+      el.classList.remove('commons-glitter-name');
+      el.style.backgroundImage = '';
+      el.style.webkitTextFillColor = '';
+      el.style.color = currentProfileTheme ? currentProfileTheme.primary : '';
+    });
+    return;
+  }
+
+  if (!document.getElementById('commons-glitter-style')) {
+    const style = document.createElement('style');
+    style.id = 'commons-glitter-style';
+    style.textContent = '.commons-glitter-name {' +
+      'background-size: 300% 100%;' +
+      '-webkit-background-clip: text;' +
+      'background-clip: text;' +
+      'animation: commons-glitter-shift 3s linear infinite;' +
+      '}' +
+      '@keyframes commons-glitter-shift {' +
+      '0% { background-position: 0% 50%; }' +
+      '100% { background-position: 300% 50%; }' +
+      '}';
+    document.head.appendChild(style);
+  }
+
+  const t = currentProfileTheme;
+  const gradient = t
+    ? ('linear-gradient(90deg, ' + t.primary + ', ' + t.accent + ', ' + t.secondary + ', ' + t.primary + ')')
+    : 'linear-gradient(90deg, #ff6fb0, #ffd700, #4fc3f7, #ff6fb0)';
+
+  targets.forEach(el => {
+    el.classList.add('commons-glitter-name');
+    el.style.backgroundImage = gradient;
+    el.style.color = 'transparent';
+    el.style.webkitTextFillColor = 'transparent';
+  });
+}
+
 function applyProfileFont(font) {
   currentProfileFont = font;
   if (font && font.google && !document.getElementById('profile-font-link')) {
@@ -202,6 +251,7 @@ async function loadProfile() {
     PROFILE_USER_ID = p.id;
     applyProfileTheme(p.theme);
     applyProfileFont(p.font);
+    applyProfileGlitter(p.glitter);
     const avatarEl = document.getElementById('profile-avatar');
     if (p.avatar_path) {
       avatarEl.innerHTML = '<img src="' + (p.avatar_path.startsWith('http') ? p.avatar_path : '/media/' + p.avatar_path) + '" style="width:100%;height:100%;object-fit:cover;">';
