@@ -1790,6 +1790,14 @@ async def api_update_glitter(
 ):
     return JSONResponse(profile_manager.update_glitter(db, current_user, enabled))
 
+@app.post("/api/profile/sparkle")
+async def api_update_sparkle(
+    enabled:      str = Form(""),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return JSONResponse(profile_manager.update_sparkle(db, current_user, enabled))
+
 @app.post("/api/profile/twitch")
 async def api_update_twitch(
     twitch:       str = Form(""),

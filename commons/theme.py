@@ -189,6 +189,24 @@ def get_glitter_output(user) -> bool:
     return bool(load_theme(user).get("glitter"))
 
 
+def set_sparkle(user, enabled: bool) -> dict:
+    """
+    Turns the twinkling sparkle-dots effect on or off (caller is responsible for db.commit()).
+    Independent of palette, font, and the wave (glitter) effect -- any combination can be on.
+    """
+    data = load_theme(user)
+    if enabled:
+        data["sparkle"] = True
+    else:
+        data.pop("sparkle", None)
+    user.profile_theme = json.dumps(data)
+    return {"ok": True, "sparkle": bool(enabled)}
+
+
+def get_sparkle_output(user) -> bool:
+    return bool(load_theme(user).get("sparkle"))
+
+
 
 def set_palette(user, palette_key: str) -> dict:
     """

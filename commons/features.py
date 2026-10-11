@@ -225,7 +225,7 @@ class ProfileManager:
                     viewer: Optional[User] = None) -> Optional[dict]:
         """Get a user's public profile."""
         from .share_util import shared_summary
-        from .theme import get_theme_output, get_font_output, get_glitter_output
+        from .theme import get_theme_output, get_font_output, get_glitter_output, get_sparkle_output
         user = db.query(User).filter(User.username.ilike(username)).first()
         if not user:
             return None
@@ -286,6 +286,7 @@ class ProfileManager:
             "theme":           get_theme_output(user),
             "font":            get_font_output(user),
             "glitter":         get_glitter_output(user),
+            "sparkle":         get_sparkle_output(user),
             "posts": [
                 {
                     "id":              p.id,
@@ -340,6 +341,13 @@ class ProfileManager:
     def update_glitter(self, db: Session, user: User, enabled: str) -> dict:
         from commons.theme import set_glitter
         result = set_glitter(user, enabled.strip() == "1")
+        if result.get("ok"):
+            db.commit()
+        return result
+
+    def update_sparkle(self, db: Session, user: User, enabled: str) -> dict:
+        from commons.theme import set_sparkle
+        result = set_sparkle(user, enabled.strip() == "1")
         if result.get("ok"):
             db.commit()
         return result
