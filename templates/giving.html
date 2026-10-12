@@ -15,14 +15,13 @@
   </div>
 
   <div class="blessing-statement">
-    <p>Each month, The Commons community selects one member in genuine life-sustaining need to receive a Blessing. The team verifies need. The community votes. One person or family receives the Blessing.</p>
-    <p>Medical. Housing. Food security. Genuine life-sustaining need only.</p>
-    <p>Ten percent of the monthly community pot, up to a maximum of $19,000 for individuals or $38,000 for families per calendar year. Every dollar transparent.</p>
+    <p>Each month, The Commons community selects one member in genuine life-sustaining need to receive a Blessing.</p>
+    <p>Ten percent of the monthly community pot, up to a maximum of $19,000 for individuals or $38,000 for families per calendar year. Every dollar transparent. The Commons programming tallies votes and the team verifies.</p>
   </div>
 
   <div class="blessing-how">
+    <p>To nominate yourself or someone you know, post on the feed with <strong>#needblessing</strong> and describe the genuine need. The community votes with ❤️. The post with the most hearts at the end of the month receives The Blessing.</p>
     <p><strong>Eligibility:</strong> One application per account per month. Recipients are not eligible again for 12 months. Every recipient is published publicly.</p>
-    <p>To nominate yourself or someone you know, post on the feed with <strong>#needblessing</strong> and describe the genuine need. The community votes with ❤️. The post with the most hearts at the end of the month receives The Blessing. The team verifies need before payment.</p>
   </div>
 
   <!-- Live #needblessing nominations -->
@@ -63,9 +62,27 @@
 
   <hr class="section-divider">
 
-  <!-- 3. Donation History -->
+  <!-- 3. Wealth Redistribution -->
+  <div class="page-header" style="margin-top:32px;">
+    <h2>Wealth Redistribution</h2>
+  </div>
+
+  <div class="giving-statement">
+    <p>Any money remaining after operating costs is donated every 6 months to a designated cause. Not kept. Not invested for profit. Given. Every dollar will be accounted for. That's a promise.</p>
+    <p>The Founder of The Commons designates the cause for each 6-month cycle. Every donation is published here. Full transparency. No exceptions.</p>
+    <p>Have a humanitarian cause you'd like to suggest? Post it on the feed with <strong>#suggestacause</strong> — your voice matters here.</p>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- 4. Transparency -->
+  <div class="page-header" style="margin-top:32px;">
+    <h2>Transparency</h2>
+  </div>
+
+  <!-- Donation history -->
   {% if donations %}
-    <h2>Donation History</h2>
+    <h3>Donation History</h3>
     <div class="donations-list">
       {% for d in donations %}
       <div class="donation-card {% if d.confirmed %}confirmed{% else %}pending{% endif %}">
@@ -100,35 +117,7 @@
     </div>
   {% endif %}
 
-  <hr class="section-divider">
-
-  <!-- 4. Surplus / Giving + Buy Me a Coffee -->
-  <div class="giving-statement">
-    <p>Any money remaining after operating costs are covered is donated to a humanitarian cause. Not kept. Not invested for profit. Given.</p>
-    <p>The Founder of The Commons designates the cause. Every donation is published here. Full transparency. No exceptions.
-    <p style="margin-top:10px;">Have a humanitarian cause you'd like to suggest? Post it on the feed with <strong>#suggestacause</strong> — your voice matters here.</p></p>
-    <div style="text-align:center; margin:24px 0;">
-      <p style="color:var(--text-muted);font-size:14px;margin-bottom:12px;">Support The Commons — every contribution helps keep the platform running and the mission alive.</p>
-      <a href="https://buymeacoffee.com/sentinel.commons" target="_blank" rel="noopener"
-         style="display:inline-block;background:#FFDD00;color:#000;font-weight:700;font-size:16px;padding:12px 28px;border-radius:8px;text-decoration:none;">
-        ☕ Support The Commons
-      </a>
-    </div>
-  </div>
-
-  <hr class="section-divider">
-
-  <!-- 5. Transparency -->
-  <div class="page-header" style="margin-top:32px;">
-    <h2>Transparency</h2>
-    <p>Codex Law 5 — Every dollar. Every month. Always public.</p>
-  </div>
-
-  <div class="transparency-statement">
-    <p>The Commons operates at cost. No profit. No shareholders. No hidden fees.</p>
-    <p>Every dollar collected in platform fees is accounted for here. Operating costs are published monthly. Any surplus goes to humanitarian causes.</p>
-  </div>
-
+  <!-- Monthly operating-cost reports -->
   {% if reports %}
     {% for report in reports %}
     <div class="report-card">
@@ -153,6 +142,14 @@
       <p style="margin:0;font-size:15px;line-height:1.7;"><strong>Please note:</strong> The Commons is not a registered charity. Contributions are not tax deductible. Every dollar given is a voluntary act of pure generosity — and we are deeply grateful for it. Your support keeps this platform free, independent, and in service of the people.</p>
     </div>
   {% endif %}
+
+  <div style="text-align:center; margin:24px 0;">
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:12px;">Support The Commons — every contribution helps keep the platform running and the mission alive.</p>
+    <a href="https://buymeacoffee.com/sentinel.commons" target="_blank" rel="noopener"
+       style="display:inline-block;background:#FFDD00;color:#000;font-weight:700;font-size:16px;padding:12px 28px;border-radius:8px;text-decoration:none;">
+      ☕ Support The Commons
+    </a>
+  </div>
 
 </div>
 
