@@ -221,9 +221,12 @@ class InputSanitizer:
             if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
                 return "script injection pattern"
 
-        for pattern in SHELL_INJECTION_PATTERNS:
-            if re.search(pattern, text, re.IGNORECASE):
-                return "shell injection pattern"
+        # Shell-injection pattern check removed -- sanitize_text() is only
+        # used for display names, post content, and captions, none of
+        # which are ever passed to a shell/subprocess. The old check
+        # blocked a single '&', '|', ';', backtick, '$(' or '${' anywhere
+        # in the text, which flagged ordinary writing like "B & T" or
+        # "do X; then Y" as an attack.
 
         return None
 
