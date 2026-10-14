@@ -47,11 +47,26 @@
     {% endfor %}
   </div>
   {% else %}
-  <div class="blessing-empty">
-    <h3>No verified applications yet this month.</h3>
-    <p>Applications are verified by the team before going to community vote.</p>
-    <p>If you are in genuine need, please apply.</p>
+  {% if history %}
+  <div class="blessing-history">
+    <h3>Past Blessings</h3>
+    {% for h in history %}
+    <div class="blessing-history-card">
+      <div class="blessing-history-header">
+        <span class="blessing-history-month">{{ h.month }}</span>
+        <span class="blessing-history-amount">{{ h.amount_blessed }}</span>
+      </div>
+      <p class="blessing-history-winner">@{{ h.winner_username }}</p>
+      {% if h.public_message %}<p class="blessing-history-message">{{ h.public_message }}</p>{% endif %}
+    </div>
+    {% endfor %}
   </div>
+  {% else %}
+  <div class="blessing-empty">
+    <h3>No one has received a Blessing yet.</h3>
+    <p>Be the first to nominate someone in genuine need with #needblessing.</p>
+  </div>
+  {% endif %}
   {% endif %}
 
   <hr class="section-divider">

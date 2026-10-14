@@ -352,6 +352,7 @@ Power to the People.
             winner = db.query(User).filter(User.id == r.winner_id).first()
             result.append({
                 "month":            r.month,
+                "winner_username":  winner.username if winner else "Unknown",
                 "need_category":    r.need_category,
                 "need_description": r.need_description,
                 "amount_blessed":   f"${r.amount_blessed:,.2f}",
