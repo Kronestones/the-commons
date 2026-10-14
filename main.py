@@ -2455,6 +2455,15 @@ async def api_decline_request(
     return JSONResponse(decline_request(db, current_user, message_id))
 
 
+@app.get("/api/messages/sent")
+async def api_sent_requests(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    from commons.messaging import get_sent_requests
+    return JSONResponse({"ok": True, "sent": get_sent_requests(db, current_user)})
+
+
 @app.get("/api/messages/{username}")
 async def api_conversation(
     username: str,

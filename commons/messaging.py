@@ -153,3 +153,34 @@ def get_conversation(db: Session, user: User, other_username: str) -> list:
         "time":    m.created_at.isoformat(),
         "mine":    m.sender_id == user.id
     } for m in msgs]
+
+
+def get_sent_requests(db: Session, user: User) -> list:
+    """
+    Outgoing message requests this user sent that haven't become a mutual
+    conversation yet -- still pending, or declined. Once the recipient
+    accepts, the thread shows up in the Inbox instead, so it's left out
+    here to avoid duplicates.
+
+    Added so a sent request doesn't silently disappear from view --
+    previously it wasn't in the Inbox (not accepted yet) and wasn't in
+    Requests (that only shows incoming ones), so there was no way to
+    see it again after sending it.
+    """
+    msgs = db.query(DirectMessage).filter(
+        DirectMessage.sender_id  == user.id,
+        DirectMessage.is_request == True,
+        DirectMessage.accepted   != True
+    ).order_by(DirectMessage.created_at.desc()).all()
+
+    result = []
+    for m in msgs:
+        recipient = db.query(User).filter(User.id == m.recipient_id).first()
+        result.append({
+            "id":       m.id,
+            "username": recipient.username if recipient else "unknown",
+            "preview":  m.content_encrypted[:100],
+            "time":     m.created_at.isoformat(),
+            "status":   "declined" if m.accepted is False else "pending",
+        })
+    return result

@@ -19,6 +19,7 @@
       <button onclick="showTab('inbox')" id="tab-inbox" class="vote-btn">Inbox</button>
       <button onclick="showTab('market')" id="tab-market" class="vote-btn">🛍️ Market</button>
       <button onclick="showTab('requests')" id="tab-requests" class="vote-btn">Requests <span id="req-count"></span></button>
+      <button onclick="showTab('sent')" id="tab-sent" class="vote-btn">Sent</button>
       <button onclick="showTab('new')" id="tab-new" class="vote-btn">+ New</button>
     </div>
 
@@ -30,6 +31,9 @@
 
     <!-- Requests -->
     <div id="pane-requests" style="display:none"></div>
+
+    <!-- Sent -->
+    <div id="pane-sent" style="display:none"></div>
 
     <!-- New Message -->
     <div id="pane-new" style="display:none">
@@ -67,7 +71,7 @@
     let currentConvo = null;
 
     function showTab(tab) {
-      ['inbox','market','requests','new','conversation'].forEach(t => {
+      ['inbox','market','requests','sent','new','conversation'].forEach(t => {
         document.getElementById('pane-' + t).style.display = 'none';
         const btn = document.getElementById('tab-' + t);
         if (btn) btn.style.opacity = '0.6';
@@ -78,6 +82,7 @@
       if (tab === 'inbox') loadInbox();
       if (tab === 'market') loadMarket();
       if (tab === 'requests') loadRequests();
+      if (tab === 'sent') loadSent();
     }
 
     function isMarketMessage(m) {
@@ -154,6 +159,28 @@
             <button onclick="acceptRequest(${r.id}, '${r.username}')" class="vote-btn">Accept</button>
             <button onclick="declineRequest(${r.id})" class="delete-btn">Decline</button>
           </div>
+        </div>
+      `).join('');
+    }
+
+    async function loadSent() {
+      const res = await fetch('/api/messages/sent', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      const pane = document.getElementById('pane-sent');
+      if (!data.sent || data.sent.length === 0) {
+        pane.innerHTML = '<p style="color:var(--muted);text-align:center;padding:32px;">No pending sent requests.</p>';
+        return;
+      }
+      pane.innerHTML = data.sent.map(s => `
+        <div class="post-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong>@${s.username}</strong>
+            <span style="font-size:12px;color:var(--muted);">${formatTime(s.time)}</span>
+          </div>
+          <p style="margin:8px 0;">${s.preview}</p>
+          <span style="font-size:12px;font-weight:600;color:${s.status === 'declined' ? '#e53935' : 'var(--muted)'};">${s.status === 'declined' ? 'Declined' : 'Pending — waiting for them to accept'}</span>
         </div>
       `).join('');
     }
