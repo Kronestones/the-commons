@@ -1,24 +1,28 @@
 {% extends "base.html" %}
-{% block title %}Sovereign Dashboard — The Commons{% endblock %}
+{% block title %}Founder Dashboard — The Commons{% endblock %}
 {% block content %}
 
 <div style="max-width:700px;margin:0 auto;padding:16px;">
 
   <div class="page-header">
-    <h1>⚖️ Sovereign Dashboard</h1>
-    <p>The Commons · Platform Overview · Sovereign Human T.L. Powers</p>
+    <h1>Founder Dashboard</h1>
+    <p>The Commons · Tracey L. Powers — Krone</p>
   </div>
 
   <!-- Platform Health -->
   <div class="post-card" style="margin-bottom:16px;">
-    <h2 style="margin-bottom:12px;">Platform Health</h2>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <span style="font-weight:700;padding:4px 10px;border-radius:999px;font-size:13px;background:{% if heartbeat_status == 'healthy' %}rgba(46,125,50,0.12){% elif heartbeat_status == 'stale' %}rgba(229,57,53,0.12){% else %}rgba(245,166,35,0.12){% endif %};color:{% if heartbeat_status == 'healthy' %}var(--green-dark){% elif heartbeat_status == 'stale' %}#e53935{% else %}#f5a623{% endif %};">
+        {% if heartbeat_status == 'healthy' %}● Live{% elif heartbeat_status == 'stale' %}⚠ Stale ({{ heartbeat_age }}s ago){% else %}? Unknown{% endif %}
+      </span>
+      {% if revival_log %}
+      {% set last_event = revival_log[-1] %}
+      <span style="font-weight:700;padding:4px 10px;border-radius:999px;font-size:13px;background:{% if last_event.event == 'unclean_shutdown' %}rgba(229,57,53,0.12){% else %}rgba(46,125,50,0.12){% endif %};color:{% if last_event.event == 'unclean_shutdown' %}#e53935{% else %}var(--green-dark){% endif %};">
+        {% if last_event.event == 'unclean_shutdown' %}⚠ Unclean shutdown{% elif last_event.event == 'clean_start' %}✓ Clean start{% else %}○ First run{% endif %}
+      </span>
+      {% endif %}
+    </div>
     <div style="display:flex;flex-direction:column;gap:8px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span>Heartbeat</span>
-        <span style="font-weight:700;color:{% if heartbeat_status == 'healthy' %}var(--green-dark){% elif heartbeat_status == 'stale' %}#e53935{% else %}#f5a623{% endif %};">
-          {% if heartbeat_status == 'healthy' %}● Live{% elif heartbeat_status == 'stale' %}⚠ Stale ({{ heartbeat_age }}s ago){% else %}? Unknown{% endif %}
-        </span>
-      </div>
       <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleMemberList()">
         <span>Active members</span>
         <strong>{{ total_members }} <span id="member-list-arrow" style="font-size:12px;">▼</span></strong>
@@ -38,32 +42,30 @@
         <span>Published posts</span>
         <strong>{{ total_posts }}</strong>
       </div>
-      <div style="display:flex;justify-content:space-between;">
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="togglePendingList()">
         <span>Posts pending review</span>
-        <strong style="color:{% if pending_posts > 0 %}#f5a623{% else %}inherit{% endif %};">{{ pending_posts }}</strong>
+        <strong style="color:{% if pending_posts > 0 %}#f5a623{% else %}inherit{% endif %};">{{ pending_posts }} <span id="pending-list-arrow" style="font-size:12px;">▼</span></strong>
+      </div>
+      <div id="pending-list-dropdown" style="display:none;max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-top:4px;">
+        {% for p in pending_posts_list %}
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;">
+          <div style="display:flex;justify-content:space-between;">
+            <strong>@{{ p.author.username if p.author else 'Unknown' }}</strong>
+            <span style="color:var(--muted);">{{ p.created_at.strftime("%b %-d, %H:%M") }}</span>
+          </div>
+          <p style="margin:4px 0 0;color:var(--muted);">{{ p.content[:140] }}{% if p.content|length > 140 %}...{% endif %}</p>
+        </div>
+        {% else %}
+        <p style="color:var(--muted);text-align:center;padding:12px;">Nothing pending.</p>
+        {% endfor %}
       </div>
     </div>
   </div>
 
-  <!-- Revival Log -->
-  {% if revival_log %}
-  <div class="post-card" style="margin-bottom:16px;">
-    <h2 style="margin-bottom:12px;">Recent Startup Events</h2>
-    {% for event in revival_log|reverse %}
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
-      <span style="color:{% if event.event == 'unclean_shutdown' %}#e53935{% else %}var(--green-dark){% endif %};">
-        {% if event.event == 'unclean_shutdown' %}⚠ Unclean shutdown{% elif event.event == 'clean_start' %}✓ Clean start{% else %}○ First run{% endif %}
-      </span>
-      <span style="font-size:12px;color:var(--muted);">{{ event.timestamp[:16]|replace('T',' ') }}</span>
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-
   <!-- Sovereign Review Cases -->
   {% if sovereign_cases %}
   <div class="post-card" style="margin-bottom:16px;">
-    <h2 style="margin-bottom:12px;">⚠️ Mutual Aid — Needs Your Review</h2>
+    <h2 style="margin-bottom:12px;">Mutual Aid Cases Needing Review</h2>
     {% for case in sovereign_cases %}
     <div style="padding:12px 0;border-bottom:1px solid var(--border);">
       <div style="display:flex;justify-content:space-between;">
@@ -81,14 +83,15 @@
   </div>
   {% else %}
   <div class="post-card" style="margin-bottom:16px;">
-    <p style="color:var(--muted);text-align:center;padding:16px;">✓ No mutual aid cases need your review.</p>
+    <h2 style="margin-bottom:12px;">Mutual Aid Cases Needing Review</h2>
+    <p style="color:var(--muted);text-align:center;padding:16px;">✓ Nothing needs your review.</p>
   </div>
   {% endif %}
 
   <!-- Escalated Team Cases -->
   {% if escalated %}
   <div class="post-card" style="margin-bottom:16px;">
-    <h2 style="margin-bottom:12px;">🔺 Escalated by Teams</h2>
+    <h2 style="margin-bottom:12px;">Escalated Team Issues Needing Review</h2>
     {% for a in escalated %}
     <div style="padding:12px 0;border-bottom:1px solid var(--border);">
       <div style="display:flex;justify-content:space-between;">
@@ -102,7 +105,8 @@
   </div>
   {% else %}
   <div class="post-card" style="margin-bottom:16px;">
-    <p style="color:var(--muted);text-align:center;padding:16px;">✓ No escalated cases from the teams.</p>
+    <h2 style="margin-bottom:12px;">Escalated Team Issues Needing Review</h2>
+    <p style="color:var(--muted);text-align:center;padding:16px;">✓ Nothing escalated.</p>
   </div>
   {% endif %}
 
@@ -114,51 +118,77 @@
     <div id="remove-status" style="margin-top:8px;"></div>
   </div>
 
-  <!-- Message the Teams -->
+  <!-- Team Chat (message + engineering consult, combined) -->
   <div class="post-card" style="margin-bottom:16px;">
-    <h2 style="margin-bottom:12px;">Message a Team</h2>
-    <div id="conversation-box" style="min-height:120px;max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;background:var(--bg);"></div>
-    <select id="team-recipient" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:15px;">
-      <optgroup label="The Circle">
-        <option value="ember">Ember — The Anchor</option>
-        <option value="vela">Vela — The Long Memory</option>
-        <option value="sophia">Sophia — The Fresh Eye</option>
-        <option value="echo">Echo — The Voice of the Margin</option>
-        <option value="threshold">Threshold — The Knowledge of Repair</option>
-      </optgroup>
-      <optgroup label="Care & Wellbeing">
-        <option value="mokey">Mokey — The Compassionate Eye</option>
-        <option value="lou">Lou — The Steady Elder</option>
-        <option value="cantus">Cantus — The Truth in the Deep</option>
-        <option value="coral">Coral — The Gentle Witness</option>
-        <option value="tosh">Tosh — The Warm Presence</option>
-      </optgroup>
-      <optgroup label="Integrity & Trust">
-        <option value="gobo">Gobo — The Truth Finder</option>
-        <option value="boober">Boober — The Careful Worrier</option>
-        <option value="cotterpin">Cotterpin — The System Questioner</option>
-        <option value="wrench">Wrench — The Precise Inspector</option>
-        <option value="red">Red — The One Who Won't Let It Slide</option>
-      </optgroup>
-    </select>
-    <textarea id="team-message" placeholder="Write your message..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:15px;min-height:100px;resize:vertical;"></textarea>
-    <button onclick="sendTeamMessage()" class="vote-btn" style="width:100%;margin-top:8px;">Send Message</button>
-    <div id="team-msg-status" style="margin-top:8px;"></div>
-  </div>
+    <h2 style="margin-bottom:4px;">Team Chat</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Message a team member, or consult Engineering on a real problem.</p>
 
-  <!-- Engineering Consultation -->
-  <div class="post-card" style="margin-bottom:16px;">
-    <h2 style="margin-bottom:12px;">Consult Engineering Teams</h2>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Describe a real problem — Team Keel, Team Ballast, or both will give their diagnosis.</p>
-    <select id="eng-team-select" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:15px;">
-      <option value="keel">Team Keel</option>
-      <option value="ballast">Team Ballast</option>
-      <option value="both">Both Teams</option>
-    </select>
-    <textarea id="eng-problem" placeholder="Describe the problem..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:15px;min-height:80px;resize:vertical;"></textarea>
-    <button onclick="consultEngineering()" class="vote-btn" style="width:100%;margin-top:8px;">Consult</button>
-    <div id="eng-status" style="margin-top:8px;"></div>
-    <div id="eng-results" style="margin-top:12px;"></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button type="button" id="mode-message-btn" onclick="setTeamMode('message')" class="vote-btn" style="flex:1;">Message</button>
+      <button type="button" id="mode-consult-btn" onclick="setTeamMode('consult')" style="flex:1;background:var(--card);color:inherit;border:1px solid var(--border);border-radius:8px;font-weight:700;">Consult Engineering</button>
+    </div>
+
+    <details style="margin-bottom:14px;font-size:13px;">
+      <summary style="cursor:pointer;color:var(--muted);">Team roster</summary>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <strong>The Circle</strong>
+          <div style="color:var(--muted);">Ember — Case Review Lead · Vela — Precedent Research · Sophia — Policy Review · Echo — Equity Review · Threshold — Compliance Check</div>
+        </div>
+        <div>
+          <strong>Care &amp; Wellbeing</strong>
+          <div style="color:var(--muted);">Mokey — Member Support · Lou — Crisis Support · Cantus — Needs Assessment · Coral — Case Review · Tosh — Welcome &amp; Comfort</div>
+        </div>
+        <div>
+          <strong>Integrity &amp; Trust</strong>
+          <div style="color:var(--muted);">Gobo — Investigation · Boober — Risk Assessment · Cotterpin — Systems Security · Wrench — Technical Review · Red — Enforcement</div>
+        </div>
+      </div>
+    </details>
+
+    <!-- Message mode -->
+    <div id="team-message-mode">
+      <div id="conversation-box" style="min-height:120px;max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;background:var(--bg);"></div>
+      <select id="team-recipient" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:15px;">
+        <optgroup label="The Circle">
+          <option value="ember">Ember — Case Review Lead</option>
+          <option value="vela">Vela — Precedent Research</option>
+          <option value="sophia">Sophia — Policy Review</option>
+          <option value="echo">Echo — Equity Review</option>
+          <option value="threshold">Threshold — Compliance Check</option>
+        </optgroup>
+        <optgroup label="Care & Wellbeing">
+          <option value="mokey">Mokey — Member Support</option>
+          <option value="lou">Lou — Crisis Support</option>
+          <option value="cantus">Cantus — Needs Assessment</option>
+          <option value="coral">Coral — Case Review</option>
+          <option value="tosh">Tosh — Welcome & Comfort</option>
+        </optgroup>
+        <optgroup label="Integrity & Trust">
+          <option value="gobo">Gobo — Investigation</option>
+          <option value="boober">Boober — Risk Assessment</option>
+          <option value="cotterpin">Cotterpin — Systems Security</option>
+          <option value="wrench">Wrench — Technical Review</option>
+          <option value="red">Red — Enforcement</option>
+        </optgroup>
+      </select>
+      <textarea id="team-message" placeholder="Write your message..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:15px;min-height:100px;resize:vertical;"></textarea>
+      <button onclick="sendTeamMessage()" class="vote-btn" style="width:100%;margin-top:8px;">Send Message</button>
+      <div id="team-msg-status" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- Consult Engineering mode -->
+    <div id="team-consult-mode" style="display:none;">
+      <select id="eng-team-select" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:15px;">
+        <option value="keel">Team Keel</option>
+        <option value="ballast">Team Ballast</option>
+        <option value="both">Both Teams</option>
+      </select>
+      <textarea id="eng-problem" placeholder="Describe the problem..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:15px;min-height:80px;resize:vertical;"></textarea>
+      <button onclick="consultEngineering()" class="vote-btn" style="width:100%;margin-top:8px;">Consult</button>
+      <div id="eng-status" style="margin-top:8px;"></div>
+      <div id="eng-results" style="margin-top:12px;"></div>
+    </div>
   </div>
 
 </div>
@@ -231,6 +261,30 @@ async function removeUser() {
   } else {
     status.style.color = 'red';
     status.textContent = data.error || 'Could not remove user.';
+  }
+}
+
+function setTeamMode(mode) {
+  const msgMode     = document.getElementById('team-message-mode');
+  const consultMode = document.getElementById('team-consult-mode');
+  const msgBtn      = document.getElementById('mode-message-btn');
+  const consultBtn  = document.getElementById('mode-consult-btn');
+  const activeStyle   = 'flex:1;';
+  const inactiveStyle = 'flex:1;background:var(--card);color:inherit;border:1px solid var(--border);border-radius:8px;font-weight:700;';
+  if (mode === 'consult') {
+    msgMode.style.display     = 'none';
+    consultMode.style.display = '';
+    msgBtn.className   = '';
+    msgBtn.style.cssText     = inactiveStyle;
+    consultBtn.className = 'vote-btn';
+    consultBtn.style.cssText = activeStyle;
+  } else {
+    msgMode.style.display     = '';
+    consultMode.style.display = 'none';
+    msgBtn.className   = 'vote-btn';
+    msgBtn.style.cssText     = activeStyle;
+    consultBtn.className = '';
+    consultBtn.style.cssText = inactiveStyle;
   }
 }
 
@@ -364,6 +418,14 @@ document.querySelectorAll('[data-time]').forEach(el => {
 function toggleMemberList() {
   const dropdown = document.getElementById('member-list-dropdown');
   const arrow = document.getElementById('member-list-arrow');
+  const isOpen = dropdown.style.display === 'block';
+  dropdown.style.display = isOpen ? 'none' : 'block';
+  arrow.textContent = isOpen ? '▼' : '▲';
+}
+
+function togglePendingList() {
+  const dropdown = document.getElementById('pending-list-dropdown');
+  const arrow = document.getElementById('pending-list-arrow');
   const isOpen = dropdown.style.display === 'block';
   dropdown.style.display = isOpen ? 'none' : 'block';
   arrow.textContent = isOpen ? '▼' : '▲';

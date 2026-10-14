@@ -2503,6 +2503,13 @@ async def sovereign_dashboard(
     total_members = len(member_list)
     total_posts   = db.query(Post).filter(Post.status == PostStatus.PUBLISHED).count()
     pending_posts = db.query(Post).filter(Post.status == PostStatus.PENDING).count()
+    pending_posts_list = (
+        db.query(Post)
+        .filter(Post.status == PostStatus.PENDING)
+        .order_by(Post.created_at.desc())
+        .limit(50)
+        .all()
+    )
 
     # Blessing applications needing sovereign review
     sovereign_cases = db.query(BlessingApplication).filter(
@@ -2547,6 +2554,7 @@ async def sovereign_dashboard(
         "member_list":      member_list,
         "total_posts":      total_posts,
         "pending_posts":    pending_posts,
+        "pending_posts_list": pending_posts_list,
         "sovereign_cases":  sovereign_cases,
         "escalated":        escalated,
         "revival_log":      revival_log,
